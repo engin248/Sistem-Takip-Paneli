@@ -20,7 +20,7 @@ export default function TaskForm() {
       await logAudit({
         operation_type: 'CREATE',
         action_description: `Yeni görev oluşturuldu: ${title}`,
-        metadata: { title }
+        metadata: { action_code: 'TASK_CREATED', title }
       }); // İşlem mühürlendi
       setTitle('');
       await fetchTasksFromDB(); // Listeyi güncelle

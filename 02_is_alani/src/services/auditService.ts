@@ -100,3 +100,17 @@ export const logAuditError = async (
     metadata: details,
   });
 };
+// Audit loglarını getir (En yeni 5 kayıt)
+export const fetchAuditLogs = async () => {
+  const { data, error } = await supabase
+    .from('audit_logs')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(5);
+
+  if (error) {
+    console.error('ERR-STP001-007', error);
+    return [];
+  }
+  return data;
+};

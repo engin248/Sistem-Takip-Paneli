@@ -26,7 +26,7 @@ export const updateStatus = async (id: string, status: string) => {
       operation_type: 'UPDATE',
       action_description: `Görev durumu güncellendi: ${id} -> ${status}`,
       task_id: id,
-      metadata: { status }
+      metadata: { action_code: 'TASK_UPDATED', status }
     });
     await fetchTasksFromDB();
   } else {
