@@ -10,10 +10,12 @@ import TaskCard from '@/components/TaskCard';
 import Stats from '@/components/Stats';
 import AuditLog from '@/components/AuditLog';
 import { exportSystemData } from '@/services/exportService';
+import { toast } from 'sonner';
 
 export default function Dashboard() {
   const { tasks, error, setError } = useTaskStore();
   const [isLocked, setIsLocked] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     // ── FETCH: Görev listesini çek ──────────────────────────
@@ -50,17 +52,22 @@ export default function Dashboard() {
     };
   }, [setError]);
 
-  // ── EXPORT: Sistem mühürleme ──────────────────────────────
+  // ── EXPORT: Sistem mühürleme (loading + toast) ────────────
   const handleExport = async () => {
+    setIsExporting(true);
     try {
       await exportSystemData();
+      toast.success('Sistem başarıyla mühürlendi (JSON)');
     } catch (error) {
       await handleError(ERR.SYSTEM_EXPORT, error, { kaynak: 'Dashboard.handleExport', islem: 'EXPORT' });
+    } finally {
+      setIsExporting(false);
     }
   };
 
   return (
     <main className="p-8 max-w-4xl mx-auto text-start">
+      {/* ── ÜST: BAŞLIK + KONTROLLER ─────────────────────────── */}
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-black tracking-tighter">STP-OPERASYON MERKEZİ</h1>
         <div className="flex items-center gap-4">
@@ -75,14 +82,18 @@ export default function Dashboard() {
           {!isLocked && (
             <button
               onClick={handleExport}
-              className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 px-3 py-1 rounded border border-slate-300 dark:border-slate-700 transition-colors"
+              disabled={isExporting}
+              className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 px-3 py-1 rounded border border-slate-300 dark:border-slate-700 transition-colors disabled:opacity-50"
             >
-              SİSTEMİ MÜHÜRLE (JSON)
+              {isExporting ? 'MÜHÜRLEME...' : 'SİSTEMİ MÜHÜRLE (JSON)'}
             </button>
           )}
           <div className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">SİSTEM ÇEVRİMİÇİ</div>
         </div>
       </div>
+
+      {/* ── ÜST: STATS — Her zaman görünür ──────────────────── */}
+      <Stats />
 
       {isLocked ? (
         <div className="flex flex-col items-center justify-center p-20 bg-slate-50 dark:bg-slate-900 border-2 border-dashed border-slate-200 rounded-3xl">
@@ -92,8 +103,6 @@ export default function Dashboard() {
         </div>
       ) : (
         <>
-          <Stats />
-
           {error && (
             <div className="mb-6 p-4 bg-red-50 border-s-4 border-red-500 text-red-700 flex justify-between items-center rounded shadow-sm">
               <div className="flex items-center gap-2">
@@ -104,27 +113,29 @@ export default function Dashboard() {
             </div>
           )}
 
+          {/* ── ÖN: Görev giriş formu ───────────────────────────── */}
           <section className="mb-12">
             <h2 className="text-sm font-bold text-slate-500 mb-4 tracking-widest uppercase text-start">Yeni Emir Girişi</h2>
             <TaskForm />
           </section>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <section>
-              <h2 className="text-sm font-bold text-slate-500 mb-4 tracking-widest uppercase text-start">Görev Çizelgesi</h2>
-              <div className="space-y-3">
-                {tasks.length === 0 && <p className="text-slate-400 italic text-xs text-start">Aktif emir bulunmamaktadır.</p>}
-                {tasks.map((task) => (
-                  <TaskCard key={task.id} task={task} />
-                ))}
-              </div>
-            </section>
-
-            {/* BUG-005/BUG-012 FIX: Artık AuditLog component'i kullanılıyor, duplicate logic kaldırıldı */}
-            <AuditLog />
-          </div>
+          {/* ── ÖN: Görev listesi ───────────────────────────────── */}
+          <section className="mb-12">
+            <h2 className="text-sm font-bold text-slate-500 mb-4 tracking-widest uppercase text-start">Görev Çizelgesi</h2>
+            <div className="space-y-3">
+              {tasks.length === 0 && <p className="text-slate-400 italic text-xs text-start">Aktif emir bulunmamaktadır.</p>}
+              {tasks.map((task) => (
+                <TaskCard key={task.id} task={task} />
+              ))}
+            </div>
+          </section>
         </>
       )}
+
+      {/* ── ALT: AUDIT LOG — Sayfanın en altında, her zaman görünür ── */}
+      <section className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800">
+        <AuditLog />
+      </section>
     </main>
   );
 }
