@@ -100,6 +100,16 @@ export const translations = {
     boardNoDecisions: 'Henüz kurul kararı bulunmuyor.',
     boardHistory: 'Karar Geçmişi',
 
+    // ── File-level Locking (İzin/Kilit) ─────────────────────────
+    permOperatorLabel: 'Aktif Operatör',
+    permLockWarning: 'BU GÖREV BAŞKA OPERATÖRe ATANMIŞ',
+    permDeniedToast: 'YAZMA YETKİSİ REDDEDİLDİ',
+    permLockedBy: 'Atanan:',
+    permYou: '(SİZ)',
+    permReadOnly: 'SALT OKUNUR',
+    permWritable: 'YAZMA YETKİSİ',
+    permNoAccess: 'Bu görevi değiştirme yetkiniz bulunmuyor.',
+
     // ── Kanban Görev Panosu ──────────────────────────────────
     kanbanTitle: 'GÖREV PANOSU',
     kanbanTodo: 'YAPILACAK',
@@ -202,6 +212,16 @@ export const translations = {
     boardConsensusWaiting: '⏳ التصويت جارٍ',
     boardNoDecisions: 'لا توجد قرارات مجلس حتى الآن.',
     boardHistory: 'سجل القرارات',
+
+    // ── File-level Locking (İzin/Kilit) ─────────────────────────
+    permOperatorLabel: 'المشغل النشط',
+    permLockWarning: 'هذه المهمة مخصصة لمشغل آخر',
+    permDeniedToast: 'تم رفض إذن الكتابة',
+    permLockedBy: 'مخصص لـ:',
+    permYou: '(أنت)',
+    permReadOnly: 'قراءة فقط',
+    permWritable: 'إذن الكتابة',
+    permNoAccess: 'ليس لديك صلاحية لتعديل هذه المهمة.',
 
     // ── Kanban Görev Panosu ──────────────────────────────────
     kanbanTitle: 'لوحة المهام',

@@ -9,8 +9,10 @@ import { handleError } from '@/lib/errorHandler';
 import { t } from '@/lib/i18n';
 import TaskForm from '@/components/TaskForm';
 import TaskCard from '@/components/TaskCard';
+import TaskBoard from '@/components/TaskBoard';
 import Stats from '@/components/Stats';
 import AuditLog from '@/components/AuditLog';
+import BoardPanel from '@/components/BoardPanel';
 import { exportSystemData } from '@/services/exportService';
 import { toast } from 'sonner';
 
@@ -72,7 +74,7 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col min-h-[calc(100vh-57px)]">
       {/* ── ANA İÇERİK — Scrollable ──────────────────────────── */}
-      <main className="flex-1 p-8 max-w-4xl mx-auto w-full text-start">
+      <main className="flex-1 p-8 max-w-7xl mx-auto w-full text-start">
         {/* ── ÜST: BAŞLIK + KONTROLLER ─────────────────────────── */}
         <div className={`flex justify-between items-center mb-8 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
           <h1 className="text-3xl font-black tracking-tighter">{tr.dashboardTitle}</h1>
@@ -125,7 +127,10 @@ export default function Dashboard() {
               <TaskForm />
             </section>
 
-            {/* ── ÖN: Görev listesi ───────────────────────────────── */}
+            {/* ── ÖN: KANBAN GÖREV PANOSU ─────────────────────────── */}
+            <TaskBoard />
+
+            {/* ── ÖN: Görev listesi (düz liste görünümü) ─────────── */}
             <section className="mb-12">
               <h2 className="text-sm font-bold text-slate-500 mb-4 tracking-widest uppercase text-start">{tr.taskSchedule}</h2>
               <div className="space-y-3">
@@ -135,13 +140,16 @@ export default function Dashboard() {
                 ))}
               </div>
             </section>
+
+            {/* ── ÖN: YÖNETİM KURULU — Konsensüs Mekanizması ──── */}
+            <BoardPanel />
           </>
         )}
       </main>
 
       {/* ── ALT: AUDIT LOG — Sayfa altına SABİTLENMİŞ (sticky bottom) ── */}
       <footer className="sticky bottom-0 z-40 bg-white dark:bg-slate-950 border-t-2 border-slate-200 dark:border-slate-800 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
-        <div className="max-w-4xl mx-auto p-4">
+        <div className="max-w-7xl mx-auto p-4">
           <AuditLog />
         </div>
       </footer>

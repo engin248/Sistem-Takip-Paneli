@@ -3,6 +3,7 @@ import { useTaskStore } from '@/store/useTaskStore';
 import { logAudit, logAuditError } from './auditService';
 import { validateSupabaseConnection } from '@/lib/supabase';
 import { ERR, processError } from '@/lib/errorCore';
+import { guardWritePermission, getTaskOwner } from '@/lib/permissionGuard';
 
 // ============================================================
 // BAĞLANTI ÖN KONTROLÜ
@@ -54,6 +55,13 @@ export const updateStatus = async (id: string, status: string) => {
   }
 
   try {
+    // ── FILE-LEVEL LOCK: Sahiplik kontrolü ────────────────
+    const owner = getTaskOwner(id);
+    if (owner !== null) {
+      const permitted = await guardWritePermission(id, owner, 'UPDATE');
+      if (!permitted) return;
+    }
+
     const { error } = await supabase
       .from('tasks')
       .update({ status })
@@ -91,6 +99,13 @@ export const deleteTask = async (id: string) => {
   }
 
   try {
+    // ── FILE-LEVEL LOCK: Sahiplik kontrolü ────────────────
+    const owner = getTaskOwner(id);
+    if (owner !== null) {
+      const permitted = await guardWritePermission(id, owner, 'DELETE');
+      if (!permitted) return;
+    }
+
     const { error } = await supabase
       .from('tasks')
       .delete()
@@ -128,6 +143,13 @@ export const archiveTask = async (id: string) => {
   }
 
   try {
+    // ── FILE-LEVEL LOCK: Sahiplik kontrolü ────────────────
+    const owner = getTaskOwner(id);
+    if (owner !== null) {
+      const permitted = await guardWritePermission(id, owner, 'ARCHIVE');
+      if (!permitted) return;
+    }
+
     const { error } = await supabase
       .from('tasks')
       .update({ is_archived: true, updated_at: new Date().toISOString() })

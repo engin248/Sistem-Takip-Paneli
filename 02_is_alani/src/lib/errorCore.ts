@@ -48,6 +48,11 @@ export const ERR = {
   BOARD_CONSENSUS:       'ERR-STP001-021',
   BOARD_SEAL:            'ERR-STP001-022',
 
+  // ── DOSYA KİLİTLEME / YETKİ (023–025) ─────────────────────
+  PERMISSION_DENIED:     'ERR-STP001-023',
+  OWNERSHIP_VERIFY:      'ERR-STP001-024',
+  LOCK_VIOLATION:        'ERR-STP001-025',
+
   // ── ACİL DURUM — TANIMLANAMAYAN ÇÖKME (999) ────────────────
   UNIDENTIFIED_COLLAPSE: 'ERR-STP001-999',
 } as const;
@@ -78,6 +83,9 @@ export const ERR_DESCRIPTIONS: Record<ErrorCode, string> = {
   'ERR-STP001-020': 'AI ajan oyu kaydedilemedi',
   'ERR-STP001-021': 'Konsensüs hesaplaması başarısız',
   'ERR-STP001-022': 'Kurul mühürü uygulanamadı',
+  'ERR-STP001-023': 'Yazma yetkisi reddedildi — dosya kilidi aktif',
+  'ERR-STP001-024': 'Görev sahipliği doğrulanamadı',
+  'ERR-STP001-025': 'Dosya kilit ihlali tespit edildi',
   'ERR-STP001-999': 'TABLO ÇÖKMESI — TANIMLANAMAYAN HATA',
 };
 
