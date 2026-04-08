@@ -8,7 +8,7 @@ export const fetchTasksFromDB = async () => {
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('ERR-STP-DB-001', error);
+    console.error('ERR-STP001-003', error); // Veritabanı veri çekme hatası
     return;
   }
   useTaskStore.getState().setTasks(data);
