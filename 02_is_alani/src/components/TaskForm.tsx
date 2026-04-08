@@ -6,6 +6,8 @@ import { logAudit } from '@/services/auditService';
 import { handleError } from '@/lib/errorHandler';
 import { ERR, processError } from '@/lib/errorCore';
 import { toast } from 'sonner';
+import { useLanguageStore } from '@/store/useLanguageStore';
+import { t } from '@/lib/i18n';
 
 // task_code üretici — TSK-YYYYMMDD-RAND formatında
 function generateTaskCode(): string {
@@ -19,6 +21,8 @@ function generateTaskCode(): string {
 export default function TaskForm() {
   const [title, setTitle] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { lang, dir } = useLanguageStore();
+  const tr = t(lang);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,20 +90,21 @@ export default function TaskForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mb-8 flex gap-2">
+    <form onSubmit={handleSubmit} className={`mb-8 flex gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
       <input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         className="border p-2 rounded w-full dark:bg-slate-800"
-        placeholder="Yeni Görev Emri..."
+        placeholder={tr.placeholder}
         disabled={isSubmitting}
+        dir={dir}
       />
       <button
         type="submit"
         className="bg-blue-600 text-white px-6 py-2 rounded disabled:opacity-50"
         disabled={isSubmitting}
       >
-        {isSubmitting ? '...' : 'EKLE'}
+        {isSubmitting ? '...' : tr.addButton}
       </button>
     </form>
   );
