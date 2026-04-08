@@ -1,0 +1,117 @@
+{
+  "locale": "ar",
+  "direction": "rtl",
+  "language_name": "العربية",
+  "language_code": "ar-SA",
+  "navigation": {
+    "dashboard": "لوحة التحكم",
+    "tasks": "المهام",
+    "audit_logs": "سجلات التدقيق",
+    "settings": "الإعدادات",
+    "reports": "التقارير",
+    "users": "المستخدمون",
+    "notifications": "الإشعارات",
+    "archive": "الأرشيف",
+    "system_health": "صحة النظام",
+    "language_switch": "تغيير اللغة",
+    "logout": "تسجيل الخروج",
+    "home": "الصفحة الرئيسية",
+    "modules": "الوحدات",
+    "help": "المساعدة",
+    "search": "بحث"
+  },
+  "tasks": {
+    "title": "إدارة المهام",
+    "new_task": "مهمة جديدة",
+    "edit_task": "تعديل المهمة",
+    "delete_task": "حذف المهمة",
+    "task_code": "رمز المهمة",
+    "task_title": "عنوان المهمة",
+    "task_description": "وصف المهمة",
+    "assigned_to": "مُسند إلى",
+    "assigned_by": "مُسند من قبل",
+    "created_at": "تاريخ الإنشاء",
+    "updated_at": "تاريخ التحديث",
+    "due_date": "تاريخ الاستحقاق",
+    "status": {
+      "label": "الحالة",
+      "pending": "قيد الانتظار",
+      "in_progress": "قيد التنفيذ",
+      "validation": "قيد التحقق",
+      "completed": "مكتملة",
+      "rejected": "مرفوضة",
+      "cancelled": "ملغاة"
+    },
+    "priority": {
+      "label": "الأولوية",
+      "critical": "حرجة",
+      "high": "عالية",
+      "normal": "عادية",
+      "low": "منخفضة"
+    },
+    "evidence": {
+      "label": "الدليل",
+      "required": "الدليل مطلوب",
+      "provided": "تم تقديم الدليل",
+      "not_provided": "لم يتم تقديم الدليل",
+      "upload": "رفع الدليل",
+      "view": "عرض الدليل"
+    },
+    "actions": {
+      "approve": "موافقة",
+      "reject": "رفض",
+      "reassign": "إعادة تعيين",
+      "archive": "أرشفة",
+      "duplicate": "نسخ",
+      "export": "تصدير"
+    },
+    "filters": {
+      "all": "الكل",
+      "my_tasks": "مهامي",
+      "overdue": "المتأخرة",
+      "today": "اليوم",
+      "this_week": "هذا الأسبوع"
+    },
+    "messages": {
+      "created_success": "تم إنشاء المهمة بنجاح.",
+      "updated_success": "تم تحديث المهمة بنجاح.",
+      "deleted_success": "تم حذف المهمة بنجاح.",
+      "approved_success": "تمت الموافقة على المهمة.",
+      "rejected_success": "تم رفض المهمة.",
+      "no_tasks_found": "لم يتم العثور على مهام.",
+      "confirm_delete": "هل أنت متأكد من حذف هذه المهمة؟"
+    }
+  },
+  "errors": {
+    "general": {
+      "unknown_error": "حدث خطأ غير معروف.",
+      "network_error": "خطأ في الاتصال بالشبكة.",
+      "timeout_error": "انتهت مهلة الطلب.",
+      "server_error": "خطأ في الخادم.",
+      "unauthorized": "وصول غير مصرح به.",
+      "forbidden": "ليس لديك صلاحية لهذه العملية.",
+      "not_found": "السجل غير موجود.",
+      "validation_failed": "فشل التحقق."
+    },
+    "system_codes": {
+      "ERR-STP001-001": "تم اكتشاف رمز لغة غير صالح.",
+      "ERR-STP001-002": "استخدام خطاف اللغة خارج I18nProvider.",
+      "ERR-STP001-003": "خطأ في الاتصال بقاعدة البيانات.",
+      "ERR-STP001-004": "فشل رفع ملف الدليل.",
+      "ERR-STP001-005": "فشل التحقق من المهمة.",
+      "ERR-STP001-006": "فشل إنشاء سجل التدقيق.",
+      "ERR-STP001-007": "فشل التحقق من الصلاحية.",
+      "ERR-STP001-008": "لا يمكن تعديل السجل المختوم.",
+      "ERR-STP001-009": "تم تجاوز الحد الأقصى للمحاولات.",
+      "ERR-STP001-010": "حقل مطلوب مفقود."
+    },
+    "form": {
+      "required_field": "هذا الحقل مطلوب.",
+      "invalid_format": "تنسيق غير صالح.",
+      "min_length": "لم يتم الوصول إلى الحد الأدنى لعدد الأحرف.",
+      "max_length": "تم تجاوز الحد الأقصى لعدد الأحرف.",
+      "invalid_email": "عنوان بريد إلكتروني غير صالح.",
+      "invalid_date": "تنسيق تاريخ غير صالح."
+    }
+  }
+}
