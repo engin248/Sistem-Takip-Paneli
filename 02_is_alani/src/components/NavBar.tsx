@@ -1,9 +1,11 @@
 "use client";
 import { useLanguageStore } from "@/store/useLanguageStore";
 import { logAudit } from "@/services/auditService";
+import { t } from "@/lib/i18n";
 
 export default function NavBar() {
   const { lang, dir, toggleLang } = useLanguageStore();
+  const tr = t(lang);
 
   // Dil değişikliğini audit_logs'a mühürle
   const handleLangChange = (targetLang: 'tr' | 'ar') => {
@@ -34,9 +36,9 @@ export default function NavBar() {
     <nav className="border-b p-4 bg-white dark:bg-slate-900 sticky top-0 z-50">
       <div className={`container mx-auto flex justify-between items-center ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
         <div className={`flex items-center gap-3 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-          <span className="font-black text-lg tracking-tight">STP-PANEL</span>
+          <span className="font-black text-lg tracking-tight">{tr.panelTitle}</span>
           <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-            {lang === 'tr' ? 'Sistem Takip Paneli' : 'لوحة تتبع النظام'}
+            {tr.panelSubtitle}
           </span>
         </div>
         <div className={`flex gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
