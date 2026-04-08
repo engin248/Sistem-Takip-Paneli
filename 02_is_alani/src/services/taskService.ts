@@ -8,7 +8,16 @@ export const fetchTasksFromDB = async () => {
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('ERR-STP001-003', error); // Veritabanı veri çekme hatası
+    const errorCode = 'ERR-STP001-003';
+    console.error(errorCode, error);
+    
+    // Store'a hatayı işle
+    useTaskStore.getState().setError(`${errorCode}: Veritabanı bağlantı hatası`);
+    
+    // Audit Log'a mühürle
+    const { logAuditError } = await import('./auditService');
+    await logAuditError(errorCode, 'Görev listesi çekilirken sistem hatası oluştu', { error: error.message });
+    
     return;
   }
   useTaskStore.getState().setTasks(data);

@@ -10,7 +10,7 @@ import TaskCard from '@/components/TaskCard';
 import Stats from '@/components/Stats';
 
 export default function Dashboard() {
-  const { tasks } = useTaskStore();
+  const { tasks, error, setError } = useTaskStore();
   const [logs, setLogs] = useState<any[]>([]);
 
   const loadLogs = async () => {
@@ -43,6 +43,17 @@ export default function Dashboard() {
       </div>
 
       <Stats />
+
+      {/* HATA BİLDİRİM PANELİ (ERR-CONTROL) */}
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border-s-4 border-red-500 text-red-700 flex justify-between items-center rounded shadow-sm">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-xs uppercase tracking-widest">Sistem Hatası:</span>
+            <span className="text-sm font-mono">{error}</span>
+          </div>
+          <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600 font-bold">×</button>
+        </div>
+      )}
 
       {/* GÖREV EKLEME BİRİMİ */}
       <section className="mb-12">
