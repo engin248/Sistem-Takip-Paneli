@@ -13,3 +13,43 @@ export const fetchTasksFromDB = async () => {
   }
   useTaskStore.getState().setTasks(data);
 };
+
+export const updateStatus = async (id: string, status: string) => {
+  const { error } = await supabase
+    .from('tasks')
+    .update({ status })
+    .eq('id', id);
+
+  if (!error) {
+    const { logAudit } = await import('./auditService');
+    await logAudit({
+      operation_type: 'UPDATE',
+      action_description: `Görev durumu güncellendi: ${id} -> ${status}`,
+      task_id: id,
+      metadata: { status }
+    });
+    await fetchTasksFromDB();
+  } else {
+    console.error('ERR-STP001-004', error);
+  }
+};
+
+export const deleteTask = async (id: string) => {
+  const { error } = await supabase
+    .from('tasks')
+    .delete()
+    .eq('id', id);
+
+  if (!error) {
+    const { logAudit } = await import('./auditService');
+    await logAudit({
+      operation_type: 'DELETE',
+      action_description: `Görev silindi: ${id}`,
+      task_id: id
+    });
+    await fetchTasksFromDB();
+  } else {
+    console.error('ERR-STP001-005', error);
+  }
+};
+
