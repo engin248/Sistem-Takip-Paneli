@@ -1,9 +1,10 @@
 "use client";
 import { useEffect } from "react";
 import { useLanguageStore } from "@/store/useLanguageStore";
+import { Toaster } from "sonner";
 
 /**
- * Dinamik HTML dir/lang güncelleyici.
+ * Dinamik HTML dir/lang güncelleyici + Toaster RTL senkronizasyonu.
  * Zustand store'dan lang/dir bilgisini okur ve <html> elemanına yazar.
  * Layout server component olduğu için bu client wrapper gereklidir.
  * 
@@ -18,6 +19,10 @@ export default function DirProvider({ children }: { children: React.ReactNode })
     document.documentElement.setAttribute("lang", lang);
   }, [dir, lang]);
 
-  return <>{children}</>;
+  return (
+    <>
+      <Toaster position={dir === 'rtl' ? 'top-left' : 'top-right'} richColors dir={dir} />
+      {children}
+    </>
+  );
 }
-

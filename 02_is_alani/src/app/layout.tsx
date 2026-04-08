@@ -1,7 +1,7 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
-import { Toaster } from "sonner";
+
 import NavBar from "@/components/NavBar";
 import DirProvider from "@/components/DirProvider";
 import SwInit from "@/components/SwInit";
@@ -42,7 +42,6 @@ export default function RootLayout({
       <body className={`${inter.className} bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50`}>
         <DirProvider>
           <SwInit />
-          <Toaster position="top-right" richColors />
           <NavBar />
           {children}
           <PwaInstallPrompt />

@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import { fetchAuditLogs } from '@/services/auditService';
 import { supabase } from '@/lib/supabase';
 import { ERR, processError } from '@/lib/errorCore';
+import { handleError } from '@/lib/errorHandler';
 import { useLanguageStore } from '@/store/useLanguageStore';
 import { t } from '@/lib/i18n';
 
@@ -27,7 +28,7 @@ export default function AuditLog() {
       const data = await fetchAuditLogs();
       setLogs(data as AuditLogRecord[]);
     } catch (err) {
-      processError(ERR.AUDIT_READ, err, { kaynak: 'AuditLog.loadLogs', islem: 'FETCH' });
+      await handleError(ERR.AUDIT_READ, err, { kaynak: 'AuditLog.loadLogs', islem: 'FETCH' });
     }
   };
 
@@ -49,9 +50,18 @@ export default function AuditLog() {
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'audit_logs' }, () => {
           loadLogs();
         })
-        .subscribe();
+        .subscribe((status) => {
+          // Kanal durumunu izle — bağlantı hatalarını yakala
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            handleError(ERR.AUDIT_REALTIME, new Error(`Realtime kanal durumu: ${status}`), {
+              kaynak: 'AuditLog.subscribe',
+              islem: 'CHANNEL_STATUS',
+              durum: status
+            });
+          }
+        });
     } catch (err) {
-      processError(ERR.TASK_REALTIME, err, { kaynak: 'AuditLog.useEffect', islem: 'SUBSCRIBE' });
+      handleError(ERR.AUDIT_REALTIME, err, { kaynak: 'AuditLog.useEffect', islem: 'SUBSCRIBE' });
     }
 
     return () => {

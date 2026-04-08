@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import { Task } from '@/store/useTaskStore';
 import { updateStatus, deleteTask, archiveTask } from '@/services/taskService';
+import { handleError } from '@/lib/errorHandler';
+import { ERR } from '@/lib/errorCore';
 import { toast } from 'sonner';
 import { useLanguageStore } from '@/store/useLanguageStore';
 import { t } from '@/lib/i18n';
@@ -18,6 +20,13 @@ export default function TaskCard({ task }: { task: Task }) {
     try {
       await updateStatus(task.id, newStatus);
       toast.success(`Durum güncellendi: ${newStatus.toUpperCase()}`);
+    } catch (err) {
+      await handleError(ERR.TASK_UPDATE, err, {
+        kaynak: 'TaskCard.handleStatusChange',
+        islem: 'UPDATE',
+        task_id: task.id,
+        attempted_status: newStatus
+      });
     } finally {
       setIsUpdating(false);
     }
@@ -29,6 +38,12 @@ export default function TaskCard({ task }: { task: Task }) {
     try {
       await deleteTask(task.id);
       toast.success('Görev silindi');
+    } catch (err) {
+      await handleError(ERR.TASK_DELETE, err, {
+        kaynak: 'TaskCard.handleDelete',
+        islem: 'DELETE',
+        task_id: task.id
+      });
     } finally {
       setIsDeleting(false);
     }
@@ -40,6 +55,12 @@ export default function TaskCard({ task }: { task: Task }) {
     try {
       await archiveTask(task.id);
       toast.success('Görev arşivlendi');
+    } catch (err) {
+      await handleError(ERR.TASK_ARCHIVE, err, {
+        kaynak: 'TaskCard.handleArchive',
+        islem: 'ARCHIVE',
+        task_id: task.id
+      });
     } finally {
       setIsArchiving(false);
     }

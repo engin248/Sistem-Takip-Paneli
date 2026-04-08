@@ -25,9 +25,10 @@ export const ERR = {
   TASK_ARCHIVE:          'ERR-STP001-008',
   TASK_REALTIME:         'ERR-STP001-009',
 
-  // ── AUDIT LOG İŞLEMLERİ (006–007) ──────────────────────────
+  // ── AUDIT LOG İŞLEMLERİ (006–007, 017) ─────────────────────
   AUDIT_WRITE:           'ERR-STP001-006',
   AUDIT_READ:            'ERR-STP001-007',
+  AUDIT_REALTIME:        'ERR-STP001-017',
 
   // ── EXPORT / MÜHÜRLEME (012) ───────────────────────────────
   SYSTEM_EXPORT:         'ERR-STP001-012',
@@ -39,6 +40,13 @@ export const ERR = {
   AI_ANALYSIS:           'ERR-STP001-014',
   AI_CONNECTION:         'ERR-STP001-015',
   TELEGRAM_SEND:         'ERR-STP001-016',
+
+  // ── YÖNETİM KURULU / KONSENSÜS (018–022) ──────────────────
+  BOARD_CREATE:          'ERR-STP001-018',
+  BOARD_FETCH:           'ERR-STP001-019',
+  BOARD_VOTE:            'ERR-STP001-020',
+  BOARD_CONSENSUS:       'ERR-STP001-021',
+  BOARD_SEAL:            'ERR-STP001-022',
 
   // ── ACİL DURUM — TANIMLANAMAYAN ÇÖKME (999) ────────────────
   UNIDENTIFIED_COLLAPSE: 'ERR-STP001-999',
@@ -64,6 +72,12 @@ export const ERR_DESCRIPTIONS: Record<ErrorCode, string> = {
   'ERR-STP001-014': 'AI görev analizi başarısız',
   'ERR-STP001-015': 'OpenAI API bağlantı hatası',
   'ERR-STP001-016': 'Telegram mesaj gönderilemedi',
+  'ERR-STP001-017': 'Audit log realtime kanalı açılamadı',
+  'ERR-STP001-018': 'Kurul kararı oluşturulamadı',
+  'ERR-STP001-019': 'Kurul kararları çekilemedi',
+  'ERR-STP001-020': 'AI ajan oyu kaydedilemedi',
+  'ERR-STP001-021': 'Konsensüs hesaplaması başarısız',
+  'ERR-STP001-022': 'Kurul mühürü uygulanamadı',
   'ERR-STP001-999': 'TABLO ÇÖKMESI — TANIMLANAMAYAN HATA',
 };
 
