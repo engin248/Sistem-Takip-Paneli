@@ -2,6 +2,7 @@
 import { useLanguageStore } from "@/store/useLanguageStore";
 import { logAudit } from "@/services/auditService";
 import { t } from "@/lib/i18n";
+import NotificationBell from "@/components/NotificationBell";
 
 export default function NavBar() {
   const { lang, dir, toggleLang } = useLanguageStore();
@@ -41,7 +42,9 @@ export default function NavBar() {
             {tr.panelSubtitle}
           </span>
         </div>
-        <div className={`flex gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+        <div className={`flex items-center gap-3 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+          <NotificationBell />
+          <div className="w-px h-5 bg-slate-200 dark:bg-slate-700" />
           <button
             onClick={() => handleLangChange('tr')}
             className={`text-[10px] font-bold px-3 py-1 rounded border transition-all ${
