@@ -49,6 +49,26 @@ export const translations = {
     auditTitle: 'Denetim Günlüğü',
     refresh: 'YENİLE',
     noRecords: 'Kayıt bulunamadı.',
+
+    // ── Notification Bell ────────────────────────────────────
+    notifTitle: 'Bildirimler',
+    notifEnabled: 'Bildirimler aktif',
+    notifBlocked: 'Bildirimler engellendi',
+    notifAskPermission: 'Bildirim izni bekleniyor',
+    notifUnsupported: 'Bu tarayıcı bildirimleri desteklemiyor',
+    notifEnableButton: 'BİLDİRİMLERİ AÇ',
+    notifTestButton: 'TEST BİLDİRİMİ GÖNDER',
+    notifSending: 'GÖNDERİLİYOR...',
+    notifTestTitle: 'STP Test Bildirimi',
+    notifTestBody: 'Bildirim sistemi başarıyla çalışıyor.',
+    notifDeniedHint: 'Bildirimlere izin vermek için tarayıcı ayarlarından site izinlerini güncelleyin.',
+    notifPwaHint: 'Ana ekrana ekleyerek tam uygulama deneyimi yaşayın.',
+
+    // ── PWA Install ──────────────────────────────────────────
+    pwaInstallTitle: 'Uygulamayı Kur',
+    pwaInstallDesc: 'STP Paneli ana ekranınıza ekleyin.',
+    pwaInstallButton: 'KUR',
+    pwaLater: 'Sonra',
   },
 
   ar: {
@@ -93,6 +113,26 @@ export const translations = {
     auditTitle: 'سجل التدقيق',
     refresh: 'تحديث',
     noRecords: 'لم يتم العثور على سجلات.',
+
+    // ── Notification Bell ────────────────────────────────────
+    notifTitle: 'الإشعارات',
+    notifEnabled: 'الإشعارات مفعلة',
+    notifBlocked: 'تم حظر الإشعارات',
+    notifAskPermission: 'في انتظار إذن الإشعارات',
+    notifUnsupported: 'هذا المتصفح لا يدعم الإشعارات',
+    notifEnableButton: 'تفعيل الإشعارات',
+    notifTestButton: 'إرسال إشعار تجريبي',
+    notifSending: 'جاري الإرسال...',
+    notifTestTitle: 'إشعار تجريبي STP',
+    notifTestBody: 'نظام الإشعارات يعمل بنجاح.',
+    notifDeniedHint: 'لتفعيل الإشعارات، قم بتحديث إعدادات أذونات الموقع في المتصفح.',
+    notifPwaHint: 'أضف إلى الشاشة الرئيسية للحصول على تجربة التطبيق الكاملة.',
+
+    // ── PWA Install ──────────────────────────────────────────
+    pwaInstallTitle: 'تثبيت التطبيق',
+    pwaInstallDesc: 'أضف لوحة STP إلى شاشتك الرئيسية.',
+    pwaInstallButton: 'تثبيت',
+    pwaLater: 'لاحقاً',
   },
 } as const;
 
