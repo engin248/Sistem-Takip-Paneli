@@ -1,6 +1,6 @@
 "use client";
 import { Task, useTaskStore } from '@/store/useTaskStore';
-import { updateStatus, deleteTask } from '@/services/taskService';
+import { updateStatus, deleteTask, archiveTask } from '@/services/taskService';
 
 export default function TaskCard({ task }: { task: Task }) {
   return (
@@ -24,9 +24,20 @@ export default function TaskCard({ task }: { task: Task }) {
           <option value="iptal">İPTAL</option>
         </select>
 
+        {task.status === 'tamamlandi' && (
+          <button 
+            onClick={() => confirm('GÖREV ARŞİVLENSİN MI?') && archiveTask(task.id)}
+            className="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-blue-500 rounded-lg transition-colors border border-blue-100 dark:border-blue-900/30"
+            title="Arşivle"
+          >
+            📥
+          </button>
+        )}
+
         <button 
           onClick={() => confirm('SİLİNSİN Mİ?') && deleteTask(task.id)}
           className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-300 hover:text-red-500 rounded-lg transition-colors"
+          title="Sil"
         >
           ✕
         </button>
@@ -34,3 +45,4 @@ export default function TaskCard({ task }: { task: Task }) {
     </div>
   );
 }
+

@@ -5,6 +5,7 @@ export const fetchTasksFromDB = async () => {
   const { data, error } = await supabase
     .from('tasks')
     .select('*')
+    .eq('is_archived', false)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -59,6 +60,26 @@ export const deleteTask = async (id: string) => {
     await fetchTasksFromDB();
   } else {
     console.error('ERR-STP001-005', error);
+  }
+};
+
+export const archiveTask = async (id: string) => {
+  const { error } = await supabase
+    .from('tasks')
+    .update({ is_archived: true, updated_at: new Date().toISOString() })
+    .eq('id', id);
+
+  if (!error) {
+    const { logAudit } = await import('./auditService');
+    await logAudit({
+      operation_type: 'UPDATE',
+      action_description: `Görev arşivlendi: ${id}`,
+      task_id: id,
+      metadata: { action_code: 'TASK_ARCHIVED', is_archived: true }
+    });
+    await fetchTasksFromDB();
+  } else {
+    console.error('ERR-STP001-008', error);
   }
 };
 

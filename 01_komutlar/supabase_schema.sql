@@ -54,6 +54,8 @@ CREATE TABLE IF NOT EXISTS tasks (
     -- İlişkisel
     parent_task_id UUID REFERENCES tasks(id) ON DELETE SET NULL,
     
+    is_archived BOOLEAN NOT NULL DEFAULT FALSE,      -- Arşivlendi mi?
+    
     -- Meta veri
     metadata JSONB DEFAULT '{}'::jsonb
 );
