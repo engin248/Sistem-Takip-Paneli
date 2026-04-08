@@ -86,9 +86,10 @@ export async function subscribeToPush(): Promise<PushSubscription | null> {
       return null;
     }
 
+    const keyArray = urlBase64ToUint8Array(vapidKey);
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(vapidKey),
+      applicationServerKey: keyArray.buffer as ArrayBuffer,
     });
 
     // Audit log — abonelik kaydı
@@ -152,7 +153,6 @@ export async function sendLocalNotification(
     tag?: string;
     icon?: string;
     url?: string;
-    vibrate?: number[];
   }
 ): Promise<boolean> {
   try {
@@ -177,10 +177,9 @@ export async function sendLocalNotification(
       icon: options?.icon || '/icons/icon-192x192.png',
       badge: '/icons/icon-192x192.png',
       tag: options?.tag || 'stp-local',
-      vibrate: options?.vibrate || [100, 50, 100],
       data: { url: options?.url || '/' },
       requireInteraction: false,
-    });
+    } as NotificationOptions);
 
     return true;
   } catch (error) {
