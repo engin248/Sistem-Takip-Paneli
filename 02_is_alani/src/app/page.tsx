@@ -2,9 +2,11 @@
 import { useEffect, useState } from 'react';
 import { fetchTasksFromDB, subscribeToTasks } from '@/services/taskService';
 import { useTaskStore } from '@/store/useTaskStore';
+import { useLanguageStore } from '@/store/useLanguageStore';
 import { supabase } from '@/lib/supabase';
 import { ERR, processError } from '@/lib/errorCore';
 import { handleError } from '@/lib/errorHandler';
+import { t } from '@/lib/i18n';
 import TaskForm from '@/components/TaskForm';
 import TaskCard from '@/components/TaskCard';
 import Stats from '@/components/Stats';
@@ -14,6 +16,8 @@ import { toast } from 'sonner';
 
 export default function Dashboard() {
   const { tasks, error, setError } = useTaskStore();
+  const { lang, dir } = useLanguageStore();
+  const tr = t(lang);
   const [isLocked, setIsLocked] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
 
@@ -66,76 +70,81 @@ export default function Dashboard() {
   };
 
   return (
-    <main className="p-8 max-w-4xl mx-auto text-start">
-      {/* ── ÜST: BAŞLIK + KONTROLLER ─────────────────────────── */}
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-black tracking-tighter">STP-OPERASYON MERKEZİ</h1>
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => setIsLocked(!isLocked)}
-            className={`text-[10px] font-bold px-3 py-1 rounded border transition-colors ${
-              isLocked ? 'bg-red-600 text-white border-red-700' : 'bg-green-600 text-white border-green-700'
-            }`}
-          >
-            {isLocked ? 'ERİŞİM KİLİTLİ (AÇ)' : 'ERİŞİM AÇIK (KİLİTLE)'}
-          </button>
-          {!isLocked && (
+    <div className="flex flex-col min-h-[calc(100vh-57px)]">
+      {/* ── ANA İÇERİK — Scrollable ──────────────────────────── */}
+      <main className="flex-1 p-8 max-w-4xl mx-auto w-full text-start">
+        {/* ── ÜST: BAŞLIK + KONTROLLER ─────────────────────────── */}
+        <div className={`flex justify-between items-center mb-8 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+          <h1 className="text-3xl font-black tracking-tighter">{tr.dashboardTitle}</h1>
+          <div className={`flex items-center gap-4 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
             <button
-              onClick={handleExport}
-              disabled={isExporting}
-              className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 px-3 py-1 rounded border border-slate-300 dark:border-slate-700 transition-colors disabled:opacity-50"
+              onClick={() => setIsLocked(!isLocked)}
+              className={`text-[10px] font-bold px-3 py-1 rounded border transition-colors ${
+                isLocked ? 'bg-red-600 text-white border-red-700' : 'bg-green-600 text-white border-green-700'
+              }`}
             >
-              {isExporting ? 'MÜHÜRLEME...' : 'SİSTEMİ MÜHÜRLE (JSON)'}
+              {isLocked ? tr.accessLocked : tr.accessOpen}
             </button>
-          )}
-          <div className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">SİSTEM ÇEVRİMİÇİ</div>
+            {!isLocked && (
+              <button
+                onClick={handleExport}
+                disabled={isExporting}
+                className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 px-3 py-1 rounded border border-slate-300 dark:border-slate-700 transition-colors disabled:opacity-50"
+              >
+                {isExporting ? tr.sealing : tr.sealSystem}
+              </button>
+            )}
+            <div className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">{tr.systemOnline}</div>
+          </div>
         </div>
-      </div>
 
-      {/* ── ÜST: STATS — Her zaman görünür ──────────────────── */}
-      <Stats />
+        {/* ── ÜST: STATS — Her zaman görünür ──────────────────── */}
+        <Stats />
 
-      {isLocked ? (
-        <div className="flex flex-col items-center justify-center p-20 bg-slate-50 dark:bg-slate-900 border-2 border-dashed border-slate-200 rounded-3xl">
-          <span className="text-4xl mb-4 text-start">🔒</span>
-          <p className="text-slate-500 font-bold tracking-widest uppercase text-start">Sistem Erişimi Kısıtlandı</p>
-          <p className="text-[10px] text-slate-400 mt-2 text-start">Lütfen yukarıdaki butonu kullanarak kilidi açın.</p>
-        </div>
-      ) : (
-        <>
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 border-s-4 border-red-500 text-red-700 flex justify-between items-center rounded shadow-sm">
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-xs uppercase tracking-widest">Sistem Hatası:</span>
-                <span className="text-sm font-mono">{error}</span>
+        {isLocked ? (
+          <div className="flex flex-col items-center justify-center p-20 bg-slate-50 dark:bg-slate-900 border-2 border-dashed border-slate-200 rounded-3xl">
+            <span className="text-4xl mb-4 text-start">🔒</span>
+            <p className="text-slate-500 font-bold tracking-widest uppercase text-start">{tr.systemRestricted}</p>
+            <p className="text-[10px] text-slate-400 mt-2 text-start">{tr.unlockHint}</p>
+          </div>
+        ) : (
+          <>
+            {error && (
+              <div className={`mb-6 p-4 bg-red-50 border-s-4 border-red-500 text-red-700 flex justify-between items-center rounded shadow-sm ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                <div className={`flex items-center gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                  <span className="font-bold text-xs uppercase tracking-widest">{tr.systemError}</span>
+                  <span className="text-sm font-mono">{error}</span>
+                </div>
+                <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600 font-bold">×</button>
               </div>
-              <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600 font-bold">×</button>
-            </div>
-          )}
+            )}
 
-          {/* ── ÖN: Görev giriş formu ───────────────────────────── */}
-          <section className="mb-12">
-            <h2 className="text-sm font-bold text-slate-500 mb-4 tracking-widest uppercase text-start">Yeni Emir Girişi</h2>
-            <TaskForm />
-          </section>
+            {/* ── ÖN: Görev giriş formu ───────────────────────────── */}
+            <section className="mb-12">
+              <h2 className="text-sm font-bold text-slate-500 mb-4 tracking-widest uppercase text-start">{tr.newOrder}</h2>
+              <TaskForm />
+            </section>
 
-          {/* ── ÖN: Görev listesi ───────────────────────────────── */}
-          <section className="mb-12">
-            <h2 className="text-sm font-bold text-slate-500 mb-4 tracking-widest uppercase text-start">Görev Çizelgesi</h2>
-            <div className="space-y-3">
-              {tasks.length === 0 && <p className="text-slate-400 italic text-xs text-start">Aktif emir bulunmamaktadır.</p>}
-              {tasks.map((task) => (
-                <TaskCard key={task.id} task={task} />
-              ))}
-            </div>
-          </section>
-        </>
-      )}
+            {/* ── ÖN: Görev listesi ───────────────────────────────── */}
+            <section className="mb-12">
+              <h2 className="text-sm font-bold text-slate-500 mb-4 tracking-widest uppercase text-start">{tr.taskSchedule}</h2>
+              <div className="space-y-3">
+                {tasks.length === 0 && <p className="text-slate-400 italic text-xs text-start">{tr.noActiveTasks}</p>}
+                {tasks.map((task) => (
+                  <TaskCard key={task.id} task={task} />
+                ))}
+              </div>
+            </section>
+          </>
+        )}
+      </main>
 
-      {/* ── ALT: AUDIT LOG — Sayfanın en altında, her zaman görünür ── */}
-      <section className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800">
-        <AuditLog />
-      </section>
-    </main>
+      {/* ── ALT: AUDIT LOG — Sayfa altına SABİTLENMİŞ (sticky bottom) ── */}
+      <footer className="sticky bottom-0 z-40 bg-white dark:bg-slate-950 border-t-2 border-slate-200 dark:border-slate-800 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+        <div className="max-w-4xl mx-auto p-4">
+          <AuditLog />
+        </div>
+      </footer>
+    </div>
   );
 }

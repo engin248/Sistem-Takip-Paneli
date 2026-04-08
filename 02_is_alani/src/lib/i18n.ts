@@ -99,7 +99,12 @@ export const translations = {
 export type Lang = keyof typeof translations;
 export type TranslationKeys = keyof typeof translations['tr'];
 
+/** Çeviri sözlük tipi — her iki dil aynı anahtar setini paylaşır */
+export type TranslationMap = {
+  [K in TranslationKeys]: string;
+};
+
 /** Dil anahtarından çeviri sözlüğü döndürür */
-export function t(lang: Lang): typeof translations['tr'] {
-  return translations[lang];
+export function t(lang: Lang): TranslationMap {
+  return translations[lang] as TranslationMap;
 }

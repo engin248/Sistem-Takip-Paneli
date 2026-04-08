@@ -35,6 +35,11 @@ export const ERR = {
   // ── BAĞLANTI DOĞRULAMA (013) ───────────────────────────────
   CONNECTION_INVALID:    'ERR-STP001-013',
 
+  // ── AI / TELEGRAM İŞLEMLERİ (014–016) ─────────────────────
+  AI_ANALYSIS:           'ERR-STP001-014',
+  AI_CONNECTION:         'ERR-STP001-015',
+  TELEGRAM_SEND:         'ERR-STP001-016',
+
   // ── ACİL DURUM — TANIMLANAMAYAN ÇÖKME (999) ────────────────
   UNIDENTIFIED_COLLAPSE: 'ERR-STP001-999',
 } as const;
@@ -56,6 +61,9 @@ export const ERR_DESCRIPTIONS: Record<ErrorCode, string> = {
   'ERR-STP001-011': 'Görev oluşturulamadı (Genel)',
   'ERR-STP001-012': 'Sistem verisi dışa aktarılamadı',
   'ERR-STP001-013': 'Supabase bağlantı bilgileri eksik/geçersiz',
+  'ERR-STP001-014': 'AI görev analizi başarısız',
+  'ERR-STP001-015': 'OpenAI API bağlantı hatası',
+  'ERR-STP001-016': 'Telegram mesaj gönderilemedi',
   'ERR-STP001-999': 'TABLO ÇÖKMESI — TANIMLANAMAYAN HATA',
 };
 

@@ -100,6 +100,27 @@
       "seviye": "CRITICAL",
       "kullanim_alani": "supabase.ts — validateSupabaseConnection, tüm servisler (ön kontrol)"
     },
+    "ERR-STP001-014": {
+      "anahtar": "AI_ANALYSIS",
+      "kategori": "AI / TELEGRAM İŞLEMLERİ",
+      "aciklama": "AI görev analizi başarısız",
+      "seviye": "ERROR",
+      "kullanim_alani": "aiManager.ts — analyzeWithAI, analyzeTaskPriority"
+    },
+    "ERR-STP001-015": {
+      "anahtar": "AI_CONNECTION",
+      "kategori": "AI / TELEGRAM İŞLEMLERİ",
+      "aciklama": "OpenAI API bağlantı hatası",
+      "seviye": "CRITICAL",
+      "kullanim_alani": "aiManager.ts — getOpenAIClient"
+    },
+    "ERR-STP001-016": {
+      "anahtar": "TELEGRAM_SEND",
+      "kategori": "AI / TELEGRAM İŞLEMLERİ",
+      "aciklama": "Telegram mesaj gönderilemedi",
+      "seviye": "ERROR",
+      "kullanim_alani": "telegramService.ts (sonraki aşamada)"
+    },
     "ERR-STP001-999": {
       "anahtar": "UNIDENTIFIED_COLLAPSE",
       "kategori": "ACİL DURUM",
