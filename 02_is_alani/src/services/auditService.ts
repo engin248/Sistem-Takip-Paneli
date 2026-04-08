@@ -1,9 +1,11 @@
 import { supabase } from '@/lib/supabase';
+import { ERR, processError, type ErrorCode } from '@/lib/errorCore';
 
 // ============================================================
 // AUDIT SERVICE — audit_logs tablosuna kayıt ekleme
 // Kaynak: 01_komutlar/supabase_schema.sql — Satır 86-146
 // Doktrin: Sütun isimleri SQL şemasıyla HARFİYEN eşleşir
+// Hata Kodları: ERR-STP001-006 (yazma), ERR-STP001-007 (okuma)
 // ============================================================
 
 // operation_type — SQL CHECK (satır 91-102) ile birebir eşleşir
@@ -68,49 +70,85 @@ function generateLogCode(): string {
 
 // Ana kayıt fonksiyonu
 export const logAudit = async (entry: Omit<AuditLogEntry, 'log_code'>): Promise<{ success: boolean; error?: string }> => {
-  const logEntry: AuditLogEntry = {
-    log_code: generateLogCode(),
-    ...entry,
-  };
+  try {
+    const logEntry: AuditLogEntry = {
+      log_code: generateLogCode(),
+      ...entry,
+    };
 
-  const { error } = await supabase
-    .from('audit_logs')
-    .insert([logEntry]);
+    const { error } = await supabase
+      .from('audit_logs')
+      .insert([logEntry]);
 
-  if (error) {
-    console.error('ERR-STP001-006', error);
-    return { success: false, error: error.message };
+    if (error) {
+      // ERR-STP001-006: Audit log yazma hatası — errorCore ile işle
+      processError(ERR.AUDIT_WRITE, error, {
+        attempted_entry: entry.operation_type,
+        tablo: 'audit_logs',
+        islem: 'INSERT'
+      });
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err) {
+    // ERR-STP001-999: Tanımlanamayan çökme
+    processError(ERR.UNIDENTIFIED_COLLAPSE, err, {
+      tablo: 'audit_logs',
+      islem: 'INSERT',
+      context: 'logAudit catch bloğu'
+    }, 'FATAL');
+    const message = err instanceof Error ? err.message : String(err);
+    return { success: false, error: message };
   }
-
-  return { success: true };
 };
 
-// Kısayol: Hata kaydı
+// Kısayol: Hata kaydı — UID ile benzersiz kimlik atanır
 export const logAuditError = async (
   errorCode: string,
   description: string,
   details?: Record<string, unknown>
-): Promise<{ success: boolean; error?: string }> => {
-  return logAudit({
+): Promise<{ success: boolean; error?: string; uid?: string }> => {
+  const { generateUID } = await import('@/lib/errorCore');
+  const uid = generateUID();
+
+  const result = await logAudit({
     operation_type: 'ERROR',
-    action_description: description,
+    action_description: `[${uid}] ${errorCode}: ${description}`,
     error_code: errorCode,
     error_severity: 'ERROR',
     status: 'basarisiz',
-    metadata: details,
+    metadata: { uid, ...details },
   });
+
+  return { ...result, uid };
 };
+
 // Audit loglarını getir (En yeni 5 kayıt)
 export const fetchAuditLogs = async () => {
-  const { data, error } = await supabase
-    .from('audit_logs')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(5);
+  try {
+    const { data, error } = await supabase
+      .from('audit_logs')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(5);
 
-  if (error) {
-    console.error('ERR-STP001-007', error);
+    if (error) {
+      // ERR-STP001-007: Audit log okuma hatası
+      processError(ERR.AUDIT_READ, error, {
+        tablo: 'audit_logs',
+        islem: 'SELECT'
+      });
+      return [];
+    }
+    return data;
+  } catch (err) {
+    // ERR-STP001-999: Tanımlanamayan çökme
+    processError(ERR.UNIDENTIFIED_COLLAPSE, err, {
+      tablo: 'audit_logs',
+      islem: 'SELECT',
+      context: 'fetchAuditLogs catch bloğu'
+    }, 'FATAL');
     return [];
   }
-  return data;
 };

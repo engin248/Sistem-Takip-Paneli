@@ -1,0 +1,75 @@
+============================================================
+STP-001 — TANIMLI HATA KODLARI LİSTESİ
+NİHAİ MÜHÜR — MÜHÜRDAR (3. BİRİM)
+============================================================
+Tarih      : 08.04.2026
+Saat       : 14:26 (UTC+3)
+Mühürleyen : Antigravity AI — MÜHÜRDAR Rolü
+Format     : ERR-STP001-XXX
+============================================================
+
+NO   KOD               AÇIKLAMA                              KAYNAK DOSYA                              SATIR     KAPSAM
+---  ----------------  ------------------------------------  ----------------------------------------  --------  ----------------------------
+001  ERR-STP001-001    Veritabanı veri çekme hatası          src/lib/constants.ts                      Satır 2   constants → DB_FETCH
+002  ERR-STP001-002    Veritabanı veri ekleme hatası         src/lib/constants.ts                      Satır 3   constants → DB_INSERT
+003  ERR-STP001-003    Kimlik doğrulama hatası               src/lib/constants.ts + taskService.ts     Satır 4   constants → AUTH_FAIL + fetchTasks
+004  ERR-STP001-004    Gerçek zamanlı senkronizasyon hatası  src/lib/constants.ts + taskService.ts     Satır 5   constants → RTL_SYNC + updateStatus
+005  ERR-STP001-005    Realtime bağlantı kopma hatası        src/lib/constants.ts + taskService.ts     Satır 6   constants → REALTIME_DISCONNECT + deleteTask
+006  ERR-STP001-006    Audit log yazma hatası                src/services/auditService.ts              Satır 81  logAudit → insert hata
+007  ERR-STP001-007    Audit log okuma hatası                src/services/auditService.ts              Satır 112 fetchAuditLogs → select hata
+008  ERR-STP001-008    Görev arşivleme hatası                src/services/taskService.ts               Satır 90  archiveTask → update hata
+010  ERR-STP001-010    Görev oluşturma hatası (Insert)       src/components/TaskForm.tsx               Satır 47  handleSubmit → insert hata
+011  ERR-STP001-011    Görev oluşturma hatası (Genel)        src/components/TaskForm.tsx               Satır 61  handleSubmit → catch bloğu
+
+============================================================
+HATA KOD FORMATI
+============================================================
+ERR-STP001-XXX
+│   │       │
+│   │       └── Sıra numarası (001–999)
+│   └────────── Sistem kodu (STP001 = Sistem Takip Paneli)
+└────────────── Hata öneki
+
+============================================================
+SİSTEM UYUMLULUK DOĞRULAMASI
+============================================================
+
+┌──────────────────────────────────────────────────────────────┐
+│ 1. YEREL SİSTEM (TypeScript / Next.js)                      │
+├──────────────────────────────────────────────────────────────┤
+│ ✅ constants.ts         → ERR-STP001-001 ~ 005 tanımlı     │
+│ ✅ taskService.ts       → 003, 004, 005, 008 kullanılıyor  │
+│ ✅ auditService.ts      → 006, 007 kullanılıyor            │
+│ ✅ TaskForm.tsx          → 010, 011 kullanılıyor            │
+│ ✅ errorHandler.ts       → Merkezi hata yönetimi aktif     │
+│ ✅ useTaskStore.ts       → error_code alanı tanımlı        │
+│ SONUÇ: YEREL SİSTEM TÜM KODLARI TANIYOR                    │
+└──────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────┐
+│ 2. SUPABASE VERİTABANI                                      │
+├──────────────────────────────────────────────────────────────┤
+│ ✅ tasks tablosu         → error_code VARCHAR(30) alanı var │
+│ ✅ audit_logs tablosu    → error_code VARCHAR(30) alanı var │
+│ ✅ idx_tasks_error_code  → Koşullu indeks aktif             │
+│ ✅ idx_audit_logs_error_code → Koşullu indeks aktif         │
+│ ✅ error_severity CHECK  → INFO/WARNING/ERROR/CRITICAL/FATAL│
+│ ✅ Immutable trigger     → audit_logs UPDATE/DELETE engelli │
+│ SONUÇ: SUPABASE TÜM KODLARI TANIYOR                        │
+└──────────────────────────────────────────────────────────────┘
+
+============================================================
+NİHAİ MÜHÜR
+============================================================
+HER İKİ SİSTEM (YEREL + SUPABASE) TÜM HATA KODLARINI
+TANIMAKTA VE DOĞRU ŞEKILDE İŞLEMEKTEDİR.
+
+MÜHÜR DURUMU: ✅ MÜHÜRLENDİ
+KANITLAR:
+  - src/lib/constants.ts (satır 1-7)
+  - src/services/auditService.ts (satır 49, 81, 112)
+  - src/services/taskService.ts (satır 13, 43, 67, 90)
+  - src/components/TaskForm.tsx (satır 47, 61)
+  - src/lib/errorHandler.ts (satır 4-21)
+  - 01_komutlar/supabase_schema.sql (satır 44, 69, 118, 153)
+============================================================

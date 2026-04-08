@@ -10,6 +10,7 @@
 // ============================================================
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { ERR, processError } from "./errorCore";
 
 // ============================================================
 // ÇEVRESEL DEĞİŞKEN OKUMA VE DOĞRULAMA
@@ -24,10 +25,22 @@ const supabaseAnonKey: string = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 // oluşturur. Bu client tüm uygulama genelinde tekil olarak
 // kullanılır (modül seviyesinde singleton).
 // ============================================================
-export const supabase: SupabaseClient = createClient(
-  supabaseUrl,
-  supabaseAnonKey
-);
+let supabase: SupabaseClient;
+
+try {
+  supabase = createClient(supabaseUrl, supabaseAnonKey);
+} catch (error) {
+  processError(ERR.DB_CONNECTION, error, {
+    islem: 'CLIENT_INIT',
+    kaynak: 'supabase.ts',
+    url_var: !!supabaseUrl,
+    key_var: !!supabaseAnonKey
+  }, 'CRITICAL');
+  // Fallback: Boş URL ile client oluştur — runtime'da hata verir ama build kırılmaz
+  supabase = createClient("https://placeholder.supabase.co", "placeholder-key");
+}
+
+export { supabase };
 
 // ============================================================
 // BAĞLANTI DOĞRULAMA FONKSİYONU
@@ -42,12 +55,26 @@ export function validateSupabaseConnection(): {
 } {
   const missingVars: string[] = [];
 
-  if (!supabaseUrl || supabaseUrl === "" || supabaseUrl.includes("your-project-id")) {
-    missingVars.push("NEXT_PUBLIC_SUPABASE_URL");
-  }
+  try {
+    if (!supabaseUrl || supabaseUrl === "" || supabaseUrl.includes("your-project-id")) {
+      missingVars.push("NEXT_PUBLIC_SUPABASE_URL");
+    }
 
-  if (!supabaseAnonKey || supabaseAnonKey === "" || supabaseAnonKey.includes("your-anon-key")) {
-    missingVars.push("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+    if (!supabaseAnonKey || supabaseAnonKey === "" || supabaseAnonKey.includes("your-anon-key")) {
+      missingVars.push("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+    }
+
+    if (missingVars.length > 0) {
+      processError(ERR.CONNECTION_INVALID, new Error('Bağlantı doğrulama başarısız'), {
+        islem: 'VALIDATE',
+        eksik_degiskenler: missingVars
+      }, 'WARNING');
+    }
+  } catch (error) {
+    processError(ERR.DB_CONNECTION, error, {
+      islem: 'VALIDATE',
+      kaynak: 'validateSupabaseConnection'
+    });
   }
 
   return {
