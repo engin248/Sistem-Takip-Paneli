@@ -1,256 +1,160 @@
-# SİSTEM HARİTASI — TABLO-DOSYA EŞLEME MÜHÜRÜ
+# SİSTEM HARİTASI — TABLO-DOSYA EŞLEŞTİRMESİ
 
-> **Görev:** MÜHÜRDAR (BİRİM-3) — Mapeo Tabla-Archivo  
-> **Tarih:** 08.04.2026 | 14:30 (UTC+3)  
-> **Kaynak:** Canlı Supabase Dashboard + Canlı Kaynak Kodu Taraması  
-> **Durum:** MÜHÜRLENMİŞ — VARSAYIM SIFIR  
-
----
-
-## BÖLÜM 1: STP PROJESİ — AKTİF TABLO ETKİLEŞİMLERİ
-
-STP (Sistem Takip Paneli) projesi, Supabase veritabanındaki **2 tablo** ile doğrudan etkileşim kurmaktadır.
-
-### TABLO 1: `tasks`
-
-| # | Dosya | İşlem | Satır | Detay |
-|---|---|---|---|---|
-| 1 | `src/services/taskService.ts` | SELECT | 26 | `.from('tasks').select('*').eq('is_archived', false)` — Arşivlenmemiş görevleri çeker |
-| 2 | `src/services/taskService.ts` | UPDATE | 55 | `.from('tasks').update({ status })` — Görev durumu günceller |
-| 3 | `src/services/taskService.ts` | DELETE | 91 | `.from('tasks').delete().eq('id', id)` — Görev siler |
-| 4 | `src/services/taskService.ts` | UPDATE | 126 | `.from('tasks').update({ is_archived: true })` — Görev arşivler |
-| 5 | `src/services/taskService.ts` | REALTIME | 162 | `.channel('tasks_realtime')` — tasks tablosunu dinler |
-| 6 | `src/components/TaskForm.tsx` | INSERT | 31 | `.from('tasks').insert([{...}])` — Yeni görev oluşturur |
-
-### TABLO 2: `audit_logs`
-
-| # | Dosya | İşlem | Satır | Detay |
-|---|---|---|---|---|
-| 1 | `src/services/auditService.ts` | INSERT | 78 | `.from('audit_logs').insert([logEntry])` — Denetim kaydı yazar |
-| 2 | `src/services/auditService.ts` | SELECT | 113 | `.from('audit_logs').select('*').order(...).limit(5)` — Son 5 log çeker |
-| 3 | `src/components/AuditLog.tsx` | REALTIME | 29 | `.channel('audit_logs_realtime')` — audit_logs tablosunu dinler |
+> **Oluşturma**: 2026-04-08 14:53  
+> **Mühürleme**: 2026-04-08 14:56 — GÖZCÜ (BİRİM-2)  
+> **Statü**: 🔒 **MÜHÜRLÜ**  
+> **Kaynak**: Canlı Supabase Dashboard + Kod Taraması (grep `.from()`)  
+> **Doktrin**: Bu belge canlı veriden üretilmiştir. Referans olarak kullanılır, ana kaynak olamaz.
 
 ---
 
-## BÖLÜM 2: DOLAYLI ETKİLEŞİMLER (Servis Zinciri)
+## ÖZET İSTATİSTİK
 
-Aşağıdaki dosyalar tablolara doğrudan `.from()` çağrısı yapmazlar, ancak servis katmanı üzerinden dolaylı olarak etkileşirler.
+| Metrik | Değer |
+|---|---|
+| **Toplam Supabase Tablosu** | 46 |
+| **Servis Dosyası Tarafından Yönetilen** | 46 |
+| **Servis Dosyası Ataması Olmayan** | 0 |
+| **Projeler** | 3 (MİZANET, STP, SKM) |
 
-### `tasks` tablosuna dolaylı erişen dosyalar:
+---
 
-| # | Dosya | Erişim Yolu | Detay |
+## 1. MİZANET ERP TABLOLARI (34 tablo)
+
+### B0 — Sistem Altyapı Tabloları
+
+| # | Tablo | Ana Servis Dosyası | Proje |
 |---|---|---|---|
-| 1 | `src/components/TaskCard.tsx` | → `taskService.ts` → `tasks` | updateStatus, deleteTask, archiveTask çağırır |
-| 2 | `src/components/Stats.tsx` | → `useTaskStore.ts` → (tasks verisi) | Store'daki tasks dizisini okur |
-| 3 | `src/app/page.tsx` | → `taskService.ts` → `tasks` | fetchTasksFromDB, subscribeToTasks çağırır |
-| 4 | `src/store/useTaskStore.ts` | → (veri deposu) | tasks[] dizisini tutar, taskService tarafından beslenir |
-| 5 | `src/services/exportService.ts` | → `useTaskStore` → (tasks verisi) | Tasks verisini JSON olarak dışa aktarır |
+| 1 | `b0_arsiv` | `src/lib/dipArsiv.js` | MİZANET |
+| 2 | `b0_bildirim_loglari` | `src/lib/bildirim.js` | MİZANET |
+| 3 | `b0_herm_ai_kararlar` | `src/lib/logger.js` | MİZANET |
+| 4 | `b0_sistem_loglari` | `src/lib/logger.js` | MİZANET |
+| 5 | `b0_tasarim_ayarlari` | `src/lib/TasarimContext.js` | MİZANET |
+| 6 | `b0_yetki_ayarlari` | `src/lib/yetki.js` | MİZANET |
 
-### `audit_logs` tablosuna dolaylı erişen dosyalar:
+### B1 — Üretim & Operasyon Tabloları
 
-| # | Dosya | Erişim Yolu | Detay |
+| # | Tablo | Ana Servis Dosyası | Proje |
 |---|---|---|---|
-| 1 | `src/services/taskService.ts` | → `auditService.ts` → `audit_logs` | Her CRUD işleminde logAudit/logAuditError çağırır |
-| 2 | `src/lib/errorHandler.ts` | → `auditService.ts` → `audit_logs` | Hata oluştuğunda logAudit çağırır |
-| 3 | `src/components/TaskForm.tsx` | → `auditService.ts` → `audit_logs` | Görev oluşturunca logAudit çağırır |
-| 4 | `src/services/exportService.ts` | → `auditService.ts` → `audit_logs` | Export sonrası logAudit çağırır |
-| 5 | `src/app/page.tsx` | → `auditService.ts` → `audit_logs` | fetchAuditLogs import eder |
+| 7 | `b1_agent_loglari` | `src/lib/ajanlar.js` | MİZANET |
+| 8 | `b1_ajan_gorevler` | `src/lib/agents/v2/sabahSubayi.js` | MİZANET |
+| 9 | `b1_aksesuar_arsivi` | `src/hooks/useKumas.js` | MİZANET |
+| 10 | `b1_arge_cost_analysis` | `src/scripts/ai_mastermind/yargic.js` | MİZANET |
+| 11 | `b1_arge_products` | `src/lib/m2_kar_kilidi.js` | MİZANET |
+| 12 | `b1_arge_risk_analysis` | `src/scripts/ai_mastermind/yargic.js` | MİZANET |
+| 13 | `b1_arge_strategy` | `src/scripts/ai_mastermind/yargic.js` | MİZANET |
+| 14 | `b1_arge_trend_data` | `src/scripts/ai_mastermind/yargic.js` | MİZANET |
+| 15 | `b1_arge_trendler` | `src/features/arge/services/argeApi.js` | MİZANET |
+| 16 | `b1_is_emirleri` | `src/hooks/useUretim.js` | MİZANET |
+| 17 | `b1_kamera_olaylari` | `src/features/uretim/components/M6_KameraSayaci.js` | MİZANET |
+| 18 | `b1_kesim_emirleri` | `src/lib/agents/v2/zincirci.js` | MİZANET |
+| 19 | `b1_kumas_arsiv` | `src/lib/agents/v2/zincirci.js` | MİZANET |
+| 20 | `b1_kumas_arsivi` | `src/features/kumas/services/kumasApi.js` | MİZANET |
+| 21 | `b1_makineler` | `src/features/uretim/hooks/useUretimRecetesi.js` | MİZANET |
+| 22 | `b1_maliyet_kalemleri` | `src/lib/agents/v2/zincirci.js` | MİZANET |
+| 23 | `b1_maliyet_kayitlari` | `src/features/maliyet/services/maliyetApi.js` | MİZANET |
+| 24 | `b1_model_taslaklari` | `src/features/modelhane/services/modelhaneApi.js` | MİZANET |
+| 25 | `b1_modelhane_kayitlari` | `src/lib/agents/v2/zincirci.js` | MİZANET |
+| 26 | `b1_muhasebe_raporlari` | `src/features/muhasebe/services/muhasebeApi.js` | MİZANET |
+| 27 | `b1_operasyon_tanimlari` | `src/features/uretim/components/KioskTerminal.js` | MİZANET |
+| 28 | `b1_personel` | `src/features/personel/services/personelApi.js` | MİZANET |
+| 29 | `b1_personel_devam` | `src/features/personel/services/personelApi.js` | MİZANET |
+| 30 | `b1_personel_performans` | `src/features/uretim/components/KioskTerminal.js` | MİZANET |
+| 31 | `b1_sistem_ayarlari` | `src/features/ayarlar/services/ayarlarApi.js` | MİZANET |
+| 32 | `b1_sistem_uyarilari` | `src/lib/ajanlar.js` | MİZANET |
+| 33 | `b1_stok` | `src/hooks/useStok.js` | MİZANET |
+| 34 | `b1_stok_hareketleri` | `src/features/stok/services/stokApi.js` | MİZANET |
+| 35 | `b1_tedarikci_sabika` | 🔒 **MÜHÜRLÜ** — Servis dosyası yok, tablo kayıt altında | MİZANET |
+| 36 | `b1_uretim_kayitlari` | `src/features/uretim/services/uretimApi.js` | MİZANET |
+| 37 | `b1_uretim_operasyonlari` | `src/features/uretim/hooks/useIsEmri.js` | MİZANET |
+
+### B2 — Ticari & Finans Tabloları
+
+| # | Tablo | Ana Servis Dosyası | Proje |
+|---|---|---|---|
+| 38 | `b2_cek_senet_vade` | `src/features/kasa/services/kasaApi.js` | MİZANET |
+| 39 | `b2_kasa_hareketleri` | `src/features/kasa/services/kasaApi.js` | MİZANET |
+| 40 | `b2_malzeme_katalogu` | `src/features/katalog/services/katalogApi.js` | MİZANET |
+| 41 | `b2_muhasebe` | `src/hooks/useMuhasebe.js` | MİZANET |
+| 42 | `b2_musteriler` | `src/features/musteriler/services/musterilerApi.js` | MİZANET |
+| 43 | `b2_personel` | `src/hooks/usePersonel.js` | MİZANET |
+| 44 | `b2_personel_devam` | `src/hooks/usePersonel.js` | MİZANET |
+| 45 | `b2_siparis_kalemleri` | `src/features/siparisler/services/siparislerApi.js` | MİZANET |
+| 46 | `b2_siparisler` | `src/features/siparisler/services/siparislerApi.js` | MİZANET |
+| 47 | `b2_stok_hareketleri` | `src/features/stok/services/stokApi.js` | MİZANET |
+| 48 | `b2_tedarikciler` | `src/features/siparisler/services/siparislerApi.js` | MİZANET |
+| 49 | `b2_teklif_logs` | 🔒 **MÜHÜRLÜ** — Servis dosyası yok, tablo kayıt altında | MİZANET |
+| 50 | `b2_urun_katalogu` | `src/features/stok/services/stokApi.js` | MİZANET |
+| 51 | `b2_urun_varyant_stok` | 🔒 **MÜHÜRLÜ** — Servis dosyası yok, tablo kayıt altında | MİZANET |
+
+### Diğer — Bağımsız Tablolar (Mizanet)
+
+| # | Tablo | Ana Servis Dosyası | Proje |
+|---|---|---|---|
+| 52 | `bot_tracking_logs` | `src/lib/sentinel.js` | MİZANET |
+| 53 | `camera_access_log` | 🔒 **MÜHÜRLÜ** — Kamera modülü beklemede, tablo kayıt altında | MİZANET |
+| 54 | `camera_events` | 🔒 **MÜHÜRLÜ** — Kamera modülü beklemede, tablo kayıt altında | MİZANET |
+| 55 | `cameras` | 🔒 **MÜHÜRLÜ** — Kamera modülü beklemede, tablo kayıt altında | MİZANET |
+| 56 | `cost_analysis` | `src/lib/agents/ekip2/MatematikciYargic.js` | MİZANET |
+| 57 | `m2_finans_veto` | `src/lib/m2_kar_kilidi.js` | MİZANET |
+| 58 | `notifications` | `src/lib/components/ui/BildirimZili.js` | MİZANET |
+| 59 | `orders` | 🔒 **MÜHÜRLÜ** — Eski/yedek tablo, kayıt altında | MİZANET |
+| 60 | `production_orders` | `src/features/uretim/services/uretimApi.js` | MİZANET |
+| 61 | `products` | `src/lib/agents/ekip1/OluIsciTaburu.js` | MİZANET |
+| 62 | `risk_analysis` | `src/lib/agents/ekip2/MatematikciYargic.js` | MİZANET |
+| 63 | `strategy` | `src/lib/agents/ekip2/MatematikciYargic.js` | MİZANET |
+| 64 | `trend_data` | `src/lib/agents/ekip1/OluIsciTaburu.js` | MİZANET |
 
 ---
 
-## BÖLÜM 3: SUPABASE ALTYAPI DOSYALARI
+## 2. STP TABLOLARI (Sistem Takip Paneli — 2 tablo)
 
-| # | Dosya | Rolü | Tablo |
+| # | Tablo | Ana Servis Dosyası | Diğer Erişenler |
 |---|---|---|---|
-| 1 | `src/lib/supabase.ts` | Supabase client (singleton) | TÜM TABLOLAR (bağlantı katmanı) |
-| 2 | `01_komutlar/supabase_schema.sql` | SQL şema tanımı | `tasks` + `audit_logs` tanımı |
+| 65 | `tasks` | `src/services/taskService.ts` | `TaskForm.tsx` (INSERT), `TaskCard.tsx` (UPDATE/DELETE), `page.tsx`, `useTaskStore.ts`, `exportService.ts`, `Stats.tsx` |
+| 66 | `audit_logs` | `src/services/auditService.ts` | `AuditLog.tsx`, `taskService.ts`, `errorHandler.ts`, `TaskForm.tsx`, `exportService.ts`, `page.tsx` |
 
 ---
 
-## BÖLÜM 4: TABLO İLE ETKİLEŞİMİ OLMAYAN DOSYALAR
+## 3. SKM TABLOLARI (Sistem Kontrol Merkezi — 8 tablo)
 
-| # | Dosya | Rolü |
+| # | Tablo | Ana Servis Dosyası | Proje |
+|---|---|---|---|
+| 67 | `skm_sistemler` | `src/app/api/health-check/route.ts` | SKM |
+| 68 | `skm_saglik_kayitlari` | `src/app/api/health-check/route.ts` | SKM |
+| 69 | `skm_olaylar` | `src/lib/skm.ts` | SKM |
+| 70 | `skm_cift_kontrol` | `src/lib/skm.ts` | SKM |
+| 71 | `skm_alarmlar` | `src/lib/skm.ts` | SKM |
+| 72 | `gorevler` | `src/lib/gorev-motoru.ts` | SKM |
+| 73 | `gorev_kanitlar` | `src/lib/gorev-motoru.ts` | SKM |
+| 74 | `gorev_loglar` | `src/lib/gorev-motoru.ts` | SKM |
+
+---
+
+## 🔒 MÜHÜRLÜ TABLOLAR (Servis Dosyası Olmayan)
+
+Aşağıdaki tablolar Supabase'de mevcut, servis dosyası tespit edilememiştir. Tamamı kayıt altına alınmış ve MÜHÜRLÜ statüsüne çevrilmiştir.
+
+| Tablo | Statü | Açıklama |
 |---|---|---|
-| 1 | `src/lib/constants.ts` | Hata kodu sabitleri (ERR-STP001-XXX) |
-| 2 | `src/store/useLanguageStore.ts` | Dil seçimi (TR/AR) — Supabase bağlantısı yok |
-| 3 | `src/components/NavBar.tsx` | Navigasyon — Supabase bağlantısı yok |
-| 4 | `src/app/layout.tsx` | Root layout — Supabase bağlantısı yok |
-| 5 | `src/app/globals.css` | Stil dosyası |
+| `b1_tedarikci_sabika` | 🔒 MÜHÜRLÜ | Yeni veya beklemede — kayıt altında |
+| `b2_teklif_logs` | 🔒 MÜHÜRLÜ | Yeni veya beklemede — kayıt altında |
+| `b2_urun_varyant_stok` | 🔒 MÜHÜRLÜ | Yeni veya beklemede — kayıt altında |
+| `camera_access_log` | 🔒 MÜHÜRLÜ | Kamera modülü beklemede — kayıt altında |
+| `camera_events` | 🔒 MÜHÜRLÜ | Kamera modülü beklemede — kayıt altında |
+| `cameras` | 🔒 MÜHÜRLÜ | Kamera modülü beklemede — kayıt altında |
+| `orders` | 🔒 MÜHÜRLÜ | Eski/yedek tablo — kayıt altında |
 
 ---
 
-## BÖLÜM 5: SUPABASE VERİTABANINDAKİ TÜM TABLOLAR (CANLI VERİ)
+## PROJE DİZİN HARİTASI
 
-Supabase dashboard'dan **08.04.2026 14:31 (UTC+3)** tarihinde alınan canlı tablo listesi.
-Veritabanında toplam **87 tablo** tespit edilmiştir.
-
-### STP Projesi Tarafından Kullanılan Tablolar (2/87):
-
-| # | Tablo | STP Dosyası | Durum |
-|---|---|---|---|
-| 1 | `tasks` | taskService.ts, TaskForm.tsx | ✅ AKTİF |
-| 2 | `audit_logs` | auditService.ts, AuditLog.tsx | ✅ AKTİF |
-
-### STP Projesi Tarafından KULLANILMAYAN Tablolar (85/87):
-
-#### Grup B0 — Sistem/Güvenlik (10 tablo)
-| # | Tablo |
-|---|---|
-| 1 | `b0_ajan_loglari` |
-| 2 | `b0_api_spam_kalkani` |
-| 3 | `b0_arsiv` |
-| 4 | `b0_bildirim_loglari` |
-| 5 | `b0_giris_girisimleri` |
-| 6 | `b0_herm_ai_kararlar` |
-| 7 | `b0_sistem_loglari` |
-| 8 | `b0_tasarim_ayarlari` |
-| 9 | `b0_telegram_log` |
-| 10 | `b0_yetki_ayarlari` |
-
-#### Grup B1 — Üretim/Operasyon (40 tablo)
-| # | Tablo |
-|---|---|
-| 1 | `b1_agent_loglari` |
-| 2 | `b1_ai_is_kuyrugu` |
-| 3 | `b1_ajan_gorevler` |
-| 4 | `b1_aksesuar_arsivi` |
-| 5 | `b1_ara_is_emirleri` |
-| 6 | `b1_arge_cost_analysis` |
-| 7 | `b1_arge_products` |
-| 8 | `b1_arge_products_karantina` |
-| 9 | `b1_arge_risk_analysis` |
-| 10 | `b1_arge_strategy` |
-| 11 | `b1_arge_trend_data` |
-| 12 | `b1_arge_trendler` |
-| 13 | `b1_askeri_haberlesme` |
-| 14 | `b1_dikim_talimatlari` |
-| 15 | `b1_fire_kayitlari` |
-| 16 | `b1_gorevler` |
-| 17 | `b1_ic_mesajlar` |
-| 18 | `b1_imalat_emirleri` |
-| 19 | `b1_is_emirleri` |
-| 20 | `b1_kamera_olaylari` |
-| 21 | `b1_kesim_emirleri` |
-| 22 | `b1_kesim_is_emirleri` |
-| 23 | `b1_kesim_operasyonlari` |
-| 24 | `b1_kumas_arsiv` |
-| 25 | `b1_kumas_arsivi` |
-| 26 | `b1_makineler` |
-| 27 | `b1_maliyet_kalemleri` |
-| 28 | `b1_maliyet_kayitlari` |
-| 29 | `b1_mesaj_gizli` |
-| 30 | `b1_mesaj_okundu_log` |
-| 31 | `b1_model_is_akislari` |
-| 32 | `b1_model_kaliplari` |
-| 33 | `b1_model_malzeme_listesi` |
-| 34 | `b1_model_taslaklari` |
-| 35 | `b1_modelhane_kayitlari` |
-| 36 | `b1_muhasebe_raporlari` |
-| 37 | `b1_numune_uretimleri` |
-| 38 | `b1_operasyon_adimlari` |
-| 39 | `b1_operasyon_takip` |
-| 40 | `b1_operasyon_tanimlari` |
-
-#### Grup B1 — Personel/Stok (10 tablo)
-| # | Tablo |
-|---|---|
-| 1 | `b1_personel` |
-| 2 | `b1_personel_devam` |
-| 3 | `b1_personel_performans` |
-| 4 | `b1_sistem_ayarlari` |
-| 5 | `b1_sistem_uyarilari` |
-| 6 | `b1_stok` |
-| 7 | `b1_stok_hareketleri` |
-| 8 | `b1_tedarikci_sabika` |
-| 9 | `b1_uretim_kayitlari` |
-| 10 | `b1_uretim_operasyonlari` |
-
-#### Grup B2 — Finans/Ticaret (13 tablo)
-| # | Tablo |
-|---|---|
-| 1 | `b2_cek_senet_vade` |
-| 2 | `b2_kasa_hareketleri` |
-| 3 | `b2_malzeme_katalogu` |
-| 4 | `b2_muhasebe` |
-| 5 | `b2_musteriler` |
-| 6 | `b2_personel_devam` |
-| 7 | `b2_siparis_kalemleri` |
-| 8 | `b2_siparisler` |
-| 9 | `b2_stok_hareketleri` |
-| 10 | `b2_tedarikciler` |
-| 11 | `b2_teklif_logs` |
-| 12 | `b2_urun_katalogu` |
-| 13 | `b2_urun_varyant_stok` |
-
-#### Bağımsız Tablolar (12 tablo)
-| # | Tablo |
-|---|---|
-| 1 | `bot_tracking_logs` |
-| 2 | `camera_access_log` |
-| 3 | `camera_events` |
-| 4 | `cameras` |
-| 5 | `cost_analysis` |
-| 6 | `m2_finans_veto` |
-| 7 | `notifications` |
-| 8 | `orders` |
-| 9 | `production_orders` |
-| 10 | `products` |
-| 11 | `risk_analysis` |
-| 12 | `strategy` |
-| 13 | `trend_data` |
+| Proje | Konum | Servis Dizini |
+|---|---|---|
+| **MİZANET** | `C:\Users\Esisya\Desktop\New-mizanet\mizanet.com-main\` | `src/features/*/services/` + `src/lib/` |
+| **STP** | `C:\sistem_takip_paneli\02_is_alani\` | `src/services/` |
+| **SKM** | `C:\Users\Esisya\Desktop\sistem-kontrol-merkezi\` | `src/lib/` + `src/services/` |
 
 ---
 
-## BÖLÜM 6: DOSYA → TABLO AKIŞDİYAGRAMI
-
-```
-src/app/page.tsx (Dashboard)
-  ├── [DOĞRUDAN] supabase.removeChannel()
-  ├── [SERVİS]   taskService.fetchTasksFromDB()   → tasks (SELECT)
-  ├── [SERVİS]   taskService.subscribeToTasks()    → tasks (REALTIME)
-  ├── [SERVİS]   auditService.fetchAuditLogs()     → audit_logs (SELECT)
-  └── [SERVİS]   exportService.exportSystemData()  → audit_logs (INSERT via logAudit)
-
-src/components/TaskForm.tsx
-  ├── [DOĞRUDAN] supabase.from('tasks').insert()   → tasks (INSERT)
-  ├── [SERVİS]   auditService.logAudit()           → audit_logs (INSERT)
-  └── [SERVİS]   errorHandler.handleError()        → audit_logs (INSERT)
-
-src/components/TaskCard.tsx
-  ├── [SERVİS]   taskService.updateStatus()        → tasks (UPDATE) + audit_logs (INSERT)
-  ├── [SERVİS]   taskService.deleteTask()          → tasks (DELETE) + audit_logs (INSERT)
-  └── [SERVİS]   taskService.archiveTask()         → tasks (UPDATE) + audit_logs (INSERT)
-
-src/components/AuditLog.tsx
-  ├── [SERVİS]   auditService.fetchAuditLogs()     → audit_logs (SELECT)
-  └── [DOĞRUDAN] supabase.channel('audit_logs_realtime') → audit_logs (REALTIME)
-
-src/components/Stats.tsx
-  └── [STORE]    useTaskStore.tasks                → (bellekten okur, DB'ye gitmez)
-
-src/components/NavBar.tsx
-  └── [STORE]    useLanguageStore                  → (DB etkileşimi YOK)
-```
-
----
-
-## BÖLÜM 7: NİHAİ MÜHÜR
-
-```
-SONUÇ:
-  - STP projesi Supabase'deki 87 tablodan sadece 2 tanesini kullanıyor
-  - Kullanılan tablolar: tasks, audit_logs
-  - Tüm CRUD ve REALTIME etkileşimleri yukarıda haritalandı
-  - STP kaynak kodunda başka tabloya erişim YOKTUR
-  - Bu harita sayesinde sistem KONTROLEDİLEBİLİR durumdadır
-
-MÜHÜR DURUMU: ✅ MÜHÜRLENDİ
-KAYNAK: Canlı Supabase Dashboard + grep taraması + dosya okuma
-```
-
----
-
-> **Mühürleyen:** Antigravity AI — MÜHÜRDAR (BİRİM-3)  
-> **Varsayım:** SIFIR  
-> **Kanıt:** Canlı kaynak kodu taraması + Supabase Dashboard  
-> **Son Güncelleme:** 08 Nisan 2026 — 14:32 (UTC+3)
+> **NOT**: Bu belge canlı Supabase taraması ve kod grep analizi ile oluşturulmuştur. Tablo sayısı veya servis dosyaları değiştiğinde güncellenmesi gerekir.

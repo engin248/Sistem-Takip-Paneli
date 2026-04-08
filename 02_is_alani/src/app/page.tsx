@@ -3,39 +3,61 @@ import { useEffect, useState } from 'react';
 import { fetchTasksFromDB, subscribeToTasks } from '@/services/taskService';
 import { useTaskStore } from '@/store/useTaskStore';
 import { supabase } from '@/lib/supabase';
-import { fetchAuditLogs } from '@/services/auditService';
-import type { Task } from '@/store/useTaskStore';
+import { ERR, processError } from '@/lib/errorCore';
+import { handleError } from '@/lib/errorHandler';
 import TaskForm from '@/components/TaskForm';
 import TaskCard from '@/components/TaskCard';
 import Stats from '@/components/Stats';
 import AuditLog from '@/components/AuditLog';
 import { exportSystemData } from '@/services/exportService';
 
-// BUG-011 FIX: Audit log tip tanımı
-interface AuditLogRecord {
-  id: string;
-  log_code: string;
-  operation_type: string;
-  action_description: string;
-  created_at: string;
-  metadata?: Record<string, unknown>;
-}
-
 export default function Dashboard() {
   const { tasks, error, setError } = useTaskStore();
   const [isLocked, setIsLocked] = useState(true);
 
   useEffect(() => {
-    fetchTasksFromDB();
-
-    const channel = subscribeToTasks(() => {
+    // ── FETCH: Görev listesini çek ──────────────────────────
+    try {
       fetchTasksFromDB();
-    });
+    } catch (error) {
+      processError(ERR.TASK_FETCH, error, { kaynak: 'Dashboard.useEffect', islem: 'INIT_FETCH' });
+      setError(`${ERR.TASK_FETCH}: Görev listesi yüklenemedi`);
+    }
 
+    // ── SUBSCRIBE: Realtime kanal aç ────────────────────────
+    let channel: ReturnType<typeof subscribeToTasks> | null = null;
+    try {
+      channel = subscribeToTasks(() => {
+        try {
+          fetchTasksFromDB();
+        } catch (error) {
+          processError(ERR.TASK_FETCH, error, { kaynak: 'Dashboard.realtime_callback', islem: 'REALTIME_FETCH' });
+        }
+      });
+    } catch (error) {
+      processError(ERR.TASK_REALTIME, error, { kaynak: 'Dashboard.useEffect', islem: 'SUBSCRIBE' });
+    }
+
+    // ── CLEANUP: Kanal kapat ────────────────────────────────
     return () => {
-      supabase.removeChannel(channel);
+      try {
+        if (channel) {
+          supabase.removeChannel(channel);
+        }
+      } catch (error) {
+        processError(ERR.UNIDENTIFIED_COLLAPSE, error, { kaynak: 'Dashboard.cleanup', islem: 'REMOVE_CHANNEL' }, 'FATAL');
+      }
     };
-  }, []);
+  }, [setError]);
+
+  // ── EXPORT: Sistem mühürleme ──────────────────────────────
+  const handleExport = async () => {
+    try {
+      await exportSystemData();
+    } catch (error) {
+      await handleError(ERR.SYSTEM_EXPORT, error, { kaynak: 'Dashboard.handleExport', islem: 'EXPORT' });
+    }
+  };
 
   return (
     <main className="p-8 max-w-4xl mx-auto text-start">
@@ -52,7 +74,7 @@ export default function Dashboard() {
           </button>
           {!isLocked && (
             <button
-              onClick={exportSystemData}
+              onClick={handleExport}
               className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 px-3 py-1 rounded border border-slate-300 dark:border-slate-700 transition-colors"
             >
               SİSTEMİ MÜHÜRLE (JSON)
