@@ -5,6 +5,7 @@ import { fetchTasksFromDB } from '@/services/taskService';
 import { logAudit } from '@/services/auditService';
 import { handleError } from '@/lib/errorHandler';
 import { ERR, processError } from '@/lib/errorCore';
+import { toast } from 'sonner';
 
 // task_code üretici — TSK-YYYYMMDD-RAND formatında
 function generateTaskCode(): string {
@@ -72,6 +73,7 @@ export default function TaskForm() {
 
       setTitle('');
       await fetchTasksFromDB();
+      toast.success(`Görev oluşturuldu: ${taskCode}`);
     } catch (err) {
       // ERR-STP001-011: Görev oluşturma genel hatası
       await handleError(ERR.TASK_CREATE_GENERAL, err, {
