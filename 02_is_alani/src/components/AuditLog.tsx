@@ -1,7 +1,8 @@
 "use client";
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { fetchAuditLogs } from '@/services/auditService';
 import { supabase } from '@/lib/supabase';
+import { ERR, processError } from '@/lib/errorCore';
 
 // BUG-011 FIX: any tipi doğru tipe dönüştürüldü
 interface AuditLogRecord {
@@ -15,35 +16,61 @@ interface AuditLogRecord {
 
 export default function AuditLog() {
   const [logs, setLogs] = useState<AuditLogRecord[]>([]);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const loadLogs = async () => {
-    const data = await fetchAuditLogs();
-    setLogs(data as AuditLogRecord[]);
+    try {
+      const data = await fetchAuditLogs();
+      setLogs(data as AuditLogRecord[]);
+    } catch (err) {
+      processError(ERR.AUDIT_READ, err, { kaynak: 'AuditLog.loadLogs', islem: 'FETCH' });
+    }
   };
+
+  // Auto-scroll: yeni log geldiğinde en alta kaydır
+  useEffect(() => {
+    if (scrollRef.current && logs.length > 0) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [logs]);
 
   useEffect(() => {
     loadLogs();
 
     // Realtime dinleme — audit log değişikliklerini yakala
-    const channel = supabase
-      .channel('audit_logs_realtime')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'audit_logs' }, () => {
-        loadLogs();
-      })
-      .subscribe();
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    try {
+      channel = supabase
+        .channel('audit_logs_realtime')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'audit_logs' }, () => {
+          loadLogs();
+        })
+        .subscribe();
+    } catch (err) {
+      processError(ERR.TASK_REALTIME, err, { kaynak: 'AuditLog.useEffect', islem: 'SUBSCRIBE' });
+    }
 
     return () => {
-      supabase.removeChannel(channel);
+      try {
+        if (channel) supabase.removeChannel(channel);
+      } catch (err) {
+        processError(ERR.UNIDENTIFIED_COLLAPSE, err, { kaynak: 'AuditLog.cleanup', islem: 'REMOVE_CHANNEL' }, 'FATAL');
+      }
     };
   }, []);
 
   return (
     <section>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-sm font-bold text-slate-500 tracking-widest uppercase text-start">Denetim Günlüğü</h2>
-        <button onClick={loadLogs} className="text-[10px] text-blue-500 hover:underline">YENİLE</button>
+        <h2 className="text-sm font-bold text-slate-500 tracking-widest uppercase text-start">
+          Denetim Günlüğü
+          <span className="ms-2 text-[9px] bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-full">
+            {logs.length}
+          </span>
+        </h2>
+        <button onClick={loadLogs} className="text-[10px] text-blue-500 hover:underline font-bold">YENİLE</button>
       </div>
-      <div className="space-y-2">
+      <div ref={scrollRef} className="space-y-2 max-h-80 overflow-y-auto scroll-smooth">
         {logs.length === 0 && <p className="text-[10px] text-slate-400 italic">Kayıt bulunamadı.</p>}
         {logs.map((log) => (
           <div key={log.id} className="p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-start">

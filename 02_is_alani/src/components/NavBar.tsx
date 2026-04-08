@@ -1,8 +1,34 @@
 "use client";
 import { useLanguageStore } from "@/store/useLanguageStore";
+import { logAudit } from "@/services/auditService";
 
 export default function NavBar() {
   const { lang, dir, toggleLang } = useLanguageStore();
+
+  // Dil değişikliğini audit_logs'a mühürle
+  const handleLangChange = (targetLang: 'tr' | 'ar') => {
+    if (lang === targetLang) return;
+    const previousLang = lang;
+    const previousDir = dir;
+    toggleLang();
+    const newLang = targetLang;
+    const newDir = targetLang === 'ar' ? 'rtl' : 'ltr';
+
+    // Audit log yaz — bağlantı yoksa sessizce atlanır (isConnectionValid ön kontrolü auditService içinde)
+    logAudit({
+      operation_type: 'UPDATE',
+      action_description: `Dil değiştirildi: ${previousLang.toUpperCase()} → ${newLang.toUpperCase()} | Yön: ${previousDir.toUpperCase()} → ${newDir.toUpperCase()}`,
+      metadata: {
+        action_code: 'LANGUAGE_CHANGED',
+        previous_lang: previousLang,
+        new_lang: newLang,
+        previous_dir: previousDir,
+        new_dir: newDir
+      }
+    }).catch(() => {
+      // Bağlantı yoksa sessizce devam et — hata zaten auditService içinde kodlanıyor
+    });
+  };
 
   return (
     <nav className="border-b p-4 bg-white dark:bg-slate-900 sticky top-0 z-50">
@@ -15,7 +41,7 @@ export default function NavBar() {
         </div>
         <div className={`flex gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
           <button
-            onClick={() => lang !== 'tr' && toggleLang()}
+            onClick={() => handleLangChange('tr')}
             className={`text-[10px] font-bold px-3 py-1 rounded border transition-all ${
               lang === 'tr' 
                 ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900' 
@@ -25,7 +51,7 @@ export default function NavBar() {
             TR
           </button>
           <button
-            onClick={() => lang !== 'ar' && toggleLang()}
+            onClick={() => handleLangChange('ar')}
             className={`text-[10px] font-bold px-3 py-1 rounded border transition-all ${
               lang === 'ar' 
                 ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900' 
