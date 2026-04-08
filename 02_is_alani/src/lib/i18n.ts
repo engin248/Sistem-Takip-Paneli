@@ -1,0 +1,105 @@
+// ============================================================
+// i18n — ÇOKLU DİL SÖZLÜĞÜ (TR / AR)
+// ============================================================
+// Tüm UI metinleri tek merkezden yönetilir.
+// Dil değişiminde tüm bileşenler buradan okur.
+// Jenerik sabit metin YASAKTIR.
+// ============================================================
+
+export const translations = {
+  tr: {
+    // ── NavBar ────────────────────────────────────────────────
+    panelTitle: 'STP-PANEL',
+    panelSubtitle: 'Sistem Takip Paneli',
+
+    // ── Dashboard Başlık ─────────────────────────────────────
+    dashboardTitle: 'STP-OPERASYON MERKEZİ',
+    accessLocked: 'ERİŞİM KİLİTLİ (AÇ)',
+    accessOpen: 'ERİŞİM AÇIK (KİLİTLE)',
+    systemOnline: 'SİSTEM ÇEVRİMİÇİ',
+    sealSystem: 'SİSTEMİ MÜHÜRLE (JSON)',
+    sealing: 'MÜHÜRLEME...',
+    systemRestricted: 'Sistem Erişimi Kısıtlandı',
+    unlockHint: 'Lütfen yukarıdaki butonu kullanarak kilidi açın.',
+    systemError: 'Sistem Hatası:',
+    newOrder: 'Yeni Emir Girişi',
+    taskSchedule: 'Görev Çizelgesi',
+    noActiveTasks: 'Aktif emir bulunmamaktadır.',
+
+    // ── Stats ────────────────────────────────────────────────
+    totalOrders: 'Toplam Emir',
+    pending: 'Beklemede',
+    completed: 'Tamamlanan',
+
+    // ── TaskForm ─────────────────────────────────────────────
+    placeholder: 'Yeni Görev Emri...',
+    addButton: 'EKLE',
+
+    // ── TaskCard ─────────────────────────────────────────────
+    statusPending: 'BEKLEMEDE',
+    statusInProgress: 'DEVAM EDİYOR',
+    statusVerification: 'DOĞRULAMA',
+    statusCompleted: 'TAMAMLANDI',
+    statusRejected: 'REDDEDİLDİ',
+    statusCancelled: 'İPTAL',
+    confirmDelete: 'SİLİNSİN Mİ?',
+    confirmArchive: 'GÖREV ARŞİVLENSİN MI?',
+
+    // ── AuditLog ─────────────────────────────────────────────
+    auditTitle: 'Denetim Günlüğü',
+    refresh: 'YENİLE',
+    noRecords: 'Kayıt bulunamadı.',
+  },
+
+  ar: {
+    // ── NavBar ────────────────────────────────────────────────
+    panelTitle: 'STP-لوحة',
+    panelSubtitle: 'لوحة تتبع النظام',
+
+    // ── Dashboard Başlık ─────────────────────────────────────
+    dashboardTitle: 'مركز عمليات STP',
+    accessLocked: 'الوصول مقفل (فتح)',
+    accessOpen: 'الوصول مفتوح (قفل)',
+    systemOnline: 'النظام متصل',
+    sealSystem: 'ختم النظام (JSON)',
+    sealing: 'جاري الختم...',
+    systemRestricted: 'تم تقييد الوصول إلى النظام',
+    unlockHint: 'يرجى استخدام الزر أعلاه لفتح القفل.',
+    systemError: 'خطأ في النظام:',
+    newOrder: 'إدخال أمر جديد',
+    taskSchedule: 'جدول المهام',
+    noActiveTasks: 'لا توجد أوامر نشطة.',
+
+    // ── Stats ────────────────────────────────────────────────
+    totalOrders: 'إجمالي الأوامر',
+    pending: 'قيد الانتظار',
+    completed: 'مكتمل',
+
+    // ── TaskForm ─────────────────────────────────────────────
+    placeholder: 'أمر مهمة جديد...',
+    addButton: 'إضافة',
+
+    // ── TaskCard ─────────────────────────────────────────────
+    statusPending: 'قيد الانتظار',
+    statusInProgress: 'قيد التنفيذ',
+    statusVerification: 'التحقق',
+    statusCompleted: 'مكتمل',
+    statusRejected: 'مرفوض',
+    statusCancelled: 'ملغى',
+    confirmDelete: 'هل تريد الحذف؟',
+    confirmArchive: 'هل تريد أرشفة المهمة؟',
+
+    // ── AuditLog ─────────────────────────────────────────────
+    auditTitle: 'سجل التدقيق',
+    refresh: 'تحديث',
+    noRecords: 'لم يتم العثور على سجلات.',
+  },
+} as const;
+
+export type Lang = keyof typeof translations;
+export type TranslationKeys = keyof typeof translations['tr'];
+
+/** Dil anahtarından çeviri sözlüğü döndürür */
+export function t(lang: Lang): typeof translations['tr'] {
+  return translations[lang];
+}
