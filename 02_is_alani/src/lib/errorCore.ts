@@ -53,6 +53,11 @@ export const ERR = {
   OWNERSHIP_VERIFY:      'ERR-STP001-024',
   LOCK_VIOLATION:        'ERR-STP001-025',
 
+  // ── BROWSER KONTROL (026–028) ──────────────────────────────
+  BROWSER_LAUNCH:        'ERR-STP001-026',
+  BROWSER_NAVIGATE:      'ERR-STP001-027',
+  BROWSER_EXTRACT:       'ERR-STP001-028',
+
   // ── ACİL DURUM — TANIMLANAMAYAN ÇÖKME (999) ────────────────
   UNIDENTIFIED_COLLAPSE: 'ERR-STP001-999',
 } as const;
@@ -86,6 +91,9 @@ export const ERR_DESCRIPTIONS: Record<ErrorCode, string> = {
   'ERR-STP001-023': 'Yazma yetkisi reddedildi — dosya kilidi aktif',
   'ERR-STP001-024': 'Görev sahipliği doğrulanamadı',
   'ERR-STP001-025': 'Dosya kilit ihlali tespit edildi',
+  'ERR-STP001-026': 'Tarayıcı başlatılamadı (Playwright)',
+  'ERR-STP001-027': 'Sayfa navigasyonu başarısız',
+  'ERR-STP001-028': 'Sayfa içerik çıkarma hatası',
   'ERR-STP001-999': 'TABLO ÇÖKMESI — TANIMLANAMAYAN HATA',
 };
 

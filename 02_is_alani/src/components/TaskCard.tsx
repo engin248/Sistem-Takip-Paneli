@@ -14,6 +14,7 @@ export default function TaskCard({ task }: { task: Task }) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
+  const [auditorApproved, setAuditorApproved] = useState(false);
   const { lang, dir } = useLanguageStore();
   const { operator } = useOperatorStore();
   const tr = t(lang);
@@ -23,6 +24,16 @@ export default function TaskCard({ task }: { task: Task }) {
   const isLocked = !permission.granted;
   const isOwner = operator.name.toUpperCase() === task.assigned_to.toUpperCase();
 
+  // ── DENETÇİ ONAYI — dogrulama → tamamlandi geçiş kapısı ──
+  const handleAuditorApproval = async () => {
+    if (isLocked || task.status !== 'dogrulama') return;
+    setAuditorApproved(true);
+    toast.success(tr.auditorApprovedToast || 'Denetçi onayı verildi', {
+      description: tr.auditorApproveDesc || 'Görev artık tamamlandı olarak işaretlenebilir.',
+      duration: 4000,
+    });
+  };
+
   const handleStatusChange = async (newStatus: string) => {
     if (isLocked) {
       toast.error(tr.permDeniedToast, {
@@ -31,9 +42,29 @@ export default function TaskCard({ task }: { task: Task }) {
       });
       return;
     }
+
+    // ── DENETÇİ KAPISI: tamamlandi için dogrulama + onay zorunlu ──
+    if (newStatus === 'tamamlandi') {
+      if (task.status !== 'dogrulama') {
+        toast.error(tr.auditorGateBlockTitle || 'GEÇİŞ ENGELLENDİ', {
+          description: tr.auditorGateBlockDesc || 'Görev önce "Doğrulama" aşamasından geçmelidir.',
+          duration: 6000,
+        });
+        return;
+      }
+      if (!auditorApproved) {
+        toast.error(tr.auditorGateBlockTitle || 'GEÇİŞ ENGELLENDİ', {
+          description: tr.auditorCheckboxRequired || 'Denetçi onay kutusunu işaretleyin.',
+          duration: 6000,
+        });
+        return;
+      }
+    }
+
     setIsUpdating(true);
     try {
       await updateStatus(task.id, newStatus);
+      if (newStatus === 'tamamlandi') setAuditorApproved(false);
       toast.success(`Durum güncellendi: ${newStatus.toUpperCase()}`);
     } catch (err) {
       await handleError(ERR.TASK_UPDATE, err, {
@@ -141,6 +172,33 @@ export default function TaskCard({ task }: { task: Task }) {
           </span>
         )}
 
+        {/* ── DENETÇİ ONAYI CHECKBOX — dogrulama statüsünde görünür ── */}
+        {task.status === 'dogrulama' && !isLocked && (
+          <label
+            className={`flex items-center gap-1.5 cursor-pointer select-none group ${
+              dir === 'rtl' ? 'flex-row-reverse' : ''
+            }`}
+            title={tr.auditorCheckboxLabel || 'Denetçi Onayı'}
+          >
+            <input
+              id={`auditor-${task.id}`}
+              type="checkbox"
+              checked={auditorApproved}
+              onChange={handleAuditorApproval}
+              className="w-3.5 h-3.5 accent-emerald-600 cursor-pointer rounded"
+            />
+            <span className={`text-[9px] font-bold uppercase tracking-wider transition-colors ${
+              auditorApproved
+                ? 'text-emerald-600 dark:text-emerald-400'
+                : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'
+            }`}>
+              {auditorApproved
+                ? (tr.auditorApproved || '✅ ONAYLANDI')
+                : (tr.auditorCheckboxLabel || '🔍 DENETÇİ ONAYI')}
+            </span>
+          </label>
+        )}
+
         <select 
           value={task.status} 
           onChange={(e) => handleStatusChange(e.target.value)}
@@ -152,7 +210,7 @@ export default function TaskCard({ task }: { task: Task }) {
           <option value="beklemede">{tr.statusPending}</option>
           <option value="devam_ediyor">{tr.statusInProgress}</option>
           <option value="dogrulama">{tr.statusVerification}</option>
-          <option value="tamamlandi">{tr.statusCompleted}</option>
+          <option value="tamamlandi" disabled={task.status === 'dogrulama' && !auditorApproved}>{tr.statusCompleted}</option>
           <option value="reddedildi">{tr.statusRejected}</option>
           <option value="iptal">{tr.statusCancelled}</option>
         </select>

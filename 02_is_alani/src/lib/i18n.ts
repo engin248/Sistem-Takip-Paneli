@@ -110,6 +110,15 @@ export const translations = {
     permWritable: 'YAZMA YETKİSİ',
     permNoAccess: 'Bu görevi değiştirme yetkiniz bulunmuyor.',
 
+    // ── Denetçi Onayı (Auditor Approval Gate) ────────────────
+    auditorCheckboxLabel: '🔍 DENETÇİ ONAYI',
+    auditorApproved: '✅ ONAYLANDI',
+    auditorApprovedToast: 'Denetçi onayı verildi',
+    auditorApproveDesc: 'Görev artık tamamlandı olarak işaretlenebilir.',
+    auditorGateBlockTitle: 'GEÇİŞ ENGELLENDİ',
+    auditorGateBlockDesc: 'Görev önce "Doğrulama" aşamasından geçmelidir.',
+    auditorCheckboxRequired: 'Denetçi onay kutusunu işaretleyin.',
+
     // ── Kanban Görev Panosu ──────────────────────────────────
     kanbanTitle: 'GÖREV PANOSU',
     kanbanTodo: 'YAPILACAK',
@@ -222,6 +231,15 @@ export const translations = {
     permReadOnly: 'قراءة فقط',
     permWritable: 'إذن الكتابة',
     permNoAccess: 'ليس لديك صلاحية لتعديل هذه المهمة.',
+
+    // ── Denetçi Onayı (Auditor Approval Gate) ────────────────
+    auditorCheckboxLabel: '🔍 موافقة المدقق',
+    auditorApproved: '✅ تمت الموافقة',
+    auditorApprovedToast: 'تمت موافقة المدقق',
+    auditorApproveDesc: 'يمكن الآن وضع علامة المهمة كمكتملة.',
+    auditorGateBlockTitle: 'تم حظر الانتقال',
+    auditorGateBlockDesc: 'يجب أن تمر المهمة أولاً عبر مرحلة "التحقق".',
+    auditorCheckboxRequired: 'حدد مربع موافقة المدقق.',
 
     // ── Kanban Görev Panosu ──────────────────────────────────
     kanbanTitle: 'لوحة المهام',

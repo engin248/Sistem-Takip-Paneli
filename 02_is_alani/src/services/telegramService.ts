@@ -241,6 +241,26 @@ async function handleTaskMessage(ctx: Context, text: string, source: 'text' | 'v
     ? `${ctx.from.first_name}${ctx.from.last_name ? ' ' + ctx.from.last_name : ''}`
     : 'Bilinmeyen';
 
+  // ── GÖZCÜ: IA_COMMAND_RECEIVED — Komutu anında kaydet ──────
+  // Telegram'dan gelen her komut, işlenmeden ÖNCE audit_logs'a düşer.
+  // Bu sayede mesaj işleme sırasında hata olsa bile komutun
+  // alındığı kanıtlanmış olur.
+  await logAudit({
+    operation_type: 'SYSTEM',
+    action_description: `Telegram komut alındı: "${text.substring(0, 80)}${text.length > 80 ? '...' : ''}" [${source.toUpperCase()}]`,
+    metadata: {
+      action_code: 'IA_COMMAND_RECEIVED',
+      message_type: source,
+      chat_id: chatId,
+      sender: senderName,
+      message_length: text.length,
+      message_preview: text.substring(0, 120),
+      received_at: new Date().toISOString(),
+    }
+  }).catch(() => {
+    // Audit yazma hatası — sessizce devam et, processError zaten logluyor
+  });
+
   // Yetki kontrolü
   if (!isAuthorized(chatId)) {
     await sendReply(ctx, '⛔ YETKİSİZ ERİŞİM. Bu bot yalnızca yetkilendirilmiş operatörler tarafından kullanılabilir.');
