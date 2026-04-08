@@ -1,17 +1,15 @@
 "use client";
 import { useEffect } from 'react';
-import { fetchTasksFromDB, updateStatus, deleteTask } from '@/services/taskService';
+import { fetchTasksFromDB, updateStatus, deleteTask, subscribeToTasks } from '@/services/taskService';
 import { useTaskStore } from '@/store/useTaskStore';
+import { supabase } from '@/lib/supabase';
+import { useState } from 'react';
+import { fetchAuditLogs } from '@/services/auditService';
 import TaskForm from '@/components/TaskForm';
 import TaskCard from '@/components/TaskCard';
 import Stats from '@/components/Stats';
-import { fetchAuditLogs } from '@/services/auditService';
-import { useState } from 'react';
-import AuditLog from '@/components/AuditLog';
 
 export default function Dashboard() {
-
-
   const { tasks } = useTaskStore();
   const [logs, setLogs] = useState<any[]>([]);
 
@@ -20,10 +18,22 @@ export default function Dashboard() {
     setLogs(data);
   };
 
+
   useEffect(() => {
     fetchTasksFromDB();
     loadLogs();
+    
+    // REALTIME SUBSCRIPTION
+    const channel = subscribeToTasks(() => {
+      fetchTasksFromDB();
+      loadLogs(); // Logları da yenileyelim ki realtime hissi artsın
+    });
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
+
 
   return (
     <main className="p-8 max-w-4xl mx-auto text-start">

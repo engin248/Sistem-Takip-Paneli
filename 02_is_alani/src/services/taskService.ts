@@ -53,3 +53,13 @@ export const deleteTask = async (id: string) => {
   }
 };
 
+export const subscribeToTasks = (callback: () => void) => {
+  const channel = supabase
+    .channel('tasks_realtime')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, (payload) => {
+      callback();
+    })
+    .subscribe();
+  
+  return channel;
+};
