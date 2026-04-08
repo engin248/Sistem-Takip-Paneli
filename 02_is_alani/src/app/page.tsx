@@ -4,6 +4,7 @@ import { fetchTasksFromDB, updateStatus, deleteTask } from '@/services/taskServi
 import { useTaskStore } from '@/store/useTaskStore';
 import TaskForm from '@/components/TaskForm';
 import TaskCard from '@/components/TaskCard';
+import Stats from '@/components/Stats';
 
 export default function Dashboard() {
 
@@ -19,6 +20,8 @@ export default function Dashboard() {
         <h1 className="text-3xl font-black tracking-tighter">STP-OPERASYON MERKEZİ</h1>
         <div className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">SİSTEM ÇEVRİMİÇİ</div>
       </div>
+
+      <Stats />
 
       {/* GÖREV EKLEME BİRİMİ */}
       <section className="mb-12">
