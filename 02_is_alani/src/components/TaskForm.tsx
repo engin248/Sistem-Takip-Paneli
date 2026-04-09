@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { useLanguageStore } from '@/store/useLanguageStore';
 import { useOperatorStore } from '@/store/useOperatorStore';
 import { t } from '@/lib/i18n';
+import { CreateTaskSchema, validateInput } from '@/lib/validation';
 import type { TaskPriority } from '@/store/useTaskStore';
 
 // task_code üretici — TSK-YYYYMMDD-RAND formatında
@@ -55,6 +56,20 @@ export default function TaskForm() {
     try {
       const taskCode = generateTaskCode();
       const finalAssignedTo = assignedTo.trim() || operator.name || 'SISTEM';
+
+      // G-0 ZOD GİRİŞ FİLTRESİ
+      const validation = validateInput(CreateTaskSchema, {
+        title: title.trim(),
+        description: description.trim() || null,
+        priority,
+        assigned_to: finalAssignedTo,
+      }, { kaynak: 'TaskForm', islem: 'CREATE' });
+
+      if (!validation.success) {
+        toast.error(validation.errors?.[0] || 'Geçersiz giriş');
+        setIsSubmitting(false);
+        return;
+      }
 
       const { data, error } = await supabase
         .from('tasks')
