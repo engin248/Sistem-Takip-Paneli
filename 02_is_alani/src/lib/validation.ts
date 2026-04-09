@@ -131,9 +131,12 @@ export function validateInput<T>(
     return { success: true, data: result.data };
   }
 
-  const errors = result.error.errors.map(
-    (e) => `${e.path.join('.')}: ${e.message}`
-  );
+  const zodErrors = result.error.issues ?? result.error.errors ?? [];
+  const errors = Array.isArray(zodErrors)
+    ? zodErrors.map((e: { path?: (string | number)[]; message?: string }) =>
+        `${(e.path ?? []).join('.')}: ${e.message ?? 'Geçersiz'}`
+      )
+    : [String(result.error)];
 
   processError(ERR.SYSTEM_GENERAL, new Error(`ZOD Validasyon Hatası: ${errors.join('; ')}`), {
     kaynak: context.kaynak,
