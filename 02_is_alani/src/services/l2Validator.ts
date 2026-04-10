@@ -17,6 +17,7 @@
 import { supabase, validateSupabaseConnection } from '@/lib/supabase';
 import { ERR, processError } from '@/lib/errorCore';
 import { logAudit } from './auditService';
+import { sendTelegramNotification, formatL2Report, isTelegramNotificationAvailable } from './telegramNotifier';
 
 // ─── DENETİM SONUCU ────────────────────────────────────────
 
@@ -259,6 +260,13 @@ export async function runL2Validation(): Promise<L2ValidationReport> {
       finding_codes: allFindings.map(f => f.code),
     },
   }).catch(() => {});
+
+  // Telegram bildirim gönder (varsa)
+  if (isTelegramNotificationAvailable()) {
+    await sendTelegramNotification(
+      formatL2Report(status, errors, warnings, duration_ms)
+    ).catch(() => {});
+  }
 
   return report;
 }
