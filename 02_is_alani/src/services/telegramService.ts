@@ -36,6 +36,7 @@ const AUTHORIZED_CHAT_IDS = (process.env.TELEGRAM_AUTHORIZED_CHAT_IDS ?? '')
 
 // ─── BOT SINGLETON ──────────────────────────────────────────
 let bot: Bot | null = null;
+let botInitialized = false;
 
 /**
  * Telegram Bot'u başlatır (lazy singleton).
@@ -62,6 +63,24 @@ export function getTelegramBot(): Bot | null {
       islem: 'BOT_INIT'
     }, 'CRITICAL');
     return null;
+  }
+}
+
+/**
+ * Bot'u async olarak başlatır — handleUpdate için zorunlu.
+ * Grammy kütüphanesi bot.init() çağrılmadan handleUpdate çalıştırmaz.
+ */
+async function ensureBotInitialized(botInstance: Bot): Promise<void> {
+  if (botInitialized) return;
+  try {
+    await botInstance.init();
+    botInitialized = true;
+  } catch (error) {
+    processError(ERR.TELEGRAM_SEND, error, {
+      kaynak: 'telegramService.ts',
+      islem: 'BOT_ASYNC_INIT'
+    }, 'CRITICAL');
+    throw error;
   }
 }
 
@@ -446,6 +465,8 @@ export async function handleWebhookUpdate(update: unknown): Promise<void> {
   }
 
   try {
+    // Grammy bot.init() — handleUpdate öncesi zorunlu
+    await ensureBotInitialized(botInstance);
     // Grammy'nin update handler'ı
     await botInstance.handleUpdate(update as Parameters<typeof botInstance.handleUpdate>[0]);
   } catch (error) {
