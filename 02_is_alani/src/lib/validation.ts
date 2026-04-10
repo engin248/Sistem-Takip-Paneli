@@ -89,7 +89,7 @@ export const BrowserActionSchema = z.object({
   url: z.string().url('Geçerli bir URL gerekli').optional(),
   query: z.string().min(1).max(500).optional(),
   maxResults: z.number().int().min(1).max(50).optional(),
-  selectors: z.record(z.string()).optional(),
+  selectors: z.record(z.string(), z.string()).optional(),
 });
 
 // ─── AUDIT LOG ŞEMASI ───────────────────────────────────────
@@ -103,7 +103,7 @@ export const AuditLogSchema = z.object({
   error_code: z.string().max(50).nullable().optional(),
   error_severity: z.enum(['INFO', 'WARNING', 'CRITICAL', 'FATAL']).nullable().optional(),
   status: z.string().max(50).nullable().optional(),
-  metadata: z.record(z.unknown()).nullable().optional(),
+  metadata: z.record(z.string(), z.unknown()).nullable().optional(),
 });
 
 // ============================================================
@@ -131,12 +131,11 @@ export function validateInput<T>(
     return { success: true, data: result.data };
   }
 
-  const zodErrors = result.error.issues ?? result.error.errors ?? [];
-  const errors = Array.isArray(zodErrors)
-    ? zodErrors.map((e: { path?: (string | number)[]; message?: string }) =>
-        `${(e.path ?? []).join('.')}: ${e.message ?? 'Geçersiz'}`
-      )
-    : [String(result.error)];
+  const zodErrors = result.error.issues ?? [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const errors = zodErrors.map((e: any) =>
+    `${(e.path ?? []).join('.')}: ${e.message ?? 'Geçersiz'}`
+  );
 
   processError(ERR.SYSTEM_GENERAL, new Error(`ZOD Validasyon Hatası: ${errors.join('; ')}`), {
     kaynak: context.kaynak,

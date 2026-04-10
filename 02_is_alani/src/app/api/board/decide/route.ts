@@ -39,10 +39,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const validatedData = validation.data!;
+
     const result = await createAndVoteDecision({
-      title: title.trim(),
-      description: description?.trim(),
-      category: category as DecisionCategory,
+      title: validatedData.title,
+      description: validatedData.description,
+      category: validatedData.category as DecisionCategory,
     });
 
     if (!result.success) {

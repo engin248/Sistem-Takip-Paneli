@@ -11,7 +11,7 @@ export default function LogsPage() {
   return (
     <main className="container mx-auto px-4 py-8" dir={dir}>
       <div className={`flex items-center justify-between mb-6 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-        <h1 className="text-xl font-black tracking-tight">{tr.auditLog}</h1>
+        <h1 className="text-xl font-black tracking-tight">{tr.auditTitle}</h1>
         <Link
           href="/"
           className="text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors uppercase tracking-wider"
