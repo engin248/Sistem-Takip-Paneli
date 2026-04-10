@@ -3,12 +3,19 @@ import { ERR, processError, type ErrorCode } from '@/lib/errorCore';
 
 // ============================================================
 // AUDIT SERVICE — audit_logs tablosuna kayıt ekleme
-// Kaynak: 01_komutlar/supabase_schema.sql — Satır 86-146
-// Doktrin: Sütun isimleri SQL şemasıyla HARFİYEN eşleşir
+// ============================================================
+// DB ŞEMASI (canlı tablo — 6 alan):
+//   log_id    SERIAL PK
+//   task_id   UUID (nullable)
+//   action_code VARCHAR — İşlem kodu (TASK_CREATED, TASK_UPDATED, vb.)
+//   details   JSONB — Tüm detaylar burada
+//   operator_id VARCHAR (nullable)
+//   timestamp TIMESTAMPTZ DEFAULT NOW()
+//
 // Hata Kodları: ERR-STP001-006 (yazma), ERR-STP001-007 (okuma)
 // ============================================================
 
-// operation_type — SQL CHECK (satır 91-102) ile birebir eşleşir
+// operation_type → action_code dönüşüm haritası
 export type AuditOperationType =
   | 'CREATE'
   | 'UPDATE'
@@ -20,42 +27,36 @@ export type AuditOperationType =
   | 'ERROR'
   | 'SYSTEM';
 
-// error_severity — SQL CHECK (satır 118-119) ile birebir eşleşir
 export type AuditErrorSeverity = 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL' | 'FATAL';
-
-// audit_logs status — SQL CHECK (satır 126-127) ile birebir eşleşir
 export type AuditStatus = 'basarili' | 'basarisiz' | 'beklemede' | 'iptal';
 
 // ============================================================
-// LOG KAYDI OLUŞTURMA
-// Zorunlu alanlar (NOT NULL): log_code, operation_type, action_description, performed_by
-// Opsiyonel alanlar: task_id, table_name, error_code, error_type, metadata, vb.
+// ADAPTÖR: Kod beklentilerini DB şemasına dönüştürür
+// Kod tarafı geniş interface kullanmaya devam eder,
+// DB'ye yazarken 6 alanlı şemaya sıkıştırılır.
 // ============================================================
 interface AuditLogEntry {
-  // Zorunlu (SQL NOT NULL)
-  log_code: string;                        // VARCHAR(50) NOT NULL
-  operation_type: AuditOperationType;      // VARCHAR(30) NOT NULL CHECK
-  action_description: string;              // TEXT NOT NULL
-
-  // Zorunlu ama DEFAULT var
-  performed_by?: string;                   // VARCHAR(100) NOT NULL DEFAULT 'SISTEM'
-  status?: AuditStatus;                    // VARCHAR(20) NOT NULL DEFAULT 'basarili'
+  // Zorunlu
+  operation_type: AuditOperationType;
+  action_description: string;
 
   // Opsiyonel
-  task_id?: string | null;                 // UUID REFERENCES tasks(id)
-  table_name?: string | null;              // VARCHAR(100)
-  record_id?: string | null;              // UUID
-  action_location?: string | null;        // TEXT
-  action_output?: string | null;          // TEXT
-  action_evidence?: string | null;        // TEXT
-  error_code?: string | null;             // VARCHAR(30) — ERR-STP001-XXX formatında
-  error_type?: string | null;             // VARCHAR(50)
-  error_severity?: AuditErrorSeverity;    // VARCHAR(20) DEFAULT 'INFO'
-  authorized_by?: string | null;          // VARCHAR(100)
-  execution_duration_ms?: number | null;  // INTEGER
-  old_data?: Record<string, unknown>;     // JSONB
-  new_data?: Record<string, unknown>;     // JSONB
-  metadata?: Record<string, unknown>;     // JSONB DEFAULT '{}'
+  task_id?: string | null;
+  table_name?: string | null;
+  record_id?: string | null;
+  action_location?: string | null;
+  action_output?: string | null;
+  action_evidence?: string | null;
+  error_code?: string | null;
+  error_type?: string | null;
+  error_severity?: AuditErrorSeverity;
+  performed_by?: string;
+  authorized_by?: string | null;
+  status?: AuditStatus;
+  execution_duration_ms?: number | null;
+  old_data?: Record<string, unknown>;
+  new_data?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
 }
 
 // log_code üretici — LOG-YYYYMMDD-HHMMSS-RAND formatında
@@ -68,20 +69,84 @@ function generateLogCode(): string {
   return `LOG-${date}-${time}-${rand}`;
 }
 
+/**
+ * AuditLogEntry → DB şemasına (6 alan) dönüştürücü
+ * Tüm ek bilgiler details JSONB alanına sıkıştırılır.
+ */
+function toDbRow(entry: AuditLogEntry) {
+  const logCode = generateLogCode();
+  const actionCode = `${entry.operation_type}_${logCode.slice(-8)}`;
+
+  return {
+    task_id: entry.task_id || null,
+    action_code: actionCode,
+    operator_id: entry.performed_by || 'SISTEM',
+    details: {
+      log_code: logCode,
+      operation_type: entry.operation_type,
+      action_description: entry.action_description,
+      status: entry.status || 'basarili',
+      error_code: entry.error_code || null,
+      error_severity: entry.error_severity || 'INFO',
+      error_type: entry.error_type || null,
+      table_name: entry.table_name || null,
+      record_id: entry.record_id || null,
+      action_location: entry.action_location || null,
+      action_output: entry.action_output || null,
+      action_evidence: entry.action_evidence || null,
+      authorized_by: entry.authorized_by || null,
+      execution_duration_ms: entry.execution_duration_ms || null,
+      old_data: entry.old_data || null,
+      new_data: entry.new_data || null,
+      ...(entry.metadata || {}),
+    },
+  };
+}
+
+/**
+ * DB'den gelen satırı → frontend beklentisine dönüştürür
+ */
+interface AuditLogRow {
+  id: string;
+  log_code: string;
+  operation_type: string;
+  action_description: string;
+  task_id: string | null;
+  performed_by: string;
+  status: string;
+  error_code: string | null;
+  error_severity: string;
+  created_at: string;
+  metadata: Record<string, unknown>;
+}
+
+function fromDbRow(row: Record<string, unknown>): AuditLogRow {
+  const details = (row.details || {}) as Record<string, unknown>;
+  return {
+    id: String(row.log_id ?? ''),
+    log_code: String(details.log_code || `LOG-${row.log_id}`),
+    operation_type: String(details.operation_type || row.action_code || 'SYSTEM'),
+    action_description: String(details.action_description || row.action_code || ''),
+    task_id: row.task_id ? String(row.task_id) : null,
+    performed_by: String(row.operator_id || 'SISTEM'),
+    status: String(details.status || 'basarili'),
+    error_code: details.error_code ? String(details.error_code) : null,
+    error_severity: String(details.error_severity || 'INFO'),
+    created_at: String(row.timestamp || ''),
+    metadata: details,
+  };
+}
+
 // Ana kayıt fonksiyonu
 export const logAudit = async (entry: Omit<AuditLogEntry, 'log_code'>): Promise<{ success: boolean; error?: string }> => {
   try {
-    const logEntry: AuditLogEntry = {
-      log_code: generateLogCode(),
-      ...entry,
-    };
+    const dbRow = toDbRow(entry as AuditLogEntry);
 
     const { error } = await supabase
       .from('audit_logs')
-      .insert([logEntry]);
+      .insert([dbRow]);
 
     if (error) {
-      // ERR-STP001-006: Audit log yazma hatası — errorCore ile işle
       processError(ERR.AUDIT_WRITE, error, {
         attempted_entry: entry.operation_type,
         tablo: 'audit_logs',
@@ -92,7 +157,6 @@ export const logAudit = async (entry: Omit<AuditLogEntry, 'log_code'>): Promise<
 
     return { success: true };
   } catch (err) {
-    // ERR-STP001-999: Tanımlanamayan çökme
     processError(ERR.UNIDENTIFIED_COLLAPSE, err, {
       tablo: 'audit_logs',
       islem: 'INSERT',
@@ -130,20 +194,20 @@ export const fetchAuditLogs = async () => {
     const { data, error } = await supabase
       .from('audit_logs')
       .select('*')
-      .order('created_at', { ascending: false })
+      .order('timestamp', { ascending: false })
       .limit(5);
 
     if (error) {
-      // ERR-STP001-007: Audit log okuma hatası
       processError(ERR.AUDIT_READ, error, {
         tablo: 'audit_logs',
         islem: 'SELECT'
       });
       return [];
     }
-    return data;
+
+    // DB formatını frontend beklentisine dönüştür
+    return (data || []).map(fromDbRow);
   } catch (err) {
-    // ERR-STP001-999: Tanımlanamayan çökme
     processError(ERR.UNIDENTIFIED_COLLAPSE, err, {
       tablo: 'audit_logs',
       islem: 'SELECT',
