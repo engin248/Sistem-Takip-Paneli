@@ -6,6 +6,7 @@ import NavBar from "@/components/NavBar";
 import DirProvider from "@/components/DirProvider";
 import SwInit from "@/components/SwInit";
 import PwaInstallPrompt from "@/components/PwaInstallPrompt";
+import AuthProvider from "@/components/AuthProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -41,10 +42,24 @@ export default function RootLayout({
     <html lang="tr" dir="ltr">
       <body className={`${inter.className} bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50`}>
         <DirProvider>
-          <SwInit />
-          <NavBar />
-          {children}
-          <PwaInstallPrompt />
+          {/* AuthProvider: Supabase Auth etkinleştirildiğinde
+              .env.local'e NEXT_PUBLIC_SUPABASE_AUTH_ENABLED=true ekleyin.
+              Auth kapalıyken doğrudan dashboard gösterilir. */}
+          {process.env.NEXT_PUBLIC_SUPABASE_AUTH_ENABLED === 'true' ? (
+            <AuthProvider>
+              <SwInit />
+              <NavBar />
+              {children}
+              <PwaInstallPrompt />
+            </AuthProvider>
+          ) : (
+            <>
+              <SwInit />
+              <NavBar />
+              {children}
+              <PwaInstallPrompt />
+            </>
+          )}
         </DirProvider>
       </body>
     </html>

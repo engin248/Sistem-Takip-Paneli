@@ -152,9 +152,82 @@ Aşağıdaki tablolar Supabase'de mevcut, servis dosyası tespit edilememiştir.
 | Proje | Konum | Servis Dizini |
 |---|---|---|
 | **MİZANET** | `C:\Users\Esisya\Desktop\New-mizanet\mizanet.com-main\` | `src/features/*/services/` + `src/lib/` |
-| **STP** | `C:\sistem_takip_paneli\02_is_alani\` | `src/services/` |
+| **STP** | `C:\Users\Esisya\Desktop\Sistem-Takip-Paneli\02_is_alani\` | `src/services/` |
 | **SKM** | `C:\Users\Esisya\Desktop\sistem-kontrol-merkezi\` | `src/lib/` + `src/services/` |
 
 ---
 
+## STP DOSYA ENVANTERİ — GÜNCEL (10 Nisan 2026)
+
+### Lib
+| Dosya | İşlev |
+|---|---|
+| `supabase.ts` | Singleton client + bağlantı doğrulama |
+| `errorCore.ts` | Merkezi hata motoru (28 ERR kodu) |
+| `errorHandler.ts` | Hata işleme orkestratörü |
+| `permissionGuard.ts` | Dosya seviyesi kilitleme |
+| `i18n.ts` | TR/AR çeviri sözlüğü |
+| `validation.ts` | ZOD G-0 giriş filtresi (7 şema) |
+| `swRegister.ts` | Service Worker kayıt |
+
+### Servisler
+| Dosya | İşlev |
+|---|---|
+| `taskService.ts` | CRUD + Realtime |
+| `auditService.ts` | Audit log yönetimi |
+| `authService.ts` | Supabase Auth (signIn/signUp/signOut) |
+| `exportService.ts` | Sistem veri dışa aktarma |
+| `aiManager.ts` | AI öncelik analizi |
+| `consensusEngine.ts` | 3 ajan konsensüs |
+| `boardService.ts` | Kurul karar yönetimi |
+| `telegramService.ts` | Telegram bot entegrasyonu |
+| `browserService.ts` | Playwright tarayıcı köprüsü |
+| `browserlessAdapter.ts` | Browserless HTTP API adapter |
+| `notificationService.ts` | Bildirim yönetimi |
+| `l2Validator.ts` | L2 bağımsız denetim ajanı |
+| `selfLearningEngine.ts` | G-8 pattern motoru |
+
+### Bileşenler
+| Dosya | İşlev |
+|---|---|
+| `TaskForm.tsx` | Görev oluşturma (ZOD entegre) |
+| `TaskCard.tsx` | Görev kartı + durum yönetimi |
+| `TaskBoard.tsx` | Kanban sürükle-bırak |
+| `AuditLog.tsx` | Denetim günlüğü |
+| `BoardPanel.tsx` | Kurul kararları paneli |
+| `Stats.tsx` | 7 kartlı istatistik (6 durum + toplam) |
+| `NavBar.tsx` | Navigasyon + Auth çıkış |
+| `NotificationBell.tsx` | Bildirim zili |
+| `PwaInstallPrompt.tsx` | PWA kurulum istemi |
+| `DirProvider.tsx` | RTL/LTR senkronizasyonu |
+| `SwInit.tsx` | Service Worker başlatma |
+| `LoginPage.tsx` | Giriş/Kayıt sayfası |
+| `AuthProvider.tsx` | Oturum koruma katmanı |
+
+### App (Sayfa + API)
+| Dosya | İşlev |
+|---|---|
+| `page.tsx` | Dashboard |
+| `layout.tsx` | Root layout + AuthProvider |
+| `error.tsx` | Global hata sınırı |
+| `loading.tsx` | Yükleme göstergesi |
+| `not-found.tsx` | 404 sayfası |
+| `api/board/decide/route.ts` | Kurul karar API |
+| `api/browser/route.ts` | Tarayıcı API |
+| `api/telegram/route.ts` | Telegram webhook |
+| `api/validate/route.ts` | L2 Validator API |
+| `api/learn/route.ts` | Self-Learning API |
+
+### Store
+| Dosya | İşlev |
+|---|---|
+| `useTaskStore.ts` | Görev durumu yönetimi |
+| `useLanguageStore.ts` | Dil tercihi (persist) |
+| `useOperatorStore.ts` | Operatör/Rol yönetimi |
+| `useAuthStore.ts` | Oturum durumu |
+
+---
+
 > **NOT**: Bu belge canlı Supabase taraması ve kod grep analizi ile oluşturulmuştur. Tablo sayısı veya servis dosyaları değiştiğinde güncellenmesi gerekir.
+> **Son Güncelleme**: 10 Nisan 2026 — 02:50 UTC+3
+

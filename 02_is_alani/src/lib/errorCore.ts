@@ -58,6 +58,13 @@ export const ERR = {
   BROWSER_NAVIGATE:      'ERR-STP001-027',
   BROWSER_EXTRACT:       'ERR-STP001-028',
 
+  // ── KÖPRÜ / SAĞLIK / ALARM (030–034) ───────────────────────
+  BRIDGE_CONNECTION:     'ERR-STP001-030',
+  BRIDGE_QUERY:          'ERR-STP001-031',
+  HEALTH_CHECK:          'ERR-STP001-032',
+  ALARM_CREATE:          'ERR-STP001-033',
+  ALARM_UPDATE:          'ERR-STP001-034',
+
   // ── ACİL DURUM — TANIMLANAMAYAN ÇÖKME (999) ────────────────
   UNIDENTIFIED_COLLAPSE: 'ERR-STP001-999',
 } as const;
@@ -94,6 +101,11 @@ export const ERR_DESCRIPTIONS: Record<ErrorCode, string> = {
   'ERR-STP001-026': 'Tarayıcı başlatılamadı (Playwright)',
   'ERR-STP001-027': 'Sayfa navigasyonu başarısız',
   'ERR-STP001-028': 'Sayfa içerik çıkarma hatası',
+  'ERR-STP001-030': 'Dış sistem köprü bağlantısı başarısız',
+  'ERR-STP001-031': 'Dış sistem sorgusu başarısız',
+  'ERR-STP001-032': 'Sağlık kontrolü başarısız',
+  'ERR-STP001-033': 'Alarm oluşturulamadı',
+  'ERR-STP001-034': 'Alarm durumu güncellenemedi',
   'ERR-STP001-999': 'TABLO ÇÖKMESI — TANIMLANAMAYAN HATA',
 };
 
@@ -146,13 +158,13 @@ function extractErrorSource(): { file: string; func: string } {
     if (!stack) return fallback;
     // İlk 3 satırı atla (Error, extractErrorSource, processError)
     const lines = stack.split('\n').filter(l => l.includes('at '));
-    const callerLine = lines[2] || lines[1] || '';
+    const callerLine = lines[2] ?? lines[1] ?? '';
     // Fonksiyon adını çıkar
     const funcMatch = callerLine.match(/at\s+([\w.]+)\s*\(/);
-    const func = funcMatch ? funcMatch[1] : 'anonim';
+    const func = funcMatch?.[1] ?? 'anonim';
     // Dosya adını çıkar
     const fileMatch = callerLine.match(/\(?([^)]+\.[tj]sx?)/);
-    let file = fileMatch ? fileMatch[1] : 'bilinmiyor';
+    let file: string = fileMatch?.[1] ?? 'bilinmiyor';
     // Sadece dosya adını al (tam yol yerine)
     const lastSlash = Math.max(file.lastIndexOf('/'), file.lastIndexOf('\\'));
     if (lastSlash >= 0) file = file.substring(lastSlash + 1);

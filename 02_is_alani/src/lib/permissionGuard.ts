@@ -123,10 +123,18 @@ export async function guardWritePermission(
 /**
  * Görevin store'dan assigned_to bilgisini çeker.
  * Task ID ile store araması yapar — store senkronize olmalıdır.
+ * NOT: Circular dependency önlemek için useTaskStore doğrudan import edilmez.
  */
 export function getTaskOwner(taskId: string): string | null {
-  // Lazy import ile circular dependency önle
-  const { useTaskStore } = require('@/store/useTaskStore');
-  const task = useTaskStore.getState().tasks.find((t: { id: string }) => t.id === taskId);
+  // Zustand store'ları modül seviyesinde singleton olduğundan
+  // getState() runtime'da güvenli erişim sağlar.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { useTaskStore } = require('@/store/useTaskStore') as {
+    useTaskStore: {
+      getState: () => { tasks: Array<{ id: string; assigned_to: string }> };
+    };
+  };
+  const task = useTaskStore.getState().tasks.find((t) => t.id === taskId);
   return task?.assigned_to ?? null;
 }
+

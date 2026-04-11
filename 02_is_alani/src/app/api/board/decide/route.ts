@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAndVoteDecision, fetchBoardDecisions } from '@/services/boardService';
 import { ERR, processError } from '@/lib/errorCore';
+import { BoardDecisionSchema, validateInput } from '@/lib/validation';
 import type { DecisionCategory } from '@/services/consensusEngine';
 
 const VALID_CATEGORIES: DecisionCategory[] = [
@@ -25,25 +26,25 @@ export async function POST(request: NextRequest) {
       category?: string;
     };
 
-    // Validasyon
-    if (!title || typeof title !== 'string' || title.trim().length === 0) {
+    // G-0 ZOD VALİDASYON
+    const validation = validateInput(BoardDecisionSchema, body, {
+      kaynak: 'api/board/decide/route.ts',
+      islem: 'POST_VALIDATE',
+    });
+
+    if (!validation.success) {
       return NextResponse.json(
-        { success: false, error: 'Karar başlığı zorunludur.' },
+        { success: false, error: validation.errors?.join('; ') || 'Geçersiz giriş' },
         { status: 400 }
       );
     }
 
-    if (!category || !VALID_CATEGORIES.includes(category as DecisionCategory)) {
-      return NextResponse.json(
-        { success: false, error: `Geçersiz kategori. Geçerli: ${VALID_CATEGORIES.join(', ')}` },
-        { status: 400 }
-      );
-    }
+    const validatedData = validation.data!;
 
     const result = await createAndVoteDecision({
-      title: title.trim(),
-      description: description?.trim(),
-      category: category as DecisionCategory,
+      title: validatedData.title,
+      description: validatedData.description,
+      category: validatedData.category as DecisionCategory,
     });
 
     if (!result.success) {

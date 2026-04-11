@@ -1,7 +1,9 @@
 "use client";
 import { useLanguageStore } from "@/store/useLanguageStore";
 import { useOperatorStore, type OperatorRole } from "@/store/useOperatorStore";
+import { useAuthStore } from "@/store/useAuthStore";
 import { logAudit } from "@/services/auditService";
+import { signOut } from "@/services/authService";
 import { t } from "@/lib/i18n";
 import NotificationBell from "@/components/NotificationBell";
 
@@ -16,7 +18,13 @@ const OPERATORS: { name: string; role: OperatorRole }[] = [
 export default function NavBar() {
   const { lang, dir, toggleLang } = useLanguageStore();
   const { operator, setOperator } = useOperatorStore();
+  const { user, clearAuth } = useAuthStore();
   const tr = t(lang);
+
+  const handleSignOut = async () => {
+    await signOut();
+    clearAuth();
+  };
 
   // Dil değişikliğini audit_logs'a mühürle
   const handleLangChange = (targetLang: 'tr' | 'ar') => {
@@ -126,6 +134,24 @@ export default function NavBar() {
           >
             AR
           </button>
+
+          <div className="w-px h-5 bg-slate-200 dark:bg-slate-700" />
+
+          {/* ── KULLANICI + ÇIKIŞ ─────────────────────────── */}
+          <div className={`flex items-center gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+            {user?.email && (
+              <span className="text-[9px] font-mono text-slate-400 max-w-[120px] truncate">
+                {user.email}
+              </span>
+            )}
+            <button
+              onClick={handleSignOut}
+              className="text-[10px] font-bold px-3 py-1 rounded border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+            >
+              {lang === 'ar' ? 'خروج' : 'ÇIKIŞ'}
+            </button>
+          </div>
+
         </div>
       </div>
     </nav>

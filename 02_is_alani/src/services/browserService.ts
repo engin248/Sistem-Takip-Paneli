@@ -292,6 +292,7 @@ export async function searchWeb(query: string, maxResults: number = 10): Promise
 
       for (let i = 0; i < Math.min(resultElements.length, limit); i++) {
         const el = resultElements[i];
+        if (!el) continue;
         const titleEl = el.querySelector('.result__title a, .result__a');
         const snippetEl = el.querySelector('.result__snippet');
         const urlEl = el.querySelector('.result__url');

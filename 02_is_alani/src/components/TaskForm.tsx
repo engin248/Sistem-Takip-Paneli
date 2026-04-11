@@ -7,7 +7,10 @@ import { handleError } from '@/lib/errorHandler';
 import { ERR, processError } from '@/lib/errorCore';
 import { toast } from 'sonner';
 import { useLanguageStore } from '@/store/useLanguageStore';
+import { useOperatorStore } from '@/store/useOperatorStore';
 import { t } from '@/lib/i18n';
+import { CreateTaskSchema, validateInput } from '@/lib/validation';
+import type { TaskPriority } from '@/store/useTaskStore';
 
 // task_code üretici — TSK-YYYYMMDD-RAND formatında
 function generateTaskCode(): string {
@@ -18,10 +21,21 @@ function generateTaskCode(): string {
   return `TSK-${date}-${rand}`;
 }
 
+const PRIORITY_OPTIONS: { value: TaskPriority; label: string; emoji: string }[] = [
+  { value: 'kritik', label: 'KRİTİK', emoji: '🔴' },
+  { value: 'yuksek', label: 'YÜKSEK', emoji: '🟠' },
+  { value: 'normal', label: 'NORMAL', emoji: '🟡' },
+  { value: 'dusuk', label: 'DÜŞÜK', emoji: '🟢' },
+];
+
 export default function TaskForm() {
   const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [priority, setPriority] = useState<TaskPriority>('normal');
+  const [assignedTo, setAssignedTo] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { lang, dir } = useLanguageStore();
+  const { operator } = useOperatorStore();
   const tr = t(lang);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,16 +55,32 @@ export default function TaskForm() {
 
     try {
       const taskCode = generateTaskCode();
+      const finalAssignedTo = assignedTo.trim() || operator.name || 'SISTEM';
+
+      // G-0 ZOD GİRİŞ FİLTRESİ
+      const validation = validateInput(CreateTaskSchema, {
+        title: title.trim(),
+        description: description.trim() || null,
+        priority,
+        assigned_to: finalAssignedTo,
+      }, { kaynak: 'TaskForm', islem: 'CREATE' });
+
+      if (!validation.success) {
+        toast.error(validation.errors?.[0] || 'Geçersiz giriş');
+        setIsSubmitting(false);
+        return;
+      }
 
       const { data, error } = await supabase
         .from('tasks')
         .insert([{
           title: title.trim(),
+          description: description.trim() || null,
           task_code: taskCode,
           status: 'beklemede',
-          priority: 'normal',
-          assigned_to: 'SISTEM',
-          assigned_by: 'OPERATÖR',
+          priority,
+          assigned_to: finalAssignedTo,
+          assigned_by: operator.name || 'OPERATÖR',
           evidence_required: true,
           evidence_provided: false,
           retry_count: 0,
@@ -70,12 +100,22 @@ export default function TaskForm() {
 
       await logAudit({
         operation_type: 'CREATE',
-        action_description: `Yeni görev oluşturuldu: ${title} [${taskCode}]`,
+        action_description: `Yeni görev oluşturuldu: ${title} [${taskCode}] → ${priority.toUpperCase()} → ${finalAssignedTo}`,
         task_id: data?.[0]?.id ?? null,
-        metadata: { action_code: 'TASK_CREATED', title, task_code: taskCode }
+        metadata: {
+          action_code: 'TASK_CREATED',
+          title,
+          description: description.trim() || null,
+          task_code: taskCode,
+          priority,
+          assigned_to: finalAssignedTo,
+        }
       });
 
       setTitle('');
+      setDescription('');
+      setPriority('normal');
+      setAssignedTo('');
       await fetchTasksFromDB();
       toast.success(`Görev oluşturuldu: ${taskCode}`);
     } catch (err) {
@@ -90,22 +130,62 @@ export default function TaskForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className={`mb-8 flex gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+    <form onSubmit={handleSubmit} className="mb-8 space-y-3">
+      {/* Başlık */}
       <input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        className="border p-2 rounded w-full dark:bg-slate-800"
+        className="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
         placeholder={tr.placeholder}
         disabled={isSubmitting}
         dir={dir}
       />
-      <button
-        type="submit"
-        className="bg-blue-600 text-white px-6 py-2 rounded disabled:opacity-50"
+
+      {/* Açıklama */}
+      <textarea
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        className="w-full border border-slate-200 dark:border-slate-700 dark:bg-slate-800 p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none h-16"
+        placeholder={lang === 'ar' ? 'وصف المهمة (اختياري)...' : 'Görev açıklaması (opsiyonel)...'}
         disabled={isSubmitting}
-      >
-        {isSubmitting ? '...' : tr.addButton}
-      </button>
+        dir={dir}
+      />
+
+      {/* Alt satır: Öncelik + Atanan + Buton */}
+      <div className={`flex gap-2 items-end ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+        {/* Öncelik */}
+        <select
+          value={priority}
+          onChange={(e) => setPriority(e.target.value as TaskPriority)}
+          className="border border-slate-200 dark:border-slate-700 dark:bg-slate-800 p-2 rounded-lg text-xs outline-none"
+          disabled={isSubmitting}
+        >
+          {PRIORITY_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.emoji} {opt.label}
+            </option>
+          ))}
+        </select>
+
+        {/* Atanan kişi */}
+        <input
+          value={assignedTo}
+          onChange={(e) => setAssignedTo(e.target.value)}
+          className="flex-1 border border-slate-200 dark:border-slate-700 dark:bg-slate-800 p-2 rounded-lg text-xs outline-none"
+          placeholder={lang === 'ar' ? 'المسؤول...' : 'Atanan kişi...'}
+          disabled={isSubmitting}
+          dir={dir}
+        />
+
+        {/* Gönder */}
+        <button
+          type="submit"
+          className="bg-blue-600 text-white text-xs font-bold px-6 py-2.5 rounded-lg disabled:opacity-50 hover:bg-blue-700 transition-all uppercase tracking-wider whitespace-nowrap"
+          disabled={isSubmitting || !title.trim()}
+        >
+          {isSubmitting ? '...' : tr.addButton}
+        </button>
+      </div>
     </form>
   );
 }
