@@ -11,6 +11,10 @@
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { ERR, processError } from "./errorCore";
+// Database tipleri referans olarak kullanılır — doğrudan generic
+// olarak verilmez çünkü @supabase/supabase-js internal PostgREST
+// tipleri ile uyumsuzluk yaratıyor.
+// import type { Database } from "./database.types";
 
 // ============================================================
 // ÇEVRESEL DEĞİŞKEN OKUMA VE DOĞRULAMA

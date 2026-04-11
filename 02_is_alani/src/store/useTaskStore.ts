@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { devtools, subscribeWithSelector } from 'zustand/middleware';
 
 // ============================================================
 // TASK TİP TANIMLARI
@@ -55,24 +56,67 @@ export interface Task {
 }
 
 // ============================================================
-// ZUSTAND STORE
+// ZUSTAND STORE — Devtools + subscribeWithSelector
+// ============================================================
+// Devtools: Redux DevTools ile debug
+// subscribeWithSelector: Granüler selector bazlı subscribe
 // ============================================================
 interface TaskState {
   tasks: Task[];
   error: string | null;
+  lastSyncAt: string | null;
   setTasks: (tasks: Task[]) => void;
   setError: (error: string | null) => void;
   addTask: (task: Task) => void;
   updateTaskStatus: (id: string, status: TaskStatus) => void;
+  removeTask: (id: string) => void;
+  getTaskById: (id: string) => Task | undefined;
+  getTasksByStatus: (status: TaskStatus) => Task[];
+  getTasksByPriority: (priority: TaskPriority) => Task[];
 }
 
-export const useTaskStore = create<TaskState>((set) => ({
-  tasks: [],
-  error: null,
-  setTasks: (tasks) => set({ tasks, error: null }),
-  setError: (error) => set({ error }),
-  addTask: (task) => set((state) => ({ tasks: [...state.tasks, task] })),
-  updateTaskStatus: (id, status) => set((state) => ({
-    tasks: state.tasks.map((t) => t.id === id ? { ...t, status } : t),
-  })),
-}));
+export const useTaskStore = create<TaskState>()(
+  devtools(
+    subscribeWithSelector((set, get) => ({
+      tasks: [],
+      error: null,
+      lastSyncAt: null,
+
+      setTasks: (tasks) => set(
+        { tasks, error: null, lastSyncAt: new Date().toISOString() },
+        false,
+        'setTasks'
+      ),
+
+      setError: (error) => set({ error }, false, 'setError'),
+
+      addTask: (task) => set(
+        (state) => ({ tasks: [task, ...state.tasks] }),
+        false,
+        'addTask'
+      ),
+
+      updateTaskStatus: (id, status) => set(
+        (state) => ({
+          tasks: state.tasks.map((t) =>
+            t.id === id ? { ...t, status, updated_at: new Date().toISOString() } : t
+          ),
+        }),
+        false,
+        'updateTaskStatus'
+      ),
+
+      removeTask: (id) => set(
+        (state) => ({ tasks: state.tasks.filter((t) => t.id !== id) }),
+        false,
+        'removeTask'
+      ),
+
+      // ── SELECTÖRler ─────────────────────────────────────────
+      getTaskById: (id) => get().tasks.find((t) => t.id === id),
+      getTasksByStatus: (status) => get().tasks.filter((t) => t.status === status),
+      getTasksByPriority: (priority) => get().tasks.filter((t) => t.priority === priority),
+    })),
+    { name: 'STP-TaskStore', enabled: process.env.NODE_ENV !== 'production' }
+  )
+);
