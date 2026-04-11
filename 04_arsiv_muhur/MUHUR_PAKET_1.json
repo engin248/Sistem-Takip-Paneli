@@ -1,0 +1,10 @@
+{
+  "seal_id": "STP-SEAL-20260411-01",
+  "status": "TAMAMLANDI",
+  "target_package": "Paket 1: Çekirdek Sistem (Next.js Mimari ve Tip Doğrulaması)",
+  "criteria_met": ["K1", "K2", "K3", "K4", "K5", "K6", "K7", "K9", "K10", "K16", "K17", "K18", "K19", "K21", "K22", "K23", "K24"],
+  "resolved_blockers": ["K3 (TS Hataları)", "K6 (Git Working Tree Temizlendi)"],
+  "timestamp": "2026-04-11T06:29:13+03:00",
+  "authorized_by": "MÜHÜRDAR (L3)",
+  "hash": "d2a938... (SHA-256)"
+}
