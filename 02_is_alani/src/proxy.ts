@@ -1,11 +1,13 @@
 // ============================================================
-// NEXT.JS MIDDLEWARE — API KORUMA KATMANI
+// NEXT.JS 16+ PROXY — API KORUMA KATMANI
 // ============================================================
+// Next.js 16'dan itibaren middleware convention deprecated oldu.
+// Bu dosya proxy convention'ı olarak çalışır.
+//
 // Görevler:
-//   1. API route'larına rate limiting (in-memory)
+//   1. API route'larına rate limiting (Map + TTL)
 //   2. CSRF benzeri origin kontrolü
-//   3. Bot/spam koruması (User-Agent kontrolü)
-//   4. Güvenlik başlıkları ekleme
+//   3. Güvenlik başlıkları ekleme
 //
 // Kapsam: /api/* route'ları
 // Hata Kodu: ERR-STP001-001 (genel sistem)
@@ -13,9 +15,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
-// ─── RATE LIMITER (In-Memory) ───────────────────────────────
+// ─── RATE LIMITER (In-Memory Map + TTL) ─────────────────────
 // IP bazlı istek sayacı — sunucu yeniden başlatılınca sıfırlanır.
-// Üretimde Redis'e taşınabilir.
+// Üretimde Redis/Upstash'e taşınabilir.
+// Map TTL: Her istek sırasında süresi dolmuş kayıtlar temizlenir.
+// setInterval kullanılmaz — Edge runtime uyumlu.
 // ─────────────────────────────────────────────────────────────
 
 interface RateLimitEntry {
@@ -27,9 +31,18 @@ const rateLimitMap = new Map<string, RateLimitEntry>();
 
 const RATE_LIMIT_WINDOW_MS = 60_000; // 1 dakika
 const RATE_LIMIT_MAX_REQUESTS = 60;  // Dakikada 60 istek
+const CLEANUP_THRESHOLD = 500;       // 500+ kayıtta otomatik temizlik
 
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
+
+  // Lazy cleanup — Map çok büyürse süresi dolmuşları temizle
+  if (rateLimitMap.size > CLEANUP_THRESHOLD) {
+    for (const [key, entry] of rateLimitMap) {
+      if (now > entry.resetAt) rateLimitMap.delete(key);
+    }
+  }
+
   const entry = rateLimitMap.get(ip);
 
   if (!entry || now > entry.resetAt) {
@@ -38,23 +51,8 @@ function isRateLimited(ip: string): boolean {
   }
 
   entry.count++;
-  if (entry.count > RATE_LIMIT_MAX_REQUESTS) {
-    return true;
-  }
-
-  return false;
+  return entry.count > RATE_LIMIT_MAX_REQUESTS;
 }
-
-// ─── BELLEK TEMİZLİĞİ ──────────────────────────────────────
-// Her 5 dakikada süresi dolmuş kayıtları temizle
-setInterval(() => {
-  const now = Date.now();
-  for (const [ip, entry] of rateLimitMap.entries()) {
-    if (now > entry.resetAt) {
-      rateLimitMap.delete(ip);
-    }
-  }
-}, 300_000);
 
 // ─── İZİN VERİLEN ORİGİN'LER ───────────────────────────────
 const ALLOWED_ORIGINS = [
@@ -64,10 +62,10 @@ const ALLOWED_ORIGINS = [
 ].filter(Boolean) as string[];
 
 // ============================================================
-// MIDDLEWARE FONKSİYONU
+// PROXY FONKSİYONU — Next.js 16+ Convention
 // ============================================================
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Sadece /api/* route'larına uygulanır
@@ -128,6 +126,7 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-XSS-Protection', '1; mode=block');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   return response;
 }
 

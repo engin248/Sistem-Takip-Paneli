@@ -158,13 +158,13 @@ function extractErrorSource(): { file: string; func: string } {
     if (!stack) return fallback;
     // İlk 3 satırı atla (Error, extractErrorSource, processError)
     const lines = stack.split('\n').filter(l => l.includes('at '));
-    const callerLine = lines[2] || lines[1] || '';
+    const callerLine = lines[2] ?? lines[1] ?? '';
     // Fonksiyon adını çıkar
     const funcMatch = callerLine.match(/at\s+([\w.]+)\s*\(/);
-    const func = funcMatch ? funcMatch[1] : 'anonim';
+    const func = funcMatch?.[1] ?? 'anonim';
     // Dosya adını çıkar
     const fileMatch = callerLine.match(/\(?([^)]+\.[tj]sx?)/);
-    let file = fileMatch ? fileMatch[1] : 'bilinmiyor';
+    let file: string = fileMatch?.[1] ?? 'bilinmiyor';
     // Sadece dosya adını al (tam yol yerine)
     const lastSlash = Math.max(file.lastIndexOf('/'), file.lastIndexOf('\\'));
     if (lastSlash >= 0) file = file.substring(lastSlash + 1);

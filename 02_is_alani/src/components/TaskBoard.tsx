@@ -107,7 +107,7 @@ function KanbanCard({
   isDragging: boolean;
   dir: string;
 }) {
-  const priorityStyle = PRIORITY_STYLES[task.priority] || PRIORITY_STYLES.normal;
+  const priorityStyle = PRIORITY_STYLES[task.priority] ?? PRIORITY_STYLES['normal']!;
   const createdDate = new Date(task.created_at);
   const timeStr = createdDate.toLocaleTimeString(dir === 'rtl' ? 'ar-SA' : 'tr-TR', {
     hour: '2-digit', minute: '2-digit',
