@@ -67,14 +67,22 @@ async function analyzeErrorFrequency(windowHours: number): Promise<{
   const since = new Date(Date.now() - windowHours * 60 * 60 * 1000).toISOString();
 
   try {
+    // audit_logs ŞEMASI: log_id, task_id, action_code, details(JSONB), operator_id, timestamp
+    // error_code, error_severity, metadata → details JSONB içinde (auditService toDbRow adaptörü)
     const { data: logs, error } = await supabase
       .from('audit_logs')
-      .select('error_code, error_severity, created_at, metadata')
-      .not('error_code', 'is', null)
-      .gte('created_at', since)
-      .order('created_at', { ascending: true });
+      .select('action_code, details, timestamp')
+      .gte('timestamp', since)
+      .order('timestamp', { ascending: true });
 
     if (error || !logs) return { patterns, totalErrors: 0 };
+
+    // details JSONB içinden error_code alanı dolu olanları filtrele
+    const errorLogs = logs.filter(log => {
+      const details = (log.details || {}) as Record<string, unknown>;
+      return details.error_code != null;
+    });
+
 
     // error_code bazlı gruplama
     const codeMap = new Map<string, {
@@ -85,22 +93,23 @@ async function analyzeErrorFrequency(windowHours: number): Promise<{
       timestamps: number[];
     }>();
 
-    for (const log of logs) {
-      const code = log.error_code as string;
+    for (const log of errorLogs) {
+      const details = (log.details || {}) as Record<string, unknown>;
+      const code = String(details.error_code || 'UNKNOWN');
       const existing = codeMap.get(code);
-      const source = (log.metadata as Record<string, string>)?.kaynak || 'bilinmeyen';
-      const ts = new Date(log.created_at).getTime();
+      const source = String(details.kaynak || details.action_location || 'bilinmeyen');
+      const ts = new Date(log.timestamp as string).getTime();
 
       if (existing) {
         existing.count++;
-        existing.last = log.created_at;
+        existing.last = log.timestamp as string;
         existing.sources.add(source);
         existing.timestamps.push(ts);
       } else {
         codeMap.set(code, {
           count: 1,
-          first: log.created_at,
-          last: log.created_at,
+          first: log.timestamp as string,
+          last: log.timestamp as string,
           sources: new Set([source]),
           timestamps: [ts],
         });
@@ -138,7 +147,7 @@ async function analyzeErrorFrequency(windowHours: number): Promise<{
     // Frekansa göre sırala
     patterns.sort((a, b) => b.count - a.count);
 
-    return { patterns, totalErrors: logs.length };
+    return { patterns, totalErrors: errorLogs.length };
   } catch (err) {
     processError(ERR.SYSTEM_GENERAL, err, {
       kaynak: 'selfLearningEngine.ts',
