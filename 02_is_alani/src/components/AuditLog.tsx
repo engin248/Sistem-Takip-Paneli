@@ -40,31 +40,49 @@ export default function AuditLog() {
   }, [logs]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadLogs();
 
-    // Realtime dinleme — audit log değişikliklerini yakala
     let channel: ReturnType<typeof supabase.channel> | null = null;
-    try {
-      channel = supabase
-        .channel('audit_logs_realtime')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'audit_logs' }, () => {
-          loadLogs();
-        })
-        .subscribe((status) => {
-          // Kanal durumunu izle — bağlantı hatalarını yakala
-          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-            handleError(ERR.AUDIT_REALTIME, new Error(`Realtime kanal durumu: ${status}`), {
-              kaynak: 'AuditLog.subscribe',
-              islem: 'CHANNEL_STATUS',
-              durum: status
-            });
-          }
-        });
-    } catch (err) {
-      handleError(ERR.AUDIT_REALTIME, err, { kaynak: 'AuditLog.useEffect', islem: 'SUBSCRIBE' });
-    }
+    let reconnectTimer: NodeJS.Timeout;
+
+    const connectRealtime = (retryCount = 0) => {
+      try {
+        // Benzersiz isim vererek çakışmaları önle (Fast Refresh / Strict Mode)
+        const channelName = `audit_logs_${Math.random().toString(36).substring(7)}`;
+        channel = supabase
+          .channel(channelName)
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'audit_logs' }, () => {
+            loadLogs();
+          })
+          .subscribe((status) => {
+            if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+              handleError(ERR.AUDIT_REALTIME, new Error(`Realtime kanal durumu: ${status}`), {
+                kaynak: 'AuditLog.subscribe',
+                islem: 'CHANNEL_STATUS_RETRY',
+                durum: status,
+                deneme: retryCount
+              });
+              
+              // Exponential backoff ile yeniden bağlanmayı dene
+              if (retryCount < 5) {
+                const delay = Math.min(1000 * (2 ** retryCount), 15000);
+                reconnectTimer = setTimeout(() => {
+                  if (channel) supabase.removeChannel(channel);
+                  connectRealtime(retryCount + 1);
+                }, delay);
+              }
+            }
+          });
+      } catch (err) {
+        handleError(ERR.AUDIT_REALTIME, err, { kaynak: 'AuditLog.useEffect', islem: 'SUBSCRIBE' });
+      }
+    };
+
+    connectRealtime();
 
     return () => {
+      clearTimeout(reconnectTimer);
       try {
         if (channel) supabase.removeChannel(channel);
       } catch (err) {

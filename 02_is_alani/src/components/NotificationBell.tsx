@@ -25,6 +25,7 @@ export default function NotificationBell() {
   const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPermission(getNotificationPermission());
   }, []);
 

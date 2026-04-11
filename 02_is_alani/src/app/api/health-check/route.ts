@@ -54,7 +54,7 @@ export async function GET() {
     });
 
     // ── 2. MİZANET DB (KÖPRÜ) ─────────────────────────────
-    let mizanetInfo = {
+    const mizanetInfo = {
       dbConnected: false,
       dbLatencyMs: 0,
       siteReachable: false,
