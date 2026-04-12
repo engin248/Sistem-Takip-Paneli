@@ -65,6 +65,18 @@ export const ERR = {
   ALARM_CREATE:          'ERR-STP001-033',
   ALARM_UPDATE:          'ERR-STP001-034',
 
+  // ── OLLAMA / AI PROVIDER (040–042) ─────────────────────────
+  OLLAMA_CONNECTION:     'ERR-STP001-040',
+  OLLAMA_PARSE:          'ERR-STP001-041',
+  AI_PROVIDER_FALLBACK:  'ERR-STP001-042',
+
+  // ── AJAN REGİSTRY / KLONLAMA (045–049) ─────────────────────
+  AGENT_NOT_FOUND:       'ERR-STP001-045',
+  AGENT_REGISTER:        'ERR-STP001-046',
+  AGENT_UPDATE:          'ERR-STP001-047',
+  AGENT_CLONE:           'ERR-STP001-048',
+  AGENT_CAPACITY:        'ERR-STP001-049',
+
   // ── ACİL DURUM — TANIMLANAMAYAN ÇÖKME (999) ────────────────
   UNIDENTIFIED_COLLAPSE: 'ERR-STP001-999',
 } as const;
@@ -106,6 +118,14 @@ export const ERR_DESCRIPTIONS: Record<ErrorCode, string> = {
   'ERR-STP001-032': 'Sağlık kontrolü başarısız',
   'ERR-STP001-033': 'Alarm oluşturulamadı',
   'ERR-STP001-034': 'Alarm durumu güncellenemedi',
+  'ERR-STP001-040': 'Ollama yerel AI bağlantı hatası',
+  'ERR-STP001-041': 'Ollama yanıt parse hatası',
+  'ERR-STP001-042': 'AI provider fallback tetiklendi',
+  'ERR-STP001-045': 'Ajan bulunamadı',
+  'ERR-STP001-046': 'Ajan kaydı başarısız',
+  'ERR-STP001-047': 'Ajan güncelleme hatası',
+  'ERR-STP001-048': 'Ajan klonlama hatası',
+  'ERR-STP001-049': 'Kapasite boşluğu giderme başarısız',
   'ERR-STP001-999': 'TABLO ÇÖKMESI — TANIMLANAMAYAN HATA',
 };
 

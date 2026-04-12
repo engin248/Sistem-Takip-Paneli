@@ -2,17 +2,20 @@
 // AI MANAGER — GÖREV ANALİZ VE ÖNCELİK ATAMA MOTORU
 // ============================================================
 // Gelen görevleri analiz edip TaskPriority atar.
-// İki katmanlı çalışır:
-//   1. LOKAL (Kural tabanlı): Anahtar kelime + heuristik analiz
-//   2. AI (OpenAI GPT): Doğal dil işleme ile derin analiz
+// ÜÇ katmanlı çalışır:
+//   1. OLLAMA (Yerel AI): Maliyet SIFIR — öncelikli sağlayıcı
+//   2. OPENAI (Dış AI): Fallback — Ollama yoksa devreye girer
+//   3. LOKAL (Kural tabanlı): Her koşulda çalışır
 // Hata Kodları:
 //   ERR-STP001-014 → AI analiz başarısız
 //   ERR-STP001-015 → OpenAI API bağlantı hatası
+//   ERR-STP001-040 → Ollama bağlantı hatası
 // ============================================================
 
 import OpenAI from 'openai';
 import { ERR, processError } from '@/lib/errorCore';
 import { logAudit } from './auditService';
+import { aiComplete, getProviderStatus } from '@/lib/aiProvider';
 import type { TaskPriority } from '@/store/useTaskStore';
 
 // ─── OPENAI CLIENT ──────────────────────────────────────────
@@ -196,22 +199,15 @@ export function analyzeLocalPriority(taskTitle: string, taskDescription?: string
 }
 
 // ============================================================
-// 2. AI ANALİZ (OpenAI GPT)
+// 2. AI ANALİZ (Ollama → OpenAI → Lokal Fallback Zinciri)
 // ============================================================
-// Doğal dil işleme ile görev bağlamını anlar.
-// API key yoksa veya hata oluşursa lokal fallback devreye girer.
+// aiProvider soyutlama katmanını kullanır.
+// Öncelik: Ollama (yerel, ücretsiz) → OpenAI (dış) → Lokal.
 // ============================================================
 export async function analyzeWithAI(
   taskTitle: string,
   taskDescription?: string | null
 ): Promise<PriorityAnalysisResult> {
-  const client = getOpenAIClient();
-
-  // API key yoksa lokal analiz devralır
-  if (!client) {
-    return analyzeLocalPriority(taskTitle, taskDescription);
-  }
-
   const systemPrompt = `Sen bir görev önceliklendirme asistanısın. Verilen görev başlığı ve açıklamasını analiz edip öncelik seviyesi belirle.
 
 ÖNCELİK SEVİYELERİ:
@@ -230,41 +226,30 @@ CEVAP FORMATI (sadece JSON, başka bir şey yazma):
   const userMessage = `Görev Başlığı: ${taskTitle}${taskDescription ? `\nGörev Açıklaması: ${taskDescription}` : ''}`;
 
   try {
-    const startTime = Date.now();
-
-    const response = await client.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userMessage },
-      ],
+    // aiProvider fallback zinciri: Ollama → OpenAI → null
+    const response = await aiComplete({
+      systemPrompt,
+      userMessage,
       temperature: 0.2,
-      max_tokens: 200,
-      response_format: { type: 'json_object' },
+      maxTokens: 200,
+      jsonMode: true,
     });
 
-    const durationMs = Date.now() - startTime;
-    const content = response.choices?.[0]?.message?.content;
-
-    if (!content) {
-      processError(ERR.AI_ANALYSIS, new Error('OpenAI boş yanıt döndürdü'), {
-        kaynak: 'aiManager.ts',
-        islem: 'PARSE_RESPONSE',
-        model: 'gpt-4o-mini',
-        duration_ms: durationMs,
-      });
+    // Tüm AI sağlayıcılar devre dışı → lokal devralır
+    if (!response) {
       return analyzeLocalPriority(taskTitle, taskDescription);
     }
 
     // JSON parse
     let parsed: { priority?: string; reasoning?: string; confidence?: number };
     try {
-      parsed = JSON.parse(content);
+      parsed = JSON.parse(response.content);
     } catch (parseErr) {
       processError(ERR.AI_ANALYSIS, parseErr, {
         kaynak: 'aiManager.ts',
         islem: 'JSON_PARSE',
-        raw_content: content.substring(0, 200),
+        provider: response.provider,
+        raw_content: response.content.substring(0, 200),
       });
       return analyzeLocalPriority(taskTitle, taskDescription);
     }
@@ -282,15 +267,17 @@ CEVAP FORMATI (sadece JSON, başka bir şey yazma):
     // Audit log — AI analiz kaydı
     await logAudit({
       operation_type: 'EXECUTE',
-      action_description: `AI görev analizi tamamlandı: "${taskTitle}" → ${aiPriority.toUpperCase()}`,
+      action_description: `AI görev analizi tamamlandı: "${taskTitle}" → ${aiPriority.toUpperCase()} [${response.provider}]`,
       metadata: {
         action_code: 'AI_PRIORITY_ANALYSIS',
-        model: 'gpt-4o-mini',
+        provider: response.provider,
+        model: response.model,
         priority: aiPriority,
         confidence: aiConfidence,
         reasoning: parsed.reasoning || '',
-        duration_ms: durationMs,
-        tokens_used: response.usage?.total_tokens || 0,
+        duration_ms: response.durationMs,
+        tokens_used: response.tokensUsed || 0,
+        cost: response.provider === 'ollama' ? 0 : undefined,
       },
     }).catch(() => {
       // Audit yazma hatası — processError zaten auditService içinde loglanıyor
@@ -298,7 +285,7 @@ CEVAP FORMATI (sadece JSON, başka bir şey yazma):
 
     return {
       priority: aiPriority,
-      reasoning: parsed.reasoning || `AI analiz: ${aiPriority} öncelik atandı (güven: ${aiConfidence})`,
+      reasoning: parsed.reasoning || `${response.provider} analiz: ${aiPriority} öncelik atandı (güven: ${aiConfidence})`,
       source: 'ai',
       confidence: aiConfidence,
       detectedKeywords: [],
@@ -306,8 +293,7 @@ CEVAP FORMATI (sadece JSON, başka bir şey yazma):
   } catch (error) {
     processError(ERR.AI_ANALYSIS, error, {
       kaynak: 'aiManager.ts',
-      islem: 'CHAT_COMPLETION',
-      model: 'gpt-4o-mini',
+      islem: 'AI_COMPLETE',
     });
 
     // Fallback: Lokal analiz devralır
@@ -367,9 +353,16 @@ export async function analyzeTaskPriority(
 // 4. YARDIMCI FONKSİYONLAR
 // ============================================================
 
-/** OpenAI API key'in tanımlı olup olmadığını kontrol eder */
+/** AI sağlayıcının (Ollama veya OpenAI) mevcut olup olmadığını kontrol eder */
 export function isAIAvailable(): boolean {
-  return !!(apiKey && apiKey !== '' && !apiKey.includes('your-api-key'));
+  // Ollama veya OpenAI — biri bile varsa AI mevcut
+  return !!(apiKey && apiKey !== '' && !apiKey.includes('your-api-key')) ||
+    !!(process.env.OLLAMA_BASE_URL || process.env.OLLAMA_MODEL);
+}
+
+/** Aktif AI sağlayıcı durumunu döndürür */
+export async function getActiveAIProvider() {
+  return getProviderStatus();
 }
 
 /** Öncelik seviyesini Türkçe etiket olarak döndürür */

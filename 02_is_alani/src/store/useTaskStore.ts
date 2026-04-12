@@ -51,6 +51,7 @@ export interface Task {
   error_message?: string | null;          // TEXT
   started_at?: string | null;             // TIMESTAMPTZ
   completed_at?: string | null;           // TIMESTAMPTZ
+  due_date?: string | null;               // TIMESTAMPTZ — İş emri son tarihi
   parent_task_id?: string | null;         // UUID REFERENCES tasks(id)
   metadata?: Record<string, unknown>;     // JSONB DEFAULT '{}'
 }

@@ -41,7 +41,7 @@ export interface PermissionResult {
 export function checkWritePermission(
   taskId: string,
   assignedTo: string,
-  operation: string
+  _operation: string // eslint — parametrenin imzada kalması gerekli
 ): PermissionResult {
   const { operator, canWrite } = useOperatorStore.getState();
   const isGranted = canWrite(assignedTo);

@@ -49,6 +49,10 @@ export const CreateTaskSchema = z.object({
     .max(100, 'Atanan kişi adı en fazla 100 karakter')
     .trim()
     .default('SISTEM'),
+  due_date: z
+    .string()
+    .nullable()
+    .optional(),
 });
 
 // ─── GÖREV DURUM GÜNCELLEME ŞEMASI ──────────────────────────

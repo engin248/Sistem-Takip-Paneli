@@ -30,6 +30,7 @@ export interface Database {
           parent_task_id: string | null;
           metadata: Record<string, unknown>;
           is_archived: boolean;
+          due_date: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -53,6 +54,7 @@ export interface Database {
           parent_task_id?: string | null;
           metadata?: Record<string, unknown>;
           is_archived?: boolean;
+          due_date?: string | null;
           created_at?: string;
           updated_at?: string;
         };

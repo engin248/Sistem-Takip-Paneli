@@ -18,3 +18,12 @@ yarn-debug.log*
 
 # Vercel
 .vercel
+
+# ============================================================
+# ⛔ MIDDLEWARE YASAĞI — Next.js 16+ Proxy Convention
+# middleware.ts + proxy.ts birlikte YASAKLANDI.
+# Tüm güvenlik mantığı proxy.ts'te toplanmalıdır.
+# Bu dosyalar git'e GİREMEZ.
+# ============================================================
+**/middleware.ts
+**/middleware.js

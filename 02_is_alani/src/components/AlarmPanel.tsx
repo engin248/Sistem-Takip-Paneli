@@ -52,9 +52,21 @@ export default function AlarmPanel() {
   }, []);
 
   useEffect(() => {
-    loadAlarms();
+    let cancelled = false;
+    // İlk yüklemede inline fetch — setState-in-effect ihlalini önler
+    async function initialFetch() {
+      try {
+        const res = await fetch("/api/alarms");
+        const data = await res.json();
+        if (!cancelled && data.success) {
+          setAlarms(data.alarms || []);
+          setStats(data.stats || { toplam: 0, acik: 0, emergency: 0, critical: 0, warning: 0 });
+        }
+      } catch { /* sessiz — bağlantı yoksa UI boş kalır */ }
+    }
+    initialFetch();
     const interval = setInterval(loadAlarms, 30_000); // 30 saniyede bir
-    return () => clearInterval(interval);
+    return () => { cancelled = true; clearInterval(interval); };
   }, [loadAlarms]);
 
   function getSeverityStyle(seviye: string) {

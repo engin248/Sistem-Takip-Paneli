@@ -155,6 +155,20 @@ function KanbanCard({
         <span className="text-[9px] text-slate-400 dark:text-slate-500 ms-auto">
           {dateStr} {timeStr}
         </span>
+        {/* Son tarih badge */}
+        {task.due_date && (() => {
+          const remaining = Math.ceil((new Date(task.due_date).getTime() - Date.now()) / 86400000);
+          const color = remaining < 0
+            ? 'text-red-400 bg-red-900/30 border-red-500/30'
+            : remaining <= 1
+              ? 'text-orange-400 bg-orange-900/30 border-orange-500/30'
+              : 'text-emerald-400 bg-emerald-900/30 border-emerald-500/30';
+          return (
+            <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded border ${color}`}>
+              {remaining < 0 ? `⏰ ${Math.abs(remaining)}g GEÇTİ` : `📅 ${remaining}g`}
+            </span>
+          );
+        })()}
       </div>
 
       {/* Sürükle göstergesi */}

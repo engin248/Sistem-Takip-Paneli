@@ -13,6 +13,7 @@
 
 import OpenAI from 'openai';
 import { ERR, processError } from '@/lib/errorCore';
+import { aiComplete } from '@/lib/aiProvider';
 
 // ─── TİP TANIMLARI ──────────────────────────────────────────
 
@@ -262,33 +263,55 @@ export async function runBoardVoting(request: BoardVotingRequest): Promise<Board
   const { title, description, category } = request;
   const agents: AgentRole[] = ['strategic', 'technical', 'security'];
 
-  // OpenAI client kontrolü
-  const apiKey = process.env.OPENAI_API_KEY ?? '';
-  const hasAI = !!(apiKey && apiKey !== '' && !apiKey.includes('your-api-key'));
-
   let votes: AgentVote[];
   let source: 'ai' | 'local';
 
-  if (hasAI) {
-    // AI oylama — 3 ajan paralel
-    try {
-      const client = new OpenAI({ apiKey });
-      const votePromises = agents.map(agent =>
-        aiVote(client, agent, title, description, category)
-      );
-      votes = await Promise.all(votePromises);
-      source = 'ai';
-    } catch (error) {
-      processError(ERR.BOARD_CONSENSUS, error, {
-        kaynak: 'consensusEngine.ts',
-        islem: 'PARALLEL_VOTE',
+  // Önce aiProvider (Ollama → OpenAI) ile dene
+  try {
+    const votePromises = agents.map(async (agent) => {
+      const userMessage = `KARAR BAŞLIĞI: ${title}\nKATEGORİ: ${category}\nAÇIKLAMA: ${description || 'Açıklama belirtilmedi.'}`;
+
+      const response = await aiComplete({
+        systemPrompt: AGENT_PROMPTS[agent],
+        userMessage,
+        temperature: 0.3,
+        maxTokens: 200,
+        jsonMode: true,
       });
-      // Fallback: Lokal oylama
-      votes = agents.map(agent => localVote(agent, title, description, category));
-      source = 'local';
-    }
-  } else {
-    // Lokal oylama — AI mevcut değil
+
+      if (!response) {
+        // AI yok → lokal oylama
+        return localVote(agent, title, description, category);
+      }
+
+      try {
+        const parsed = JSON.parse(response.content) as { vote?: string; reasoning?: string; confidence?: number };
+        const vote: VoteResult = parsed.vote === 'RED' ? 'RED' : 'ONAY';
+        const confidence = typeof parsed.confidence === 'number'
+          ? Math.max(0, Math.min(1, parsed.confidence))
+          : 0.7;
+
+        return {
+          agent,
+          vote,
+          reasoning: parsed.reasoning || `${agent} ajanı (${response.provider}) ${vote} oyu verdi.`,
+          confidence,
+          evaluatedAt: new Date().toISOString(),
+        } as AgentVote;
+      } catch {
+        return localVote(agent, title, description, category);
+      }
+    });
+
+    votes = await Promise.all(votePromises);
+    // En az bir ajan AI kullandıysa source = 'ai'
+    source = votes.some(v => !v.reasoning.includes('Lokal analiz')) ? 'ai' : 'local';
+  } catch (error) {
+    processError(ERR.BOARD_CONSENSUS, error, {
+      kaynak: 'consensusEngine.ts',
+      islem: 'AI_PROVIDER_VOTE',
+    });
+    // Fallback: Lokal oylama
     votes = agents.map(agent => localVote(agent, title, description, category));
     source = 'local';
   }

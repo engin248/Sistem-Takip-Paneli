@@ -1,19 +1,40 @@
 // ============================================================
-// NEXT.JS 16+ PROXY — API KORUMA KATMANI
+// NEXT.JS 16+ PROXY — BİRLEŞİK GÜVENLİK KATMANI
 // ============================================================
-// Next.js 16'dan itibaren middleware convention deprecated oldu.
-// Bu dosya proxy convention'ı olarak çalışır.
+// Next.js 16'dan itibaren middleware convention KALDIRILDI.
+// Bu dosya TEK güvenlik katmanı olarak çalışır.
+//
+// ⚠️ KRİTİK KURAL:
+//   middleware.ts DOSYASI OLUŞTURULAMAZ!
+//   Next.js 16+ middleware.ts + proxy.ts birlikte YASAKLADI.
+//   Tüm güvenlik mantığı BU DOSYADA toplanmalıdır.
+//   Bkz: https://nextjs.org/docs/messages/middleware-to-proxy
 //
 // Görevler:
-//   1. API route'larına rate limiting (Map + TTL)
-//   2. CSRF benzeri origin kontrolü
-//   3. Güvenlik başlıkları ekleme
+//   1. MUHAFIZ — Localhost guard (dev modda dış ağ erişimini engeller)
+//   2. API rate limiting (Map + TTL)
+//   3. CSRF benzeri origin kontrolü
+//   4. Güvenlik başlıkları ekleme
 //
-// Kapsam: /api/* route'ları
-// Hata Kodu: ERR-STP001-001 (genel sistem)
+// Hata Kodları:
+//   ERR-STP001-MUHAFIZ-001 — Dış ağ erişim engeli
+//   ERR-STP001-001         — Genel sistem hatası
 // ============================================================
 
 import { NextRequest, NextResponse } from 'next/server';
+
+// ─── MUHAFIZ: Localhost Guard ────────────────────────────────
+// Dev modda sadece localhost (127.0.0.1) kaynaklı isteklere
+// izin verir. Dış ağ isteklerini 403 ile reddeder.
+// Production'da Vercel platformu kendi güvenliğini sağlar.
+// ─────────────────────────────────────────────────────────────
+
+const ALLOWED_HOSTS = new Set([
+  'localhost',
+  '127.0.0.1',
+  '::1',
+  '[::1]',
+]);
 
 // ─── RATE LIMITER (In-Memory Map + TTL) ─────────────────────
 // IP bazlı istek sayacı — sunucu yeniden başlatılınca sıfırlanır.
@@ -68,12 +89,48 @@ const ALLOWED_ORIGINS = [
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Sadece /api/* route'larına uygulanır
-  if (!pathname.startsWith('/api/')) {
-    return NextResponse.next();
+  // ── 0. MUHAFIZ: LOCALHOST GUARD (Dev Only) ─────────────────
+  // Production'da devre dışı — Vercel platformu korur
+  if (process.env.NODE_ENV !== 'production') {
+    const host = request.headers.get('host')?.split(':')[0] ?? '';
+    const forwardedFor = request.headers.get('x-forwarded-for');
+
+    if (!ALLOWED_HOSTS.has(host)) {
+      console.error(
+        `[ERR-STP001-MUHAFIZ-001] 🛡️ DIŞ AĞ ERİŞİMİ ENGELLENDİ!\n` +
+        `  Host: ${host}\n` +
+        `  X-Forwarded-For: ${forwardedFor ?? 'yok'}\n` +
+        `  URL: ${pathname}\n` +
+        `  Method: ${request.method}\n` +
+        `  ⚠️ GÜVENLİ MOD AKTİF — İstek reddedildi.`
+      );
+
+      return new NextResponse(
+        JSON.stringify({
+          hata: 'Erişim engellendi. Bu sistem yalnızca localhost üzerinden çalışır.',
+          hata_kodu: 'ERR-STP001-MUHAFIZ-001',
+          mod: 'GÜVENLİ MOD',
+          timestamp: new Date().toISOString(),
+        }),
+        {
+          status: 403,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Muhafiz-Status': 'BLOCKED',
+          },
+        }
+      );
+    }
   }
 
-  // ── 1. RATE LIMITING ──────────────────────────────────────
+  // Statik dosyalar için güvenlik başlığı ekleyip geç
+  if (!pathname.startsWith('/api/')) {
+    const response = NextResponse.next();
+    response.headers.set('X-Muhafiz-Status', 'PASSED');
+    return response;
+  }
+
+  // ── 1. RATE LIMITING (Sadece /api/* ) ──────────────────────
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
     || request.headers.get('x-real-ip')
     || 'unknown';
@@ -127,10 +184,16 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-XSS-Protection', '1; mode=block');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set('X-Muhafiz-Status', 'PASSED');
   return response;
 }
 
-// ─── MATCHER: Sadece API route'ları ─────────────────────────
+// ─── MATCHER: Tüm route'lar (statik dosyalar hariç) ────────
+// ⚠️ middleware.ts'den taşınan geniş matcher:
+//   Hem sayfa hem API route'larını kapsar
+//   Statik dosyalar (_next/static, _next/image, favicon.ico) hariç
 export const config = {
-  matcher: '/api/:path*',
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico).*)',
+  ],
 };

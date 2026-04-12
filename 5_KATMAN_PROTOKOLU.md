@@ -1,7 +1,6 @@
 # STP — 5 KATMANLI İŞLEM PROTOKOLÜ
 # Versiyon: 1.0 | Tarih: 10 Nisan 2026
-# Kurucu: Engin | Doktrin: THE ORDER / NİZAM
-
+# Kurucu: Engin | Doktrin: SİSTEN TAKİP PANELİ/MİZANET
 ---
 
 ## HER İŞLEM EN AZ 5 KATMANDAN GEÇECEKTİR
