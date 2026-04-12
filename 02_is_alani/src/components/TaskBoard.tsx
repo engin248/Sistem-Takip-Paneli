@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useMemo } from 'react';
 import { useTaskStore, type Task, type TaskStatus } from '@/store/useTaskStore';
 import { updateStatus } from '@/services/taskService';
 import { useLanguageStore } from '@/store/useLanguageStore';
@@ -334,6 +334,66 @@ export default function TaskBoard() {
         <span className="text-[9px] font-bold bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-full">
           {totalKanbanTasks}
         </span>
+      </div>
+
+      {/* ── FİLTRE PANELİ ────────────────────────────────────── */}
+      <div className={`flex flex-wrap gap-2 mb-4 items-center ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+        {/* Arama */}
+        <div className="relative flex-1 min-w-[160px]">
+          <input
+            id="task-search-input"
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="🔍 Görev ara... (başlık, açıklama, kod)"
+            className="w-full bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 outline-none focus:ring-1 focus:ring-cyan-500/50 transition-all"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 text-xs"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
+        {/* Öncelik filtresi */}
+        <select
+          id="task-filter-priority"
+          value={filterPriority}
+          onChange={(e) => setFilterPriority(e.target.value)}
+          className="bg-slate-800/50 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-200 outline-none focus:ring-1 focus:ring-cyan-500/50"
+        >
+          <option value="all">Tüm Öncelik</option>
+          <option value="kritik">🔴 Kritik</option>
+          <option value="yuksek">🟠 Yüksek</option>
+          <option value="normal">🟡 Normal</option>
+          <option value="dusuk">🟢 Düşük</option>
+        </select>
+
+        {/* Ajan filtresi */}
+        <select
+          id="task-filter-agent"
+          value={filterAgent}
+          onChange={(e) => setFilterAgent(e.target.value)}
+          className="bg-slate-800/50 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-200 outline-none focus:ring-1 focus:ring-cyan-500/50"
+        >
+          <option value="all">Tüm Ajanlar</option>
+          {uniqueAgents.map(a => (
+            <option key={a} value={a}>{a}</option>
+          ))}
+        </select>
+
+        {/* Filtre temizle butonu */}
+        {isFiltered && (
+          <button
+            onClick={() => { setSearchQuery(''); setFilterPriority('all'); setFilterAgent('all'); }}
+            className="text-[9px] font-bold px-2 py-1.5 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all uppercase tracking-wider"
+          >
+            ✕ Temizle
+          </button>
+        )}
       </div>
 
       {/* ── KANBAN GRİD — 4 Sütun ────────────────────────── */}

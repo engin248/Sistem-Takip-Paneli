@@ -52,6 +52,42 @@ export async function GET(request: NextRequest) {
 
   try {
     switch (action) {
+      // ── GÖREV LİSTESİ (DB'DEN) ──────────────────────────────
+      // ?action=list
+      // ?action=list&priority=kritik
+      // ?action=list&status=beklemede
+      // ?action=list&limit=10
+      case 'list': {
+        const limitParam = url.searchParams.get('limit');
+        const priorityParam = url.searchParams.get('priority');
+        const statusParam = url.searchParams.get('status');
+        const limit = limitParam ? Math.min(parseInt(limitParam, 10) || 50, 100) : 50;
+
+        let query = supabase
+          .from('tasks')
+          .select('id, task_code, title, description, status, priority, assigned_to, assigned_by, due_date, created_at, updated_at')
+          .eq('is_archived', false)
+          .order('created_at', { ascending: false })
+          .limit(limit);
+
+        if (priorityParam) query = query.eq('priority', priorityParam);
+        if (statusParam) query = query.eq('status', statusParam);
+
+        const { data, error } = await query;
+
+        if (error) {
+          processError(ERR.TASK_FETCH, error, { kaynak: 'api/tasks/route.ts', islem: 'LIST' });
+          return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        }
+
+        return NextResponse.json({
+          success: true,
+          data: data ?? [],
+          count: data?.length ?? 0,
+          timestamp: new Date().toISOString(),
+        });
+      }
+
       // ── AJAN LİSTESİ ────────────────────────────────────────
       case 'agents': {
         const allAgents = agentRegistry.getAll();
@@ -147,7 +183,7 @@ export async function GET(request: NextRequest) {
       default:
         return NextResponse.json({
           success: false,
-          error: 'Geçerli action parametresi gerekli: agents | suggest | auto-assign',
+          error: 'Geçerli action parametresi gerekli: list | agents | suggest | auto-assign',
         }, { status: 400 });
     }
   } catch (error) {
@@ -459,6 +495,98 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({
       success: false,
       error: error instanceof Error ? error.message : 'Görev düzenlenirken beklenmeyen hata',
+      timestamp: new Date().toISOString(),
+    }, { status: 500 });
+  }
+}
+
+// ============================================================
+// DELETE: Görev silme
+// ============================================================
+// Request Body:
+//   task_id → UUID (zorunlu)
+//
+// Response:
+//   success, deleted_id, audit
+// ============================================================
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const body = await request.json();
+
+    const taskId = body.task_id;
+    if (!taskId || typeof taskId !== 'string') {
+      return NextResponse.json({
+        success: false,
+        error: 'task_id zorunlu alandır (UUID)',
+      }, { status: 400 });
+    }
+
+    // ── 1. Görev varlığını doğrula ────────────────────────
+    const { data: existing, error: fetchErr } = await supabase
+      .from('tasks')
+      .select('id, title, task_code')
+      .eq('id', taskId)
+      .single();
+
+    if (fetchErr || !existing) {
+      return NextResponse.json({
+        success: false,
+        error: `Görev bulunamadı: ${taskId}`,
+      }, { status: 404 });
+    }
+
+    // ── 2. Sil ──────────────────────────────────────────────
+    const { error } = await supabase
+      .from('tasks')
+      .delete()
+      .eq('id', taskId);
+
+    if (error) {
+      processError(ERR.TASK_DELETE, error, {
+        kaynak: 'api/tasks/route.ts',
+        islem: 'DELETE',
+        task_id: taskId,
+      });
+
+      return NextResponse.json({
+        success: false,
+        error: `Görev silinemedi: ${error.message}`,
+      }, { status: 500 });
+    }
+
+    // ── 3. Audit log ────────────────────────────────────────
+    try {
+      await logAudit({
+        operation_type: 'DELETE',
+        action_description: `GÖREV SİLİNDİ: "${existing.title}" [${existing.task_code ?? taskId.slice(0, 8)}]`,
+        task_id: taskId,
+        metadata: {
+          action_code: 'TASK_DELETED_VIA_API',
+          title: existing.title,
+          task_code: existing.task_code,
+          source: 'KARARGAH_PANELI',
+        },
+      });
+    } catch {
+      // non-blocking
+    }
+
+    return NextResponse.json({
+      success: true,
+      deleted_id: taskId,
+      timestamp: new Date().toISOString(),
+    });
+
+  } catch (error) {
+    processError(ERR.TASK_DELETE, error, {
+      kaynak: 'api/tasks/route.ts',
+      islem: 'DELETE',
+    });
+
+    return NextResponse.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Görev silinirken beklenmeyen hata',
       timestamp: new Date().toISOString(),
     }, { status: 500 });
   }
