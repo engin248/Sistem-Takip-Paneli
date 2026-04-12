@@ -127,6 +127,64 @@ export const translations = {
     kanbanSealed: 'MÜHÜRLENDİ',
     kanbanEmpty: 'Bu sütunda görev yok.',
     kanbanDropHere: 'Buraya bırak',
+
+    // ── Sistem Sağlık Paneli (Health Dashboard) ─────────────────
+    healthTitle: 'SİSTEM SAĞLIĞI',
+    healthSubtitle: 'Canlı bağlantı durumu',
+    healthChecking: 'KONTROL EDİLİYOR...',
+    healthCheckNow: 'KONTROL ET',
+    healthHealthy: 'SAĞLIKLI',
+    healthDegraded: 'SORUNLU',
+    healthDown: 'ÇEVRIMDIŞI',
+    healthUnknown: 'BİLİNMİYOR',
+    healthLatency: 'Gecikme',
+    healthLastCheck: 'Son kontrol',
+
+    // ── L2 Validator (Bağımsız Denetim) ─────────────────────────
+    l2Title: 'OTONOM DENETİM',
+    l2Subtitle: 'L2 Bağımsız Doğrulama Ajanı',
+    l2RunValidation: 'DENETİM ÇALIŞTIR',
+    l2Running: 'DENETİM YAPILIYOR...',
+    l2StatusPass: 'GEÇTİ',
+    l2StatusFail: 'BAŞARISIZ',
+    l2StatusWarning: 'UYARI',
+    l2Errors: 'Hata',
+    l2Warnings: 'Uyarı',
+    l2Info: 'Bilgi',
+    l2Duration: 'Süre',
+    l2NoFindings: 'Bulgu bulunamadı — sistem sağlıklı.',
+
+    // ── Self-Learning (G-8 Pattern Motoru) ───────────────────────
+    slTitle: 'ÖĞRENME MOTORU',
+    slSubtitle: 'G-8 Hata Pattern Analizi',
+    slRunAnalysis: 'ANALİZ BAŞLAT',
+    slRunning: 'ANALİZ EDİLİYOR...',
+    slPatterns: 'Pattern',
+    slAnomalies: 'Anomali',
+    slRecommendations: 'Öneriler',
+    slTotalErrors: 'Analiz Edilen Hata',
+    slNoPatterns: 'Pattern tespit edilmedi — sistem temiz.',
+    slTrendUp: 'ARTIŞ',
+    slTrendStable: 'SABİT',
+    slTrendDown: 'AZALIŞ',
+
+    // ── Alarm Merkezi ─────────────────────────────────────────────
+    alarmTitle: 'ALARM MERKEZİ',
+    alarmSubtitle: 'Aktif uyarılar ve eskalasyonlar',
+    alarmNoActive: 'Aktif alarm bulunmuyor.',
+    alarmRepeat: 'tekrar',
+    alarmSeverity: 'Seviye',
+    alarmModule: 'Modül',
+    alarmResolve: 'ÇÖZÜLDÜ',
+
+    // ── Telegram Gönderici ────────────────────────────────────────
+    tgSendTitle: 'TELEGRAM BİLDİRİMİ',
+    tgSendPlaceholder: 'Mesajınızı yazın...',
+    tgSendButton: 'GÖNDER',
+    tgSending: 'GÖNDERİLİYOR...',
+    tgSentSuccess: 'Telegram mesajı gönderildi.',
+    tgSentError: 'Mesaj gönderilemedi.',
+    tgNotAvailable: 'Telegram yapılandırılmamış.',
   },
 
   ar: {
@@ -249,6 +307,64 @@ export const translations = {
     kanbanSealed: 'مختوم',
     kanbanEmpty: 'لا توجد مهام في هذا العمود.',
     kanbanDropHere: 'أسقط هنا',
+
+    // ── Sistem Sağlık Paneli (Health Dashboard) ─────────────────
+    healthTitle: 'صحة النظام',
+    healthSubtitle: 'حالة الاتصال المباشر',
+    healthChecking: 'جاري الفحص...',
+    healthCheckNow: 'فحص الآن',
+    healthHealthy: 'سليم',
+    healthDegraded: 'متدهور',
+    healthDown: 'غير متصل',
+    healthUnknown: 'غير معروف',
+    healthLatency: 'التأخير',
+    healthLastCheck: 'آخر فحص',
+
+    // ── L2 Validator (Bağımsız Denetim) ─────────────────────────
+    l2Title: 'التدقيق المستقل',
+    l2Subtitle: 'وكيل التحقق المستقل L2',
+    l2RunValidation: 'بدء التدقيق',
+    l2Running: 'جاري التدقيق...',
+    l2StatusPass: 'نجح',
+    l2StatusFail: 'فشل',
+    l2StatusWarning: 'تحذير',
+    l2Errors: 'أخطاء',
+    l2Warnings: 'تحذيرات',
+    l2Info: 'معلومات',
+    l2Duration: 'المدة',
+    l2NoFindings: 'لم يتم العثور على مشاكل — النظام سليم.',
+
+    // ── Self-Learning (G-8 Pattern Motoru) ───────────────────────
+    slTitle: 'محرك التعلم',
+    slSubtitle: 'تحليل أنماط الأخطاء G-8',
+    slRunAnalysis: 'بدء التحليل',
+    slRunning: 'جاري التحليل...',
+    slPatterns: 'أنماط',
+    slAnomalies: 'شذوذ',
+    slRecommendations: 'توصيات',
+    slTotalErrors: 'الأخطاء المحللة',
+    slNoPatterns: 'لم يتم اكتشاف أنماط — النظام نظيف.',
+    slTrendUp: 'ارتفاع',
+    slTrendStable: 'مستقر',
+    slTrendDown: 'انخفاض',
+
+    // ── Alarm Merkezi ─────────────────────────────────────────────
+    alarmTitle: 'مركز الإنذار',
+    alarmSubtitle: 'التنبيهات النشطة والتصعيدات',
+    alarmNoActive: 'لا توجد إنذارات نشطة.',
+    alarmRepeat: 'تكرار',
+    alarmSeverity: 'المستوى',
+    alarmModule: 'الوحدة',
+    alarmResolve: 'تم الحل',
+
+    // ── Telegram Gönderici ────────────────────────────────────────
+    tgSendTitle: 'إشعار تيليجرام',
+    tgSendPlaceholder: 'اكتب رسالتك...',
+    tgSendButton: 'إرسال',
+    tgSending: 'جاري الإرسال...',
+    tgSentSuccess: 'تم إرسال رسالة تيليجرام.',
+    tgSentError: 'فشل إرسال الرسالة.',
+    tgNotAvailable: 'تيليجرام غير مُهيأ.',
   },
 } as const;
 

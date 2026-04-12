@@ -13,6 +13,11 @@ import TaskBoard from '@/components/TaskBoard';
 import Stats from '@/components/Stats';
 import AuditLog from '@/components/AuditLog';
 import BoardPanel from '@/components/BoardPanel';
+import HealthDashboard from '@/components/HealthDashboard';
+import L2Panel from '@/components/L2Panel';
+import SelfLearningPanel from '@/components/SelfLearningPanel';
+import AlarmPanel from '@/components/AlarmPanel';
+import TelegramSender from '@/components/TelegramSender';
 import { exportSystemData } from '@/services/exportService';
 import { toast } from 'sonner';
 
@@ -96,9 +101,11 @@ export default function Dashboard() {
                 {isExporting ? tr.sealing : tr.sealSystem}
               </button>
             )}
-            <div className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">{tr.systemOnline}</div>
           </div>
         </div>
+
+        {/* ── ÜST: SİSTEM SAĞLIK — Her zaman görünür ──────── */}
+        <HealthDashboard />
 
         {/* ── ÜST: STATS — Her zaman görünür ──────────────────── */}
         <Stats />
@@ -143,6 +150,18 @@ export default function Dashboard() {
 
             {/* ── ÖN: YÖNETİM KURULU — Konsensüs Mekanizması ──── */}
             <BoardPanel />
+
+            {/* ── ÖN: OTONOM DENETİM — L2 Validator ────────────── */}
+            <L2Panel />
+
+            {/* ── ÖN: ÖĞRENME MOTORU — G-8 Pattern Analizi ─────── */}
+            <SelfLearningPanel />
+
+            {/* ── ÖN: ALARM MERKEZİ ────────────────────────────── */}
+            <AlarmPanel />
+
+            {/* ── ÖN: TELEGRAM GÖNDERİCİ ───────────────────────── */}
+            <TelegramSender />
           </>
         )}
       </main>
