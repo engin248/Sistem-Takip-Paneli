@@ -9,12 +9,14 @@ import { toast } from 'sonner';
 import { useLanguageStore } from '@/store/useLanguageStore';
 import { useOperatorStore } from '@/store/useOperatorStore';
 import { t } from '@/lib/i18n';
+import TaskDetailModal from './TaskDetailModal';
 
 export default function TaskCard({ task }: { task: Task }) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [auditorApproved, setAuditorApproved] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
   const { lang, dir } = useLanguageStore();
   const { operator } = useOperatorStore();
   const tr = t(lang);
@@ -147,7 +149,11 @@ export default function TaskCard({ task }: { task: Task }) {
 
       {/* ── GÖREV BİLGİLERİ ───────────────────────────────────── */}
       <div className="flex flex-col gap-1">
-        <h3 className="font-bold text-slate-800 dark:text-slate-100">{task.title}</h3>
+        <h3
+          className="font-bold text-slate-800 dark:text-slate-100 cursor-pointer hover:text-cyan-400 transition-colors"
+          onClick={() => setShowDetail(true)}
+          title="Detayları görüntüle"
+        >{task.title}</h3>
         <div className={`flex items-center gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
           <span className="text-[10px] font-mono text-slate-400 italic">{task.id.slice(0, 8)}</span>
           {/* ── SAHİPLİK ETİKETİ ─────────────────────────────── */}
@@ -243,6 +249,11 @@ export default function TaskCard({ task }: { task: Task }) {
           {isDeleting ? '⏳' : '✕'}
         </button>
       </div>
+
+      {/* ── GÖREV DETAY MODAL ──────────────────────────────────── */}
+      {showDetail && (
+        <TaskDetailModal task={task} onClose={() => setShowDetail(false)} />
+      )}
     </div>
   );
 }

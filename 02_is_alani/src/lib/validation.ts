@@ -182,6 +182,7 @@ export function validateInput<T>(
 
 // ─── TİP ÇIKARIMlari ───────────────────────────────────────
 export type CreateTaskInput = z.infer<typeof CreateTaskSchema>;
+export type UpdateTaskInput = z.infer<typeof UpdateTaskSchema>;
 export type UpdateTaskStatusInput = z.infer<typeof UpdateTaskStatusSchema>;
 export type BoardDecisionInput = z.infer<typeof BoardDecisionSchema>;
 export type BrowserActionInput = z.infer<typeof BrowserActionSchema>;
