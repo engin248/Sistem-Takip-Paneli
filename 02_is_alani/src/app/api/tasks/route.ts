@@ -18,7 +18,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { CreateTaskSchema, validateInput } from '@/lib/validation';
+import { CreateTaskSchema, UpdateTaskSchema, validateInput } from '@/lib/validation';
 import { ERR, processError } from '@/lib/errorCore';
 import { logAudit } from '@/services/auditService';
 import { analyzeLocalPriority } from '@/services/aiManager';
@@ -255,6 +255,161 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: false,
       error: error instanceof Error ? error.message : 'İş emri oluşturulurken beklenmeyen hata',
+      timestamp: new Date().toISOString(),
+    }, { status: 500 });
+  }
+}
+
+// ============================================================
+// PUT: Görev düzenleme (kısmi güncelleme)
+// ============================================================
+// Request Body:
+//   task_id     → UUID (zorunlu)
+//   title       → string (opsiyonel)
+//   description → string | null (opsiyonel)
+//   priority    → kritik | yuksek | normal | dusuk (opsiyonel)
+//   assigned_to → string (opsiyonel)
+//   status      → beklemede | devam_ediyor | ... (opsiyonel)
+//   due_date    → ISO 8601 | null (opsiyonel)
+//
+// Response:
+//   success, data (güncellenen alanlar), audit
+// ============================================================
+
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+
+    // ── 1. task_id KONTROLÜ ─────────────────────────────────
+    const taskId = body.task_id;
+    if (!taskId || typeof taskId !== 'string') {
+      return NextResponse.json({
+        success: false,
+        error: 'task_id zorunlu alandır (UUID)',
+      }, { status: 400 });
+    }
+
+    // ── 2. ZOD VALİDASYON (G-0 Giriş Filtresi) ─────────────
+    const updateFields: Record<string, unknown> = {};
+    if (body.title !== undefined) updateFields.title = body.title;
+    if (body.description !== undefined) updateFields.description = body.description;
+    if (body.priority !== undefined) updateFields.priority = body.priority;
+    if (body.assigned_to !== undefined) updateFields.assigned_to = body.assigned_to;
+    if (body.status !== undefined) updateFields.status = body.status;
+    if (body.due_date !== undefined) updateFields.due_date = body.due_date;
+
+    if (Object.keys(updateFields).length === 0) {
+      return NextResponse.json({
+        success: false,
+        error: 'Güncellenecek en az bir alan gerekli (title, description, priority, assigned_to, status, due_date)',
+      }, { status: 400 });
+    }
+
+    const validation = validateInput(UpdateTaskSchema, updateFields, {
+      kaynak: 'api/tasks',
+      islem: 'PUT_UPDATE',
+    });
+
+    if (!validation.success) {
+      return NextResponse.json({
+        success: false,
+        error: validation.errors?.[0] ?? 'Validasyon hatası',
+        errors: validation.errors,
+      }, { status: 400 });
+    }
+
+    // ── 3. MEVCUT GÖREVİ DOĞRULA ───────────────────────────
+    const { data: existingTask, error: fetchErr } = await supabase
+      .from('tasks')
+      .select('id, title, priority, status, assigned_to')
+      .eq('id', taskId)
+      .single();
+
+    if (fetchErr || !existingTask) {
+      return NextResponse.json({
+        success: false,
+        error: `Görev bulunamadı: ${taskId}`,
+      }, { status: 404 });
+    }
+
+    // ── 4. SUPABASE UPDATE ──────────────────────────────────
+    const updatePayload = {
+      ...validation.data,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data, error } = await supabase
+      .from('tasks')
+      .update(updatePayload)
+      .eq('id', taskId)
+      .select();
+
+    if (error) {
+      processError(ERR.TASK_UPDATE, error, {
+        kaynak: 'api/tasks/route.ts',
+        islem: 'PUT_UPDATE',
+        task_id: taskId,
+      });
+
+      return NextResponse.json({
+        success: false,
+        error: `Görev güncellenemedi: ${error.message}`,
+      }, { status: 500 });
+    }
+
+    // ── 5. AUDİT LOG ────────────────────────────────────────
+    const changedFields = Object.keys(updateFields).join(', ');
+    try {
+      await logAudit({
+        operation_type: 'UPDATE',
+        action_description: `GÖREV DÜZENLENDİ: [${taskId.slice(0, 8)}] → Değişen: ${changedFields}`,
+        task_id: taskId,
+        metadata: {
+          action_code: 'TASK_EDITED_VIA_API',
+          changed_fields: changedFields,
+          previous: {
+            title: existingTask.title,
+            priority: existingTask.priority,
+            status: existingTask.status,
+            assigned_to: existingTask.assigned_to,
+          },
+          updated: updatePayload,
+          source: 'KARARGAH_PANELI',
+        },
+      });
+    } catch {
+      // Audit hatası — processError zaten logluyor
+    }
+
+    // ── 6. TELEGRAM BİLDİRİM (Öncelik değişikliğinde) ──────
+    if (updateFields.priority && updateFields.priority !== existingTask.priority) {
+      try {
+        if (isTelegramNotificationAvailable()) {
+          const msg = `🔄 <b>GÖREV GÜNCELLENDİ</b>\n\nID: <code>${taskId.slice(0, 8)}</code>\nBaşlık: ${existingTask.title}\nÖncelik: ${String(existingTask.priority).toUpperCase()} → ${String(updateFields.priority).toUpperCase()}`;
+          await sendTelegramNotification(msg);
+        }
+      } catch {
+        // Telegram hatası — kritik değil
+      }
+    }
+
+    // ── 7. BAŞARILI YANIT ───────────────────────────────────
+    return NextResponse.json({
+      success: true,
+      data: data?.[0] ?? { id: taskId, ...updatePayload },
+      changed_fields: changedFields,
+      timestamp: new Date().toISOString(),
+    });
+
+  } catch (error) {
+    processError(ERR.TASK_UPDATE, error, {
+      kaynak: 'api/tasks/route.ts',
+      islem: 'PUT',
+    });
+
+    return NextResponse.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Görev düzenlenirken beklenmeyen hata',
       timestamp: new Date().toISOString(),
     }, { status: 500 });
   }

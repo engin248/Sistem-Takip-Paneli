@@ -70,6 +70,7 @@ interface TaskState {
   setError: (error: string | null) => void;
   addTask: (task: Task) => void;
   updateTaskStatus: (id: string, status: TaskStatus) => void;
+  updateTask: (id: string, updates: Partial<Task>) => void;
   removeTask: (id: string) => void;
   getTaskById: (id: string) => Task | undefined;
   getTasksByStatus: (status: TaskStatus) => Task[];
@@ -105,6 +106,16 @@ export const useTaskStore = create<TaskState>()(
         }),
         false,
         'updateTaskStatus'
+      ),
+
+      updateTask: (id: string, updates: Partial<Task>) => set(
+        (state) => ({
+          tasks: state.tasks.map((t) =>
+            t.id === id ? { ...t, ...updates, updated_at: new Date().toISOString() } : t
+          ),
+        }),
+        false,
+        'updateTask'
       ),
 
       removeTask: (id) => set(

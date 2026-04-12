@@ -396,6 +396,10 @@ function registerHandlers(botInstance: Bot): void {
       `<b>Komutlar:</b>`,
       `/start — Karşılama ve bilgi`,
       `/durum — Sistem durumu`,
+      `/gorevler — Aktif görev listesi`,
+      `/gorev TSK-xxx — Görev detayı`,
+      `/tamamla TSK-xxx — Görevi tamamla`,
+      `/iptal TSK-xxx — Görevi iptal et`,
       `/yardim — Bu mesaj`,
       ``,
       `<b>Öncelik Seviyeleri (AI atar):</b>`,
@@ -404,6 +408,189 @@ function registerHandlers(botInstance: Bot): void {
       `📋 NORMAL — Standart akış`,
       `📝 DÜŞÜK — Zamanı gelince`,
     ].join('\n'));
+  });
+
+  // /gorevler komutu — aktif görev listesi
+  botInstance.command('gorevler', async (ctx) => {
+    const chatId = ctx.chat?.id ?? 0;
+    if (!isAuthorized(chatId)) {
+      await sendReply(ctx, '⛔ YETKİSİZ ERİŞİM.');
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('task_code, title, status, priority, assigned_to, created_at')
+        .eq('is_archived', false)
+        .order('created_at', { ascending: false })
+        .limit(15);
+
+      if (error) {
+        await sendReply(ctx, `❌ Görevler yüklenemedi: ${error.message}`);
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        await sendReply(ctx, '📭 Aktif görev bulunamadı.');
+        return;
+      }
+
+      const priorityEmoji: Record<string, string> = {
+        kritik: '🔴', yuksek: '🟠', normal: '🟡', dusuk: '🟢',
+      };
+      const statusEmoji: Record<string, string> = {
+        beklemede: '⏳', devam_ediyor: '⚡', dogrulama: '🔍', tamamlandi: '✅', reddedildi: '❌', iptal: '🚫',
+      };
+
+      const lines = data.map((t, i) => {
+        const pe = priorityEmoji[t.priority] ?? '🟡';
+        const se = statusEmoji[t.status] ?? '⏳';
+        return `${i + 1}. ${pe}${se} <code>${t.task_code}</code>\n   ${t.title}\n   → ${t.assigned_to} | ${t.status}`;
+      });
+
+      await sendReply(ctx, [
+        `📋 <b>AKTİF GÖREVLER</b> (${data.length})`,
+        ``,
+        ...lines,
+        ``,
+        `📌 Detay: /gorev TSK-xxx`,
+        `✅ Tamamla: /tamamla TSK-xxx`,
+      ].join('\n'));
+    } catch (err) {
+      processError(ERR.TASK_FETCH, err, { kaynak: 'telegramService.ts', islem: 'GOREVLER_CMD' });
+      await sendReply(ctx, '❌ Görev listesi alınırken hata oluştu.');
+    }
+  });
+
+  // /gorev TSK-xxx — görev detayı
+  botInstance.command('gorev', async (ctx) => {
+    const chatId = ctx.chat?.id ?? 0;
+    if (!isAuthorized(chatId)) {
+      await sendReply(ctx, '⛔ YETKİSİZ ERİŞİM.');
+      return;
+    }
+
+    const taskCode = ctx.match?.trim();
+    if (!taskCode) {
+      await sendReply(ctx, '⚠️ Kullanım: /gorev TSK-20260413-XXXX');
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('task_code', taskCode.toUpperCase())
+        .single();
+
+      if (error || !data) {
+        await sendReply(ctx, `❌ Görev bulunamadı: <code>${taskCode}</code>`);
+        return;
+      }
+
+      const pe: Record<string, string> = { kritik: '🔴', yuksek: '🟠', normal: '🟡', dusuk: '🟢' };
+      const createdAt = new Date(data.created_at).toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' });
+
+      await sendReply(ctx, [
+        `📋 <b>GÖREV DETAYI</b>`,
+        ``,
+        `<b>Kod:</b> <code>${data.task_code}</code>`,
+        `<b>Başlık:</b> ${data.title}`,
+        data.description ? `<b>Açıklama:</b> ${data.description}` : '',
+        `${pe[data.priority] ?? '🟡'} <b>Öncelik:</b> ${data.priority.toUpperCase()}`,
+        `<b>Durum:</b> ${data.status}`,
+        `<b>Atanan:</b> ${data.assigned_to}`,
+        `<b>Oluşturulma:</b> ${createdAt}`,
+        data.due_date ? `<b>Son Tarih:</b> ${new Date(data.due_date).toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' })}` : '',
+        ``,
+        `✅ /tamamla ${data.task_code}`,
+        `🚫 /iptal ${data.task_code}`,
+      ].filter(Boolean).join('\n'));
+    } catch (err) {
+      processError(ERR.TASK_FETCH, err, { kaynak: 'telegramService.ts', islem: 'GOREV_DETAIL_CMD' });
+      await sendReply(ctx, '❌ Görev detayı alınırken hata oluştu.');
+    }
+  });
+
+  // /tamamla TSK-xxx — görevi tamamla
+  botInstance.command('tamamla', async (ctx) => {
+    const chatId = ctx.chat?.id ?? 0;
+    if (!isAuthorized(chatId)) {
+      await sendReply(ctx, '⛔ YETKİSİZ ERİŞİM.');
+      return;
+    }
+
+    const taskCode = ctx.match?.trim();
+    if (!taskCode) {
+      await sendReply(ctx, '⚠️ Kullanım: /tamamla TSK-20260413-XXXX');
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .update({ status: 'tamamlandi', updated_at: new Date().toISOString() })
+        .eq('task_code', taskCode.toUpperCase())
+        .select();
+
+      if (error || !data || data.length === 0) {
+        await sendReply(ctx, `❌ Görev bulunamadı veya güncellenemedi: <code>${taskCode}</code>`);
+        return;
+      }
+
+      await logAudit({
+        operation_type: 'UPDATE',
+        action_description: `Telegram'dan görev tamamlandı: ${taskCode}`,
+        task_id: data[0]?.id ?? null,
+        metadata: { action_code: 'TASK_COMPLETED_VIA_TELEGRAM', task_code: taskCode, chat_id: chatId },
+      }).catch(() => {});
+
+      await sendReply(ctx, `✅ <b>GÖREV TAMAMLANDI</b>\n\nKod: <code>${taskCode}</code>\nBaşlık: ${data[0]?.title ?? ''}`);
+    } catch (err) {
+      processError(ERR.TASK_UPDATE, err, { kaynak: 'telegramService.ts', islem: 'TAMAMLA_CMD' });
+      await sendReply(ctx, '❌ Görev tamamlanırken hata oluştu.');
+    }
+  });
+
+  // /iptal TSK-xxx — görevi iptal et
+  botInstance.command('iptal', async (ctx) => {
+    const chatId = ctx.chat?.id ?? 0;
+    if (!isAuthorized(chatId)) {
+      await sendReply(ctx, '⛔ YETKİSİZ ERİŞİM.');
+      return;
+    }
+
+    const taskCode = ctx.match?.trim();
+    if (!taskCode) {
+      await sendReply(ctx, '⚠️ Kullanım: /iptal TSK-20260413-XXXX');
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .update({ status: 'iptal', updated_at: new Date().toISOString() })
+        .eq('task_code', taskCode.toUpperCase())
+        .select();
+
+      if (error || !data || data.length === 0) {
+        await sendReply(ctx, `❌ Görev bulunamadı veya güncellenemedi: <code>${taskCode}</code>`);
+        return;
+      }
+
+      await logAudit({
+        operation_type: 'UPDATE',
+        action_description: `Telegram'dan görev iptal edildi: ${taskCode}`,
+        task_id: data[0]?.id ?? null,
+        metadata: { action_code: 'TASK_CANCELLED_VIA_TELEGRAM', task_code: taskCode, chat_id: chatId },
+      }).catch(() => {});
+
+      await sendReply(ctx, `🚫 <b>GÖREV İPTAL EDİLDİ</b>\n\nKod: <code>${taskCode}</code>\nBaşlık: ${data[0]?.title ?? ''}`);
+    } catch (err) {
+      processError(ERR.TASK_UPDATE, err, { kaynak: 'telegramService.ts', islem: 'IPTAL_CMD' });
+      await sendReply(ctx, '❌ Görev iptal edilirken hata oluştu.');
+    }
   });
 
   // Yazılı mesaj → Görev oluştur

@@ -55,6 +55,35 @@ export const CreateTaskSchema = z.object({
     .optional(),
 });
 
+// ─── GÖREV DÜZENLEME ŞEMASI (PUT/PATCH) ─────────────────────
+// Partial update: Sadece gönderilen alanlar güncellenir
+export const UpdateTaskSchema = z.object({
+  title: z
+    .string()
+    .min(3, 'Görev başlığı en az 3 karakter olmalı')
+    .max(500, 'Görev başlığı en fazla 500 karakter olabilir')
+    .trim()
+    .optional(),
+  description: z
+    .string()
+    .max(2000, 'Açıklama en fazla 2000 karakter olabilir')
+    .trim()
+    .nullable()
+    .optional(),
+  priority: TaskPriorityEnum.optional(),
+  assigned_to: z
+    .string()
+    .min(1, 'Atanan kişi boş olamaz')
+    .max(100)
+    .trim()
+    .optional(),
+  status: TaskStatusEnum.optional(),
+  due_date: z
+    .string()
+    .nullable()
+    .optional(),
+});
+
 // ─── GÖREV DURUM GÜNCELLEME ŞEMASI ──────────────────────────
 export const UpdateTaskStatusSchema = z.object({
   taskId: z.string().uuid('Geçersiz görev ID formatı'),
