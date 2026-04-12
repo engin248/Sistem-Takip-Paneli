@@ -92,6 +92,35 @@ export default function TaskForm() {
     return () => clearTimeout(timer);
   }, [title]);
 
+  // ── OTOMATİK AJAN ÖNERİSİ — DEBOUNCE İLE ─────────────────
+  const [recommendedAgent, setRecommendedAgent] = useState<string | null>(null);
+  const [agentManuallySet, setAgentManuallySet] = useState(false);
+
+  useEffect(() => {
+    if (title.trim().length < 5 || agentManuallySet) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      fetch(`/api/tasks?action=auto-assign&title=${encodeURIComponent(title.trim())}`)
+        .then(r => r.json())
+        .then(d => {
+          if (d.success && d.data?.recommended_agent) {
+            setRecommendedAgent(d.data.recommended_agent);
+            // Otomatik seç (kullanıcı henüz manuel seçim yapmadıysa)
+            if (!agentManuallySet && !assignedTo) {
+              setAssignedTo(d.data.recommended_agent);
+            }
+          }
+        })
+        .catch(() => {
+          setRecommendedAgent(null);
+        });
+    }, 800); // 800ms debounce
+
+    return () => clearTimeout(timer);
+  }, [title, agentManuallySet, assignedTo]);
+
   // ── SUBMIT HANDLER — API ROUTE POST ───────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -235,19 +264,22 @@ export default function TaskForm() {
         <div className="flex flex-col gap-1 flex-1 min-w-[140px]">
           <label className="text-[8px] font-bold text-slate-500 uppercase tracking-wider">
             Atanan {activeAgents.length > 0 && <span className="text-cyan-400/60">({activeAgents.length} ajan)</span>}
+            {recommendedAgent && !agentManuallySet && (
+              <span className="ml-1 text-emerald-400/80 text-[7px]">✦ AI önerisi: {recommendedAgent}</span>
+            )}
           </label>
           {activeAgents.length > 0 ? (
             <select
               id="task-agent-select"
               value={assignedTo}
-              onChange={(e) => setAssignedTo(e.target.value)}
+              onChange={(e) => { setAssignedTo(e.target.value); setAgentManuallySet(true); }}
               className="border border-slate-700 bg-slate-800/50 text-slate-200 p-2 rounded-lg text-xs outline-none focus:ring-1 focus:ring-cyan-500/50"
               disabled={isSubmitting || agentsLoading}
             >
               <option value="">Seçiniz...</option>
               {activeAgents.map((a) => (
                 <option key={a.kod_adi} value={a.kod_adi}>
-                  {a.kod_adi} — {a.rol} [{a.katman}]
+                  {a.kod_adi === recommendedAgent ? '✦ ' : ''}{a.kod_adi} — {a.rol} [{a.katman}]
                 </option>
               ))}
             </select>

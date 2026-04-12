@@ -23,6 +23,7 @@ import { ERR, processError } from '@/lib/errorCore';
 import { logAudit } from '@/services/auditService';
 import { analyzeLocalPriority } from '@/services/aiManager';
 import { agentRegistry } from '@/services/agentRegistry';
+import { analyzeKapasite } from '@/services/agentCloner';
 import {
   sendTelegramNotification,
   formatTaskNotification,
@@ -95,10 +96,58 @@ export async function GET(request: NextRequest) {
         });
       }
 
+      // ── OTOMATİK AJAN ATAMA ─────────────────────────────────
+      // ?action=auto-assign&title=xxx → En uygun ajanı öner
+      case 'auto-assign': {
+        const taskTitle = url.searchParams.get('title');
+        if (!taskTitle || taskTitle.length < 3) {
+          return NextResponse.json({
+            success: false,
+            error: 'title parametresi en az 3 karakter olmalı',
+          }, { status: 400 });
+        }
+
+        // Görev başlığından anahtar kelimeler çıkar
+        const keywords = taskTitle.toLowerCase().split(/[\s,._-]+/).filter(k => k.length > 2);
+        const gorevTipi = keywords.join('_');
+
+        const analiz = analyzeKapasite(gorevTipi);
+
+        if (analiz.kapasiteVar && analiz.uygunAjanlar.length > 0) {
+          return NextResponse.json({
+            success: true,
+            data: {
+              recommended_agent: analiz.uygunAjanlar[0]!.kod_adi,
+              all_capable: analiz.uygunAjanlar.map(a => ({
+                kod_adi: a.kod_adi,
+                rol: a.rol,
+              })),
+              method: 'DIRECT_MATCH',
+            },
+            timestamp: new Date().toISOString(),
+          });
+        }
+
+        // Kapasite yok — en yakın öner
+        return NextResponse.json({
+          success: true,
+          data: {
+            recommended_agent: analiz.klonKaynagi?.kod_adi ?? 'SISTEM',
+            all_capable: [],
+            method: analiz.onerilenYol ?? 'FALLBACK',
+            gap_analysis: {
+              gorev_tipi: gorevTipi,
+              klon_kaynagi: analiz.klonKaynagi?.kod_adi ?? null,
+            },
+          },
+          timestamp: new Date().toISOString(),
+        });
+      }
+
       default:
         return NextResponse.json({
           success: false,
-          error: 'Geçerli action parametresi gerekli: agents | suggest',
+          error: 'Geçerli action parametresi gerekli: agents | suggest | auto-assign',
         }, { status: 400 });
     }
   } catch (error) {

@@ -196,6 +196,17 @@ export default function TaskBoard() {
   const [updatingTaskId, setUpdatingTaskId] = useState<string | null>(null);
   const dragCounter = useRef<Record<string, number>>({});
 
+  // ── FİLTRE STATE ──────────────────────────────────────────
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterPriority, setFilterPriority] = useState<string>('all');
+  const [filterAgent, setFilterAgent] = useState<string>('all');
+
+  // Unique ajanlar
+  const uniqueAgents = useMemo(() => {
+    const agents = [...new Set(tasks.map(t => t.assigned_to))].sort();
+    return agents;
+  }, [tasks]);
+
   // ── SÜRÜKLE BAŞLAT ────────────────────────────────────────
   const handleDragStart = useCallback((e: React.DragEvent, task: Task) => {
     setDraggedTask(task);
@@ -285,12 +296,33 @@ export default function TaskBoard() {
 
   // ── GÖREV FİLTRELEME ─────────────────────────────────────
   // Kanban'da gösterilecek durumlar (reddedildi/iptal hariç)
+  // + arama/öncelik/ajan filtresi
   const getTasksForColumn = useCallback((status: TaskStatus): Task[] => {
-    return tasks.filter(task => task.status === status);
-  }, [tasks]);
+    return tasks.filter(task => {
+      if (task.status !== status) return false;
+
+      // Arama filtresi
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchTitle = task.title.toLowerCase().includes(q);
+        const matchDesc = task.description?.toLowerCase().includes(q) ?? false;
+        const matchCode = task.task_code?.toLowerCase().includes(q) ?? false;
+        if (!matchTitle && !matchDesc && !matchCode) return false;
+      }
+
+      // Öncelik filtresi
+      if (filterPriority !== 'all' && task.priority !== filterPriority) return false;
+
+      // Ajan filtresi
+      if (filterAgent !== 'all' && task.assigned_to !== filterAgent) return false;
+
+      return true;
+    });
+  }, [tasks, searchQuery, filterPriority, filterAgent]);
 
   // ── TOPLAM AKTİF GÖREV ───────────────────────────────────
   const totalKanbanTasks = COLUMNS.reduce((sum, col) => sum + getTasksForColumn(col.id).length, 0);
+  const isFiltered = searchQuery.trim() || filterPriority !== 'all' || filterAgent !== 'all';
 
   return (
     <section className="mb-12">
