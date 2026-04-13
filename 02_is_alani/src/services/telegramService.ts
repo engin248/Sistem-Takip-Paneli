@@ -28,7 +28,7 @@ import type { TaskPriority } from '@/store/useTaskStore';
 
 // ─── ORTAM DEĞİŞKENLERİ ────────────────────────────────────
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN ?? '';
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY ?? '';
+// OPENAI_API_KEY KULLANILMAZ — sıfır maliyet politikası
 const AUTHORIZED_CHAT_IDS = (process.env.TELEGRAM_AUTHORIZED_CHAT_IDS ?? '')
   .split(',')
   .map(id => id.trim())
@@ -105,52 +105,17 @@ function isAuthorized(chatId: number): boolean {
   return AUTHORIZED_CHAT_IDS.includes(String(chatId));
 }
 
-// ─── SES MESAJINI METİNE ÇEVİR (Whisper API) ───────────────
-async function transcribeVoice(fileUrl: string): Promise<string | null> {
-  if (!OPENAI_API_KEY || OPENAI_API_KEY.includes('your-api-key')) {
-    processError(ERR.AI_CONNECTION, new Error('OPENAI_API_KEY tanımlı değil — sesli mesaj çevrilemez'), {
-      kaynak: 'telegramService.ts',
-      islem: 'WHISPER_TRANSCRIBE'
-    }, 'WARNING');
-    return null;
-  }
-
-  try {
-    // Ses dosyasını indir
-    const audioResponse = await fetch(fileUrl);
-    if (!audioResponse.ok) {
-      throw new Error(`Ses dosyası indirilemedi: HTTP ${audioResponse.status}`);
-    }
-    const audioBlob = await audioResponse.blob();
-
-    // Whisper API'ye gönder
-    const formData = new FormData();
-    formData.append('file', audioBlob, 'voice.ogg');
-    formData.append('model', 'whisper-1');
-    formData.append('language', 'tr');
-
-    const whisperResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-      },
-      body: formData,
-    });
-
-    if (!whisperResponse.ok) {
-      const errorBody = await whisperResponse.text();
-      throw new Error(`Whisper API hatası: HTTP ${whisperResponse.status} — ${errorBody}`);
-    }
-
-    const result = await whisperResponse.json() as { text?: string };
-    return result.text || null;
-  } catch (error) {
-    processError(ERR.AI_ANALYSIS, error, {
-      kaynak: 'telegramService.ts',
-      islem: 'WHISPER_TRANSCRIBE'
-    });
-    return null;
-  }
+// ─── SES MESAJINI METİNE ÇEVİR ─────────────────────────────
+// SIFIR MALİYET POLİTİKASI: OpenAI Whisper API kullanılmaz.
+// Sesli mesaj geldiğinde kullanıcıdan yazılı doğrulama istenir.
+// Gelecekte lokal Ollama/Whisper entegrasyonu eklenebilir ($0).
+// ─────────────────────────────────────────────────────────────
+// NOT: transcribeVoice fonksiyonu şu an devre dışıdır.
+// Sesli mesajlar için "yazılı tekrar et" akışı kullanılır.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function transcribeVoice(_fileUrl: string): Promise<string | null> {
+  // OpenAI API KULLANILMAZ — sıfır maliyet
+  return null;
 }
 
 // ─── GÖREV OLUŞTUR (Supabase) ──────────────────────────────
@@ -384,7 +349,7 @@ function registerHandlers(botInstance: Bot): void {
       `📊 <b>SİSTEM DURUMU</b>`,
       ``,
       `${statusEmoji} <b>Veritabanı:</b> ${statusText}`,
-      `🤖 <b>AI Motoru:</b> ${OPENAI_API_KEY ? '🟢 AKTİF' : '🟡 DEVRE DIŞI (Lokal mod)'}`,
+      `🤖 <b>AI Motoru:</b> 🟢 LOKAL MOD (Sıfır Maliyet)`,
       `📡 <b>Telegram Bot:</b> 🟢 AKTİF`,
       `🕐 <b>Zaman:</b> ${new Date().toISOString()}`,
     ].join('\n'));
