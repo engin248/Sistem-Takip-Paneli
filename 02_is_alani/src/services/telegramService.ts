@@ -19,7 +19,7 @@
 //   ERR-STP001-016 → Telegram mesaj gönderilemedi
 // ============================================================
 
-import { Bot, type Context } from 'grammy';
+import { Bot, InlineKeyboard, type Context } from 'grammy';
 import { supabase, validateSupabaseConnection } from '@/lib/supabase';
 import { ERR, processError } from '@/lib/errorCore';
 import { logAudit } from './auditService';
@@ -37,6 +37,11 @@ const AUTHORIZED_CHAT_IDS = (process.env.TELEGRAM_AUTHORIZED_CHAT_IDS ?? '')
 // ─── BOT SINGLETON ──────────────────────────────────────────
 let bot: Bot | null = null;
 let botInitialized = false;
+
+// ─── SESSLİ KOMUT ONAY BEKLEYENLERİ ────────────────────────
+// chatId → { text, timestamp } şeklinde bekleyen sesli komutlar.
+// Kullanıcı sesi metne çevrildikten sonra onay vermezse 5dk sonra silinir.
+const pendingVoiceCommands = new Map<number, { text: string; timestamp: number }>();
 
 /**
  * Telegram Bot'u başlatır (lazy singleton).
@@ -601,7 +606,9 @@ function registerHandlers(botInstance: Bot): void {
     await handleTaskMessage(ctx, text, 'text');
   });
 
-  // Sesli mesaj → Whisper → Görev oluştur
+  // Sesli mesaj → Whisper → ONAY KATMANI → Görev oluştur
+  // Ses metne çevrildikten sonra kullanıcıya onay butonu gösterilir.
+  // %100 doğruluk garanti edilir — kullanıcı onaylamadan işleme alınmaz.
   botInstance.on('message:voice', async (ctx) => {
     const chatId = ctx.chat?.id ?? 0;
 
@@ -623,8 +630,36 @@ function registerHandlers(botInstance: Bot): void {
         return;
       }
 
-      await sendReply(ctx, `📝 <b>Algılanan metin:</b> "${transcription}"`);
-      await handleTaskMessage(ctx, transcription, 'voice');
+      // ── SES DOĞRULAMA KATMANI ──────────────────────────────
+      // Sesi metne çevirdik — şimdi kullanıcıya onay soruyoruz.
+      // İşleme almadan ÖNCE kullanıcının "EVET" demesi zorunlu.
+      pendingVoiceCommands.set(chatId, {
+        text: transcription,
+        timestamp: Date.now(),
+      });
+
+      // 5 dakika sonra otomatik sil (timeout temizliği)
+      setTimeout(() => {
+        pendingVoiceCommands.delete(chatId);
+      }, 5 * 60 * 1000);
+
+      const keyboard = new InlineKeyboard()
+        .text('✅ DOĞRU — İşleme Al', 'voice_confirm')
+        .text('❌ YANLIŞ — İptal', 'voice_reject');
+
+      await ctx.reply(
+        [
+          `🎙️ <b>SES TANIMA SONUCU</b>`,
+          ``,
+          `📝 Algılanan metin:`,
+          `<blockquote>${transcription}</blockquote>`,
+          ``,
+          `⚠️ <b>Bu metin doğru mu?</b>`,
+          `Doğruysa ✅ DOĞRU butonuna basın.`,
+          `Yanlışsa ❌ YANLIŞ butonuna basın veya yazılı gönderin.`,
+        ].join('\n'),
+        { parse_mode: 'HTML', reply_markup: keyboard }
+      );
     } catch (error) {
       processError(ERR.AI_ANALYSIS, error, {
         kaynak: 'telegramService.ts',
@@ -633,6 +668,58 @@ function registerHandlers(botInstance: Bot): void {
       });
       await sendReply(ctx, '❌ Sesli mesaj işlenemedi. Lütfen yazılı mesaj gönderin.');
     }
+  });
+
+  // ── SES ONAY CALLBACK HANDLERLARI ─────────────────────────
+  // Kullanıcı ✅ DOĞRU butonuna basarsa → görev oluştur
+  // Kullanıcı ❌ YANLIŞ butonuna basarsa → iptal et
+  botInstance.callbackQuery('voice_confirm', async (ctx) => {
+    const chatId = ctx.chat?.id ?? 0;
+    const pending = pendingVoiceCommands.get(chatId);
+
+    if (!pending) {
+      await ctx.answerCallbackQuery({ text: '⏰ Süre doldu — yeni sesli mesaj gönderin.' });
+      return;
+    }
+
+    // Onayı temizle
+    pendingVoiceCommands.delete(chatId);
+    await ctx.answerCallbackQuery({ text: '✅ Onaylandı — görev oluşturuluyor...' });
+
+    // Onay mesajını güncelle
+    try {
+      await ctx.editMessageText(
+        `✅ <b>ONAYLANDI</b>\n\n📝 "${pending.text}"\n\n⏳ Görev oluşturuluyor...`,
+        { parse_mode: 'HTML' }
+      );
+    } catch { /* mesaj düzenleme hatası — kritik değil */ }
+
+    // Görev oluştur
+    await handleTaskMessage(ctx, pending.text, 'voice');
+  });
+
+  botInstance.callbackQuery('voice_reject', async (ctx) => {
+    const chatId = ctx.chat?.id ?? 0;
+    pendingVoiceCommands.delete(chatId);
+
+    await ctx.answerCallbackQuery({ text: '❌ İptal edildi.' });
+
+    try {
+      await ctx.editMessageText(
+        `❌ <b>İPTAL EDİLDİ</b>\n\nSesli komut reddedildi.\nLütfen tekrar deneyin veya yazılı gönderin.`,
+        { parse_mode: 'HTML' }
+      );
+    } catch { /* mesaj düzenleme hatası — kritik değil */ }
+
+    await logAudit({
+      operation_type: 'REJECT',
+      action_description: `Sesli komut reddedildi — kullanıcı onaylamadı (Chat: ${chatId})`,
+      metadata: {
+        action_code: 'VOICE_COMMAND_REJECTED',
+        chat_id: chatId,
+        reason: 'USER_REJECTED_TRANSCRIPTION',
+      }
+    }).catch(() => {});
   });
 }
 
