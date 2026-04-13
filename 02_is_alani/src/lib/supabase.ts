@@ -19,8 +19,8 @@ import { ERR, processError } from "./errorCore";
 // ============================================================
 // ÇEVRESEL DEĞİŞKEN OKUMA VE DOĞRULAMA
 // ============================================================
-const supabaseUrl: string = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-const supabaseAnonKey: string = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
+const supabaseUrl: string = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").trim();
+const supabaseAnonKey: string = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
 
 // ============================================================
 // SUPABASE CLIENT — TEK ÖRNEK (SINGLETON)

@@ -13,8 +13,8 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { ERR, processError } from "./errorCore";
 
 // ─── ÇEVRESEL DEĞİŞKENLER ───────────────────────────────────
-const externalUrl: string = process.env.EXTERNAL_SUPABASE_URL ?? "";
-const externalKey: string = process.env.EXTERNAL_SUPABASE_ANON_KEY ?? "";
+const externalUrl: string = (process.env.EXTERNAL_SUPABASE_URL ?? "").trim();
+const externalKey: string = (process.env.EXTERNAL_SUPABASE_ANON_KEY ?? "").trim();
 
 // ─── SİNGLETON CLIENT ────────────────────────────────────────
 let externalSupabase: SupabaseClient | null = null;

@@ -314,17 +314,9 @@ Sistem-Takip-Paneli/
 
 ---
 
-## 9. STP DIŞI TABLO HARİTASI (Referans)
+## 9. VERİTABANI İZOLASYON KURALI
 
-STP, Mizanet ve SKM projelerinin Supabase tablo dağılımı:
-
-| Proje | Tablo Sayısı | Konum |
-|-------|-------------|-------|
-| **MİZANET** | 64 | `C:\Users\Esisya\Desktop\New-mizanet\mizanet.com-main\` |
-| **STP** | 5 | `C:\Users\Esisya\Desktop\Sistem-Takip-Paneli\02_is_alani\` |
-| **SKM** | 8 | `C:\Users\Esisya\Desktop\sistem-kontrol-merkezi\` |
-
-> **KURAL:** STP Supabase ≠ Mizanet Supabase — ASLA karıştırılamaz.
+> **KURAL:** Her proje kendi Supabase kaynağını kullanır — projeler arası veritabanı paylaşımı YASAKTIR. STP tabloları yalnızca STP servis dosyaları tarafından erişilir.
 
 ---
 
