@@ -152,7 +152,15 @@ export default function TaskDetailModal({ task, onClose }: TaskDetailModalProps)
                   {isSaving ? '⏳' : '💾'} Kaydet
                 </button>
                 <button
-                  onClick={() => setIsEditing(false)}
+                  onClick={() => {
+                    setIsEditing(false);
+                    setEditTitle(task.title);
+                    setEditDescription(task.description ?? '');
+                    setEditPriority(task.priority);
+                    setEditAssignedTo(task.assigned_to);
+                    setEditStatus(task.status);
+                    setEditDueDate(task.due_date?.slice(0, 10) ?? '');
+                  }}
                   className="text-[10px] font-bold px-3 py-1.5 rounded-lg border border-slate-500/30 bg-slate-500/10 text-slate-400 hover:bg-slate-500/20 transition-all uppercase tracking-wider"
                 >
                   İptal

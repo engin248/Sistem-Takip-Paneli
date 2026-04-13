@@ -304,3 +304,111 @@ html[dir="rtl"] .ms-2 {
   margin-right: 0.5rem;
   margin-left: 0;
 }
+
+/* ══════════════════════════════════════════════════════════════ */
+/* MOBİL RESPONSİVE — TELEFON ERİŞİMİ İÇİN                    */
+/* ══════════════════════════════════════════════════════════════ */
+
+/* ── Telefon (<640px) ─────────────────────────────────────── */
+@media (max-width: 639px) {
+  /* Karargah ekran haritası: 3 sütundan 1'e */
+  .grid.grid-cols-3 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Kanban: 4 sütundan 1'e (dikey scroll) */
+  .grid.lg\:grid-cols-4 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* 9 ekran grid'i: tek sütun */
+  .hq-screen {
+    margin-bottom: 0.5rem;
+  }
+
+  /* Başlık küçült */
+  h1 {
+    font-size: 1.25rem !important;
+  }
+
+  /* Durum mühürleri: kaydırmalı */
+  .flex.flex-wrap.gap-3 {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 0.5rem;
+  }
+  .flex.flex-wrap.gap-3::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Form elemanları: tam genişlik */
+  input, select, textarea, button {
+    min-height: 44px;
+    font-size: 16px !important;
+  }
+
+  /* Footer: kompakt */
+  footer .flex.items-center.gap-4 {
+    gap: 0.5rem;
+  }
+
+  /* Ekran header: kompakt */
+  .screen-header {
+    padding: 0.5rem 0.75rem;
+  }
+
+  /* Protokol grid: 3 sütun */
+  .grid.md\:grid-cols-7 {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  /* Başlık satırı: dikey */
+  .flex.justify-between.items-end {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+}
+
+/* ── Tablet (640px–1023px) ────────────────────────────────── */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .grid.lg\:grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .grid.grid-cols-3 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .grid.md\:grid-cols-7 {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+
+/* ── Dokunmatik iyileştirmeler ────────────────────────────── */
+@media (hover: none) and (pointer: coarse) {
+  .hover\:shadow-md:hover {
+    box-shadow: none;
+  }
+
+  button, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .cursor-grab {
+    cursor: default;
+  }
+}
+
+/* ── Güvenli alan (notch/dinamik ada) ─────────────────────── */
+@supports (padding-top: env(safe-area-inset-top)) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
