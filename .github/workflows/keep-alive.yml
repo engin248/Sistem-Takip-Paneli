@@ -1,0 +1,15 @@
+name: Supabase Keep Alive
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # Her Pazartesi 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping STP Health Check
+        run: |
+          echo "Pinging STP..."
+          curl -sf https://sistem-takip-paneli.vercel.app/api/health-check || echo "STP ping failed"
+          echo "Done."
