@@ -3,7 +3,6 @@ import { useEffect, useState, useRef } from 'react';
 import { fetchAuditLogs } from '@/services/auditService';
 import { supabase } from '@/lib/supabase';
 import { ERR, processError } from '@/lib/errorCore';
-import { handleError } from '@/lib/errorHandler';
 import { useLanguageStore } from '@/store/useLanguageStore';
 import { t } from '@/lib/i18n';
 
@@ -28,7 +27,7 @@ export default function AuditLog() {
       const data = await fetchAuditLogs();
       setLogs(data as AuditLogRecord[]);
     } catch (err) {
-      await handleError(ERR.AUDIT_READ, err, { kaynak: 'AuditLog.loadLogs', islem: 'FETCH' });
+      processError(ERR.AUDIT_READ, err, { kaynak: 'AuditLog.loadLogs', islem: 'FETCH' });
     }
   };
 
@@ -57,16 +56,18 @@ export default function AuditLog() {
           })
           .subscribe((status) => {
             if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-              handleError(ERR.AUDIT_REALTIME, new Error(`Realtime kanal durumu: ${status}`), {
+              // Sessiz log — kullanıcıya toast göstermiyoruz
+              // Realtime opsiyonel, görevler manuel YENİLE ile de çekilebilir
+              processError(ERR.AUDIT_REALTIME, new Error(`Realtime kanal durumu: ${status}`), {
                 kaynak: 'AuditLog.subscribe',
                 islem: 'CHANNEL_STATUS_RETRY',
                 durum: status,
                 deneme: retryCount
-              });
+              }, 'WARNING');
               
-              // Exponential backoff ile yeniden bağlanmayı dene
-              if (retryCount < 5) {
-                const delay = Math.min(1000 * (2 ** retryCount), 15000);
+              // Exponential backoff ile yeniden bağlanmayı dene (max 3)
+              if (retryCount < 3) {
+                const delay = Math.min(2000 * (2 ** retryCount), 15000);
                 reconnectTimer = setTimeout(() => {
                   if (channel) supabase.removeChannel(channel);
                   connectRealtime(retryCount + 1);
@@ -75,7 +76,7 @@ export default function AuditLog() {
             }
           });
       } catch (err) {
-        handleError(ERR.AUDIT_REALTIME, err, { kaynak: 'AuditLog.useEffect', islem: 'SUBSCRIBE' });
+        processError(ERR.AUDIT_REALTIME, err, { kaynak: 'AuditLog.useEffect', islem: 'SUBSCRIBE' });
       }
     };
 
