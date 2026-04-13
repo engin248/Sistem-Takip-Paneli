@@ -1,0 +1,26 @@
+#!/bin/sh
+# ============================================================
+# PRE-COMMIT HOOK — TypeScript Build Guard
+# dc3f2b0 hatası (useMemo import eksikliği) tekrar etmesin
+# Commit ÖNCE build kontrolü yapılır, hata varsa commit ENGELLENIR
+# ============================================================
+
+echo "🔍 Pre-commit: TypeScript kontrolü başlıyor..."
+
+# 02_is_alani dizinine geç
+cd 02_is_alani || exit 0
+
+# TypeScript type check (build'den hızlı)
+npx tsc --noEmit 2>&1
+TSC_EXIT=$?
+
+if [ $TSC_EXIT -ne 0 ]; then
+  echo ""
+  echo "❌ COMMIT ENGELLENDİ — TypeScript hataları var!"
+  echo "   Hataları düzelt, sonra tekrar commit et."
+  echo ""
+  exit 1
+fi
+
+echo "✅ TypeScript kontrolü geçti — commit devam ediyor."
+exit 0

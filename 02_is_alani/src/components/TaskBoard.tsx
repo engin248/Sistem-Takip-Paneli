@@ -6,24 +6,6 @@ import { useLanguageStore } from '@/store/useLanguageStore';
 import { t } from '@/lib/i18n';
 import { toast } from 'sonner';
 
-// ── DUE DATE BADGE (IIFE yerine ayrı bileşen) ───────────────
-function DueDateBadge({ dueDate }: { dueDate: string }) {
-  const remaining = Math.ceil((new Date(dueDate).getTime() - Date.now()) / 86400000);
-  const isOverdue = remaining < 0;
-  const isUrgent = remaining <= 1;
-  const color = isOverdue
-    ? 'text-red-400 bg-red-900/30 border-red-500/30'
-    : isUrgent
-      ? 'text-orange-400 bg-orange-900/30 border-orange-500/30'
-      : 'text-emerald-400 bg-emerald-900/30 border-emerald-500/30';
-  const label = isOverdue ? `⏰ ${Math.abs(remaining)}g GEÇTİ` : `📅 ${remaining}g`;
-  return (
-    <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded border ${color}`}>
-      {label}
-    </span>
-  );
-}
-
 // ============================================================
 // KANBAN SÜTUN TANIMLARI
 // SQL CHECK kısıtlamalarıyla (useTaskStore.ts) HARFİYEN eşleşir.
@@ -174,7 +156,19 @@ function KanbanCard({
           {dateStr} {timeStr}
         </span>
         {/* Son tarih badge */}
-        {task.due_date && <DueDateBadge dueDate={task.due_date} />}
+        {task.due_date && (() => {
+          const remaining = Math.ceil((new Date(task.due_date).getTime() - Date.now()) / 86400000);
+          const color = remaining < 0
+            ? 'text-red-400 bg-red-900/30 border-red-500/30'
+            : remaining <= 1
+              ? 'text-orange-400 bg-orange-900/30 border-orange-500/30'
+              : 'text-emerald-400 bg-emerald-900/30 border-emerald-500/30';
+          return (
+            <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded border ${color}`}>
+              {remaining < 0 ? `⏰ ${Math.abs(remaining)}g GEÇTİ` : `📅 ${remaining}g`}
+            </span>
+          );
+        })()}
       </div>
 
       {/* Sürükle göstergesi */}

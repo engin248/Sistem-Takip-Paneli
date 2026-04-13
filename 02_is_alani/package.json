@@ -14,7 +14,8 @@
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "test:e2e": "npx playwright test",
-    "test:e2e:ui": "npx playwright test --ui"
+    "test:e2e:ui": "npx playwright test --ui",
+    "prepare": "husky"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.102.1",
@@ -29,7 +30,6 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",
-    "playwright": "^1.59.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -38,8 +38,10 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.2",
+    "husky": "^9.1.7",
     "jsdom": "^29.0.2",
     "pg": "^8.20.0",
+    "playwright": "^1.59.1",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.4"
