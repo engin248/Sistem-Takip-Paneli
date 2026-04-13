@@ -1,8 +1,8 @@
 #!/bin/sh
 # ============================================================
-# PRE-COMMIT HOOK — TypeScript Build Guard
+# PRE-COMMIT HOOK — TypeScript + Unit Test Guard
 # dc3f2b0 hatası (useMemo import eksikliği) tekrar etmesin
-# Commit ÖNCE build kontrolü yapılır, hata varsa commit ENGELLENIR
+# Commit ÖNCE build + test kontrolü yapılır, hata varsa ENGELLENIR
 # ============================================================
 
 echo "🔍 Pre-commit: TypeScript kontrolü başlıyor..."
@@ -10,7 +10,7 @@ echo "🔍 Pre-commit: TypeScript kontrolü başlıyor..."
 # 02_is_alani dizinine geç
 cd 02_is_alani || exit 0
 
-# TypeScript type check (build'den hızlı)
+# 1. TypeScript type check (build'den hızlı)
 npx tsc --noEmit 2>&1
 TSC_EXIT=$?
 
@@ -22,5 +22,20 @@ if [ $TSC_EXIT -ne 0 ]; then
   exit 1
 fi
 
-echo "✅ TypeScript kontrolü geçti — commit devam ediyor."
+echo "✅ TypeScript kontrolü geçti."
+
+# 2. Unit test kontrolü
+echo "🧪 Pre-commit: Unit testler çalıştırılıyor..."
+npx vitest run 2>&1
+TEST_EXIT=$?
+
+if [ $TEST_EXIT -ne 0 ]; then
+  echo ""
+  echo "❌ COMMIT ENGELLENDİ — Unit testler başarısız!"
+  echo "   Testleri düzelt, sonra tekrar commit et."
+  echo ""
+  exit 1
+fi
+
+echo "✅ Tüm kontroller geçti — commit devam ediyor."
 exit 0
