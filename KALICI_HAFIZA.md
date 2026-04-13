@@ -1,5 +1,5 @@
 # KALICI HAFIZA — STP Proje Durumu
-> **Son Güncelleme:** 13 Nisan 2026 03:51 (UTC+3)
+> **Son Güncelleme:** 13 Nisan 2026 05:37 (UTC+3)
 > **Kaynak:** Canlı sistem verileri
 
 ---
@@ -9,37 +9,25 @@
 |---------|-------|
 | **Çalışma Dizini** | `C:\Users\Esisya\Desktop\Sistem-Takip-Paneli\02_is_alani` |
 | **Git Repo** | `engin248/Sistem-Takip-Paneli` |
-| **Son Commit** | `5f37f27` (main) |
+| **Son Commit** | `b9a4495` (main) |
 | **Canlı** | https://sistem-takip-paneli.vercel.app |
+| **Vercel Durumu** | healthy |
 | **DB** | Supabase `tesxmqhkegotxenoljzl` |
 | **Stack** | Next.js 16.2.2 + TypeScript + TailwindCSS |
-| **Bot** | @Lumora_47bot geçici paylaşımlı (STP'ye özel bot oluşturulacak) |
-| **AI** | Ollama llama3.2:1b (lokal) + OpenAI yedek |
-
----
-
-## DOĞRULAMA (13 Nisan 2026 03:40)
-| Kontrol | Sonuç |
-|---------|-------|
-| Build | ✅ 13 route |
-| TypeScript | ✅ 0 hata |
-| Vitest | ✅ 20/20 |
-| Vercel | ✅ healthy |
-| Telegram | ✅ çalışıyor |
-| Ollama | ✅ 19ms |
-| Git | ✅ temiz |
+| **Auth** | ✅ AÇIK |
+| **Test** | Vitest 92/92 ✅ · TypeScript 0 hata ✅ |
 
 ---
 
 ## DOSYA SAYILARI
 | Dizin | Adet |
 |-------|------|
-| services/ | 20 |
+| services/ | 24 |
 | components/ | 19 |
-| lib/ | 12 |
-| store/ | 4 |
+| lib/ | 15 |
+| store/ | 5 |
 | API routes | 11 |
-| **Toplam src/** | **76** |
+| **Toplam src/** | **84** |
 
 ---
 
