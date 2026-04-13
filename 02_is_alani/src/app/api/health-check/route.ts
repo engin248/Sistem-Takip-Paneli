@@ -54,6 +54,8 @@ export async function GET() {
     });
 
     // ── 2. MİZANET DB (KÖPRÜ) ─────────────────────────────
+    // NOT: EXTERNAL_SUPABASE_URL tanımlı değilse Mizanet kontrolü atlanır.
+    // STP bağımsız çalışır — dış bağımlılık olmadan healthy döner.
     const mizanetInfo = {
       dbConnected: false,
       dbLatencyMs: 0,
@@ -76,29 +78,22 @@ export async function GET() {
           error: bridgePing.error,
         },
       });
-    } else {
+
+      // ── 3. MİZANET WEB SİTESİ ─────────────────────────────
+      const siteCheck = await httpHealthCheck('https://mizanet.com', 8000);
+      mizanetInfo.siteReachable = siteCheck.reachable;
+      mizanetInfo.siteLatencyMs = siteCheck.latencyMs;
+
       systems.push({
-        name: 'Mizanet Veritabanı (cauptlsn...)',
-        status: 'unknown',
-        latencyMs: 0,
-        details: { reason: 'EXTERNAL_SUPABASE_URL tanımlı değil' },
+        name: 'Mizanet Web (mizanet.com)',
+        status: siteCheck.reachable ? 'healthy' : 'down',
+        latencyMs: siteCheck.latencyMs,
+        details: {
+          statusCode: siteCheck.statusCode,
+          error: siteCheck.error,
+        },
       });
     }
-
-    // ── 3. MİZANET WEB SİTESİ ─────────────────────────────
-    const siteCheck = await httpHealthCheck('https://mizanet.com', 8000);
-    mizanetInfo.siteReachable = siteCheck.reachable;
-    mizanetInfo.siteLatencyMs = siteCheck.latencyMs;
-
-    systems.push({
-      name: 'Mizanet Web (mizanet.com)',
-      status: siteCheck.reachable ? 'healthy' : 'down',
-      latencyMs: siteCheck.latencyMs,
-      details: {
-        statusCode: siteCheck.statusCode,
-        error: siteCheck.error,
-      },
-    });
 
     // ── GENEL DURUM HESAPLAMA ─────────────────────────────
     const hasDown = systems.some(s => s.status === 'down');
