@@ -23,6 +23,7 @@
 import { supabase, validateSupabaseConnection } from '@/lib/supabase';
 import { ERR, processError } from '@/lib/errorCore';
 import { logAudit } from './auditService';
+import { getCommandStats, type CommandStats } from './commandArchiveService';
 
 // ─── TİP TANIMLARI ──────────────────────────────────────────
 
@@ -53,6 +54,7 @@ export interface LearningReport {
   patterns: ErrorPattern[];
   anomalies: AnomalyDetection[];
   recommendations: string[];
+  command_stats: CommandStats | null;
 }
 
 // ============================================================
@@ -252,17 +254,41 @@ export async function runSelfLearning(windowHours: number = 24): Promise<Learnin
       patterns: [],
       anomalies: [],
       recommendations: ['Supabase bağlantısı yok. Analiz yapılamaz.'],
+      command_stats: null,
     };
   }
 
-  // 1. Frekans analizi
+  // 1. Hata frekans analizi
   const { patterns, totalErrors } = await analyzeErrorFrequency(windowHours);
 
   // 2. Anomali tespiti
   const anomalies = detectAnomalies(patterns);
 
-  // 3. Öneriler
+  // 3. Komut arşivi analizi (G-8 öğrenme)
+  const commandStats = await getCommandStats(windowHours).catch(() => null);
+
+  // 4. Öneriler (hata + komut pattern'leri birleşik)
   const recommendations = generateRecommendations(patterns, anomalies);
+
+  // Komut istatistiklerinden ek öneriler
+  if (commandStats) {
+    if (commandStats.total_commands > 0) {
+      recommendations.push(
+        `Son ${windowHours} saatte ${commandStats.total_commands} komut işlendi. En aktif: ${commandStats.most_active_sender}.`
+      );
+    }
+    if (commandStats.voice_confirmation_rate !== null && commandStats.voice_confirmation_rate < 80) {
+      recommendations.push(
+        `Sesli komut doğrulama oranı %${commandStats.voice_confirmation_rate} — ses tanıma kalitesi düşük olabilir.`
+      );
+    }
+    const failedCount = commandStats.by_status?.failed || 0;
+    if (failedCount > 0) {
+      recommendations.push(
+        `${failedCount} komut başarısız oldu. Başarısız komut pattern'leri incelenmeli.`
+      );
+    }
+  }
 
   const duration_ms = Date.now() - startTime;
 
@@ -275,21 +301,24 @@ export async function runSelfLearning(windowHours: number = 24): Promise<Learnin
     patterns,
     anomalies,
     recommendations,
+    command_stats: commandStats,
   };
 
   // Raporu audit log'a mühürle
   await logAudit({
     operation_type: 'EXECUTE',
-    action_description: `G-8 Self-Learning tamamlandı: ${totalErrors} hata analiz edildi, ${patterns.length} pattern, ${anomalies.length} anomali — ${duration_ms}ms`,
+    action_description: `G-8 Self-Learning tamamlandı: ${totalErrors} hata + ${commandStats?.total_commands ?? 0} komut analiz edildi — ${duration_ms}ms`,
     metadata: {
       action_code: 'SELF_LEARNING_ANALYSIS',
       total_errors: totalErrors,
+      total_commands: commandStats?.total_commands ?? 0,
       pattern_count: patterns.length,
       anomaly_count: anomalies.length,
       recommendation_count: recommendations.length,
       window_hours: windowHours,
       duration_ms,
       top_errors: patterns.slice(0, 5).map(p => ({ code: p.error_code, count: p.count })),
+      command_sources: commandStats?.by_source ?? {},
     },
   }).catch(() => {});
 
