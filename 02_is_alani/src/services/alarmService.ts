@@ -7,12 +7,15 @@
 //   - Seviye eskalasyonu
 //   - Telegram bildirim entegrasyonu
 //
-// TABLOYA BAĞIMLI DEĞİL — in-memory + audit_logs üzerinden çalışır.
-// İleride STP'nin kendi alarm tablosu oluşturulabilir.
+// DEPOLAMA: stp_alarms tablosu (birincil) + in-memory Map (cache)
+//   - Uygulama başlarken DB'den yüklenir
+//   - Her alarm değişikliği hem Map hem DB'ye yazılır
+//   - Supabase yoksa in-memory only olarak devam eder
 //
 // Hata Kodu: ERR-STP001-001 (genel)
 // ============================================================
 
+import { supabase, validateSupabaseConnection } from '@/lib/supabase';
 import { logAudit } from './auditService';
 import { sendTelegramNotification, isTelegramNotificationAvailable } from './telegramNotifier';
 import { ERR, processError } from '@/lib/errorCore';
@@ -52,15 +55,101 @@ export interface AlarmKaydi {
   son_tetiklenme: string;
 }
 
-// ─── IN-MEMORY ALARM DEPOSU ─────────────────────────────────
-// Basit in-memory depo. Uygulama yeniden başlatılınca sıfırlanır.
-// Kalıcılık için ileride STP alarm tablosu eklenecek.
+// ─── IN-MEMORY CACHE KATMANI ────────────────────────────────
+// stp_alarms tablosu birincil depo.
+// Map cache katmanı — DB yavaş gelirse hız sağlar.
 // ─────────────────────────────────────────────────────────────
 
 const alarmDepo = new Map<string, AlarmKaydi>();
 let alarmSayaci = 0;
+let cacheYuklendi = false;
 
-// ─── ALARM ÜRET ─────────────────────────────────────────────
+// ─── DB BAĞLANTI KONTROLÜ ───────────────────────────────────
+
+function isDbConnected(): boolean {
+  return validateSupabaseConnection().isValid;
+}
+
+// ============================================================
+// DB SENKRONIZASYON KATMANI
+// ============================================================
+
+/** DB'ye alarm yazar veya günceller */
+async function persistAlarmToDB(alarm: AlarmKaydi): Promise<void> {
+  if (!isDbConnected()) return;
+
+  try {
+    await supabase.from('stp_alarms').upsert({
+      id: alarm.id,
+      baslik: alarm.baslik,
+      aciklama: alarm.aciklama,
+      seviye: alarm.seviye,
+      modul: alarm.modul,
+      durum: alarm.durum,
+      tekrar_sayisi: alarm.tekrar_sayisi,
+      ilk_tetiklenme: alarm.ilk_tetiklenme,
+      son_tetiklenme: alarm.son_tetiklenme,
+    }, { onConflict: 'id' });
+  } catch (err) {
+    processError(ERR.SYSTEM_GENERAL, err, {
+      kaynak: 'alarmService.ts',
+      islem: 'PERSIST_ALARM',
+      alarm_id: alarm.id,
+    }, 'WARNING');
+  }
+}
+
+/** DB'den tüm açık alarmları yükler (cache başlatma) */
+async function loadAlarmsFromDB(): Promise<void> {
+  if (!isDbConnected() || cacheYuklendi) return;
+
+  try {
+    const { data, error } = await supabase
+      .from('stp_alarms')
+      .select('*')
+      .neq('durum', 'COZULDU')
+      .order('ilk_tetiklenme', { ascending: false });
+
+    if (error) {
+      processError(ERR.SYSTEM_GENERAL, error, {
+        kaynak: 'alarmService.ts',
+        islem: 'LOAD_FROM_DB',
+      }, 'WARNING');
+      cacheYuklendi = true;
+      return;
+    }
+
+    if (data) {
+      for (const row of data) {
+        const alarm: AlarmKaydi = {
+          id: row.id as string,
+          baslik: row.baslik as string,
+          aciklama: row.aciklama as string,
+          seviye: row.seviye as AlarmSeviye,
+          modul: row.modul as string,
+          durum: row.durum as AlarmDurum,
+          tekrar_sayisi: row.tekrar_sayisi as number,
+          ilk_tetiklenme: row.ilk_tetiklenme as string,
+          son_tetiklenme: row.son_tetiklenme as string,
+        };
+        alarmDepo.set(`${alarm.modul}::${alarm.baslik}`, alarm);
+        alarmSayaci = Math.max(alarmSayaci, 1);
+      }
+    }
+
+    cacheYuklendi = true;
+  } catch (err) {
+    processError(ERR.SYSTEM_GENERAL, err, {
+      kaynak: 'alarmService.ts',
+      islem: 'LOAD_FROM_DB',
+    }, 'WARNING');
+    cacheYuklendi = true;
+  }
+}
+
+// ============================================================
+// 1. ALARM ÜRET
+// ============================================================
 
 export interface AlarmUretParams {
   baslik: string;
@@ -72,6 +161,7 @@ export interface AlarmUretParams {
 /**
  * Alarm üretir. Aynı modül + başlıkta açık alarm varsa tekrar sayacını artırır.
  * 3 tekrar → seviye EMERGENCY'ye yükselir (SKM Kural #49).
+ * DB'ye yazılır. Uygulama yeniden başlasa bile alarmlar korunur.
  */
 export async function alarmUret({
   baslik,
@@ -79,9 +169,10 @@ export async function alarmUret({
   seviye = ALARM_SEVIYE.WARNING,
   modul,
 }: AlarmUretParams): Promise<{ alarm: AlarmKaydi; yeni: boolean }> {
-  const anahtar = `${modul}::${baslik}`;
+  // İlk çağrıda DB'den yükle
+  await loadAlarmsFromDB();
 
-  // Mevcut açık alarm kontrolü
+  const anahtar = `${modul}::${baslik}`;
   const mevcut = alarmDepo.get(anahtar);
 
   if (mevcut && mevcut.durum !== ALARM_DURUM.COZULDU) {
@@ -106,7 +197,10 @@ export async function alarmUret({
       }
     }
 
-    // Audit log — tekrar kaydı
+    // DB'ye yaz
+    await persistAlarmToDB(mevcut);
+
+    // Audit log
     await logAudit({
       operation_type: 'SYSTEM',
       action_description: `Alarm tekrar: "${baslik}" [${modul}] — ${mevcut.tekrar_sayisi}x — ${mevcut.seviye}`,
@@ -138,7 +232,10 @@ export async function alarmUret({
 
   alarmDepo.set(anahtar, yeniAlarm);
 
-  // Audit log — yeni alarm
+  // DB'ye yaz
+  await persistAlarmToDB(yeniAlarm);
+
+  // Audit log
   await logAudit({
     operation_type: 'SYSTEM',
     action_description: `Yeni alarm: "${baslik}" [${modul}] — ${seviye}`,
@@ -170,12 +267,18 @@ export async function alarmUret({
 // ─── ALARM DURUMU GÜNCELLE ──────────────────────────────────
 
 export async function alarmDurumGuncelle(modul: string, baslik: string, durum: AlarmDurum): Promise<boolean> {
+  await loadAlarmsFromDB();
+
   const anahtar = `${modul}::${baslik}`;
   const alarm = alarmDepo.get(anahtar);
 
   if (!alarm) return false;
 
   alarm.durum = durum;
+  alarm.son_tetiklenme = new Date().toISOString();
+
+  // DB'ye yaz
+  await persistAlarmToDB(alarm);
 
   await logAudit({
     operation_type: 'UPDATE',
@@ -191,13 +294,12 @@ export async function alarmDurumGuncelle(modul: string, baslik: string, durum: A
   return true;
 }
 
-// ─── AÇIK ALARMLARI GETİR ──────────────────────────────────
+// ─── AÇIK ALARMLARI GETİR ───────────────────────────────────
 
 export function getAcikAlarmlar(): AlarmKaydi[] {
   return Array.from(alarmDepo.values())
     .filter(a => a.durum !== ALARM_DURUM.COZULDU)
     .sort((a, b) => {
-      // EMERGENCY önce, sonra tekrar sayısına göre
       const seviyeSirasi: Record<string, number> = { EMERGENCY: 0, CRITICAL: 1, WARNING: 2, INFO: 3 };
       const aSira = seviyeSirasi[a.seviye] ?? 4;
       const bSira = seviyeSirasi[b.seviye] ?? 4;
@@ -225,4 +327,12 @@ export function getAlarmStats(): {
     critical: aciklar.filter(a => a.seviye === ALARM_SEVIYE.CRITICAL).length,
     warning: aciklar.filter(a => a.seviye === ALARM_SEVIYE.WARNING).length,
   };
+}
+
+// ─── CACHE SIFIRLA (test/restart için) ──────────────────────
+
+export function resetAlarmCache(): void {
+  alarmDepo.clear();
+  alarmSayaci = 0;
+  cacheYuklendi = false;
 }
