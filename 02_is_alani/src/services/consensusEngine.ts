@@ -11,7 +11,7 @@
 //   ERR-STP001-021 → Konsensüs hesaplaması başarısız
 // ============================================================
 
-import OpenAI from 'openai';
+
 import { ERR, processError } from '@/lib/errorCore';
 import { aiComplete } from '@/lib/aiProvider';
 
@@ -149,59 +149,6 @@ function localVote(agent: AgentRole, title: string, description: string, categor
   };
 }
 
-// ─── AI VOTING ENGINE ───────────────────────────────────────
-// Her ajan bağımsız bir OpenAI çağrısı yapar.
-// API key yoksa lokal fallback devralır.
-// ─────────────────────────────────────────────────────────────
-
-async function aiVote(
-  client: OpenAI,
-  agent: AgentRole,
-  title: string,
-  description: string,
-  category: DecisionCategory
-): Promise<AgentVote> {
-  try {
-    const userMessage = `KARAR BAŞLIĞI: ${title}\nKATEGORİ: ${category}\nAÇIKLAMA: ${description || 'Açıklama belirtilmedi.'}`;
-
-    const response = await client.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: AGENT_PROMPTS[agent] },
-        { role: 'user', content: userMessage },
-      ],
-      temperature: 0.3,
-      max_tokens: 200,
-      response_format: { type: 'json_object' },
-    });
-
-    const content = response.choices?.[0]?.message?.content;
-    if (!content) throw new Error('AI boş yanıt döndürdü');
-
-    const parsed = JSON.parse(content) as { vote?: string; reasoning?: string; confidence?: number };
-
-    const vote: VoteResult = parsed.vote === 'RED' ? 'RED' : 'ONAY';
-    const confidence = typeof parsed.confidence === 'number'
-      ? Math.max(0, Math.min(1, parsed.confidence))
-      : 0.7;
-
-    return {
-      agent,
-      vote,
-      reasoning: parsed.reasoning || `${agent} ajanı ${vote} oyu verdi.`,
-      confidence,
-      evaluatedAt: new Date().toISOString(),
-    };
-  } catch (error) {
-    processError(ERR.BOARD_VOTE, error, {
-      kaynak: 'consensusEngine.ts',
-      islem: 'AI_VOTE',
-      agent,
-    });
-    // Fallback: Lokal oylama
-    return localVote(agent, title, description, category);
-  }
-}
 
 // ─── MÜHÜR HASH ÜRETİCİ ────────────────────────────────────
 // SHA-256 benzeri deterministik hash üretir.

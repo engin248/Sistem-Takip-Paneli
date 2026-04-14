@@ -1,116 +1,81 @@
+﻿// ============================================================
+// AI MANAGER â€” GÃ–REV ANALÄ°Z VE Ã–NCELÄ°K ATAMA MOTORU
 // ============================================================
-// AI MANAGER — GÖREV ANALİZ VE ÖNCELİK ATAMA MOTORU
-// ============================================================
-// Gelen görevleri analiz edip TaskPriority atar.
-// ÜÇ katmanlı çalışır:
-//   1. OLLAMA (Yerel AI): Maliyet SIFIR — öncelikli sağlayıcı
-//   2. OPENAI (Dış AI): Fallback — Ollama yoksa devreye girer
-//   3. LOKAL (Kural tabanlı): Her koşulda çalışır
-// Hata Kodları:
-//   ERR-STP001-014 → AI analiz başarısız
-//   ERR-STP001-015 → OpenAI API bağlantı hatası
-//   ERR-STP001-040 → Ollama bağlantı hatası
+// Gelen gÃ¶revleri analiz edip TaskPriority atar.
+// ÃœÃ‡ katmanlÄ± Ã§alÄ±ÅŸÄ±r:
+//   1. OLLAMA (Yerel AI): Maliyet SIFIR â€” Ã¶ncelikli saÄŸlayÄ±cÄ±
+//   2. OPENAI (DÄ±ÅŸ AI): Fallback â€” Ollama yoksa devreye girer
+//   3. LOKAL (Kural tabanlÄ±): Her koÅŸulda Ã§alÄ±ÅŸÄ±r
+// Hata KodlarÄ±:
+//   ERR-STP001-014 â†’ AI analiz baÅŸarÄ±sÄ±z
+//   ERR-STP001-015 â†’ OpenAI API baÄŸlantÄ± hatasÄ±
+//   ERR-STP001-040 â†’ Ollama baÄŸlantÄ± hatasÄ±
 // ============================================================
 
-import OpenAI from 'openai';
+
 import { ERR, processError } from '@/lib/errorCore';
 import { logAudit } from './auditService';
 import { aiComplete, getProviderStatus } from '@/lib/aiProvider';
 import type { TaskPriority } from '@/store/useTaskStore';
 
-// ─── OPENAI CLIENT ──────────────────────────────────────────
-// .env.local'dan OPENAI_API_KEY okunur.
-// Key yoksa AI analizi devre dışı kalır, lokal analiz devralır.
-// ─────────────────────────────────────────────────────────────
-const apiKey = process.env.OPENAI_API_KEY ?? '';
-
-let openai: OpenAI | null = null;
-
-/**
- * OpenAI client'ı lazily başlatır.
- * API key yoksa null döner — AI analizi devre dışı kalır.
- */
-function getOpenAIClient(): OpenAI | null {
-  if (openai) return openai;
-
-  if (!apiKey || apiKey === '' || apiKey.includes('your-api-key')) {
-    processError(ERR.AI_CONNECTION, new Error('OPENAI_API_KEY tanımlı değil veya geçersiz'), {
-      kaynak: 'aiManager.ts',
-      islem: 'CLIENT_INIT'
-    }, 'WARNING');
-    return null;
-  }
-
-  try {
-    openai = new OpenAI({ apiKey });
-    return openai;
-  } catch (error) {
-    processError(ERR.AI_CONNECTION, error, {
-      kaynak: 'aiManager.ts',
-      islem: 'CLIENT_INIT'
-    }, 'CRITICAL');
-    return null;
-  }
-}
-
-// ─── ÖNCELİK ANALİZ SONUCU ─────────────────────────────────
+// â”€â”€â”€ Ã–NCELÄ°K ANALÄ°Z SONUCU â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export interface PriorityAnalysisResult {
-  /** Atanan öncelik seviyesi */
+  /** Atanan Ã¶ncelik seviyesi */
   priority: TaskPriority;
-  /** Öncelik atama gerekçesi */
+  /** Ã–ncelik atama gerekÃ§esi */
   reasoning: string;
-  /** Analiz kaynağı: 'local' (kural tabanlı) veya 'ai' (GPT) */
+  /** Analiz kaynaÄŸÄ±: 'local' (kural tabanlÄ±) veya 'ai' (GPT) */
   source: 'local' | 'ai';
-  /** Güven skoru (0.0 – 1.0) */
+  /** GÃ¼ven skoru (0.0 â€“ 1.0) */
   confidence: number;
   /** Tespit edilen anahtar kelimeler */
   detectedKeywords: string[];
 }
 
-// ─── ANAHTAR KELİME SÖZLÜĞÜ ────────────────────────────────
-// Her öncelik seviyesi için tetikleyici anahtar kelimeler.
-// Türkçe ve İngilizce desteklenir.
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ ANAHTAR KELÄ°ME SÃ–ZLÃœÄÃœ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Her Ã¶ncelik seviyesi iÃ§in tetikleyici anahtar kelimeler.
+// TÃ¼rkÃ§e ve Ä°ngilizce desteklenir.
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const PRIORITY_KEYWORDS: Record<TaskPriority, string[]> = {
   kritik: [
     // TR
-    'acil', 'kritik', 'çökme', 'çöktü', 'arıza', 'kesinti', 'patlama',
-    'durdur', 'kriz', 'tehlike', 'güvenlik açığı', 'veri kaybı', 'sızıntı',
-    'fatal', 'ölümcül', 'sistem çöktü', 'erişilemiyor', 'veritabanı hatası',
-    'production down', 'üretim durdu', 'müdahale',
+    'acil', 'kritik', 'Ã§Ã¶kme', 'Ã§Ã¶ktÃ¼', 'arÄ±za', 'kesinti', 'patlama',
+    'durdur', 'kriz', 'tehlike', 'gÃ¼venlik aÃ§Ä±ÄŸÄ±', 'veri kaybÄ±', 'sÄ±zÄ±ntÄ±',
+    'fatal', 'Ã¶lÃ¼mcÃ¼l', 'sistem Ã§Ã¶ktÃ¼', 'eriÅŸilemiyor', 'veritabanÄ± hatasÄ±',
+    'production down', 'Ã¼retim durdu', 'mÃ¼dahale',
     // EN
     'critical', 'crash', 'outage', 'emergency', 'urgent', 'security breach',
     'data loss', 'production down', 'fatal error', 'system failure',
   ],
   yuksek: [
     // TR
-    'önemli', 'öncelikli', 'hızlı', 'ivedi', 'servis hatası', 'performans',
-    'yavaş', 'timeout', 'gecikme', 'müşteri şikayeti', 'hata raporu',
-    'bug', 'bozuk', 'çalışmıyor', 'düzeltilmeli', 'deadline', 'teslim',
+    'Ã¶nemli', 'Ã¶ncelikli', 'hÄ±zlÄ±', 'ivedi', 'servis hatasÄ±', 'performans',
+    'yavaÅŸ', 'timeout', 'gecikme', 'mÃ¼ÅŸteri ÅŸikayeti', 'hata raporu',
+    'bug', 'bozuk', 'Ã§alÄ±ÅŸmÄ±yor', 'dÃ¼zeltilmeli', 'deadline', 'teslim',
     // EN
     'high priority', 'important', 'bug', 'broken', 'not working', 'slow',
     'timeout', 'customer complaint', 'deadline', 'performance issue',
   ],
   normal: [
     // TR
-    'güncelle', 'ekle', 'düzenle', 'iyileştir', 'geliştir', 'refactor',
-    'optimize', 'bakım', 'rutin', 'planlı', 'ayarla', 'yapılandır',
+    'gÃ¼ncelle', 'ekle', 'dÃ¼zenle', 'iyileÅŸtir', 'geliÅŸtir', 'refactor',
+    'optimize', 'bakÄ±m', 'rutin', 'planlÄ±', 'ayarla', 'yapÄ±landÄ±r',
     // EN
     'update', 'add', 'modify', 'improve', 'enhance', 'refactor',
     'optimize', 'maintenance', 'configure', 'scheduled',
   ],
   dusuk: [
     // TR
-    'araştır', 'incele', 'not', 'belge', 'dokümantasyon', 'ileride',
-    'düşün', 'fikir', 'öneri', 'kozmetik', 'renk', 'font', 'typo',
-    'yazım hatası', 'biçim', 'format',
+    'araÅŸtÄ±r', 'incele', 'not', 'belge', 'dokÃ¼mantasyon', 'ileride',
+    'dÃ¼ÅŸÃ¼n', 'fikir', 'Ã¶neri', 'kozmetik', 'renk', 'font', 'typo',
+    'yazÄ±m hatasÄ±', 'biÃ§im', 'format',
     // EN
     'research', 'investigate', 'note', 'documentation', 'someday',
     'idea', 'suggestion', 'cosmetic', 'typo', 'formatting',
   ],
 };
 
-// ─── KELİME AĞIRLIK TABLOSU ────────────────────────────────
+// â”€â”€â”€ KELÄ°ME AÄIRLIK TABLOSU â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const PRIORITY_WEIGHTS: Record<TaskPriority, number> = {
   kritik: 4,
   yuksek: 3,
@@ -119,16 +84,16 @@ const PRIORITY_WEIGHTS: Record<TaskPriority, number> = {
 };
 
 // ============================================================
-// 1. LOKAL ANALİZ (Kural Tabanlı)
+// 1. LOKAL ANALÄ°Z (Kural TabanlÄ±)
 // ============================================================
 // Anahtar kelime tarama + heuristik puanlama.
-// API bağlantısı gerektirmez — her koşulda çalışır.
+// API baÄŸlantÄ±sÄ± gerektirmez â€” her koÅŸulda Ã§alÄ±ÅŸÄ±r.
 // ============================================================
 export function analyzeLocalPriority(taskTitle: string, taskDescription?: string | null): PriorityAnalysisResult {
   const text = `${taskTitle} ${taskDescription || ''}`.toLowerCase().trim();
   const detectedKeywords: string[] = [];
 
-  // Her öncelik seviyesi için eşleşme sayısını hesapla
+  // Her Ã¶ncelik seviyesi iÃ§in eÅŸleÅŸme sayÄ±sÄ±nÄ± hesapla
   const scores: Record<TaskPriority, number> = {
     kritik: 0,
     yuksek: 0,
@@ -145,8 +110,8 @@ export function analyzeLocalPriority(taskTitle: string, taskDescription?: string
     }
   }
 
-  // En yüksek puanlı önceliği seç
-  let winningPriority: TaskPriority = 'normal'; // Varsayılan
+  // En yÃ¼ksek puanlÄ± Ã¶nceliÄŸi seÃ§
+  let winningPriority: TaskPriority = 'normal'; // VarsayÄ±lan
   let maxScore = 0;
 
   for (const [priority, score] of Object.entries(scores) as [TaskPriority, number][]) {
@@ -156,38 +121,38 @@ export function analyzeLocalPriority(taskTitle: string, taskDescription?: string
     }
   }
 
-  // Güven skoru: eşleşme kalitesine göre 0-1 arası
-  // Hiç eşleşme yoksa düşük güven (varsayılan 'normal' atanır)
+  // GÃ¼ven skoru: eÅŸleÅŸme kalitesine gÃ¶re 0-1 arasÄ±
+  // HiÃ§ eÅŸleÅŸme yoksa dÃ¼ÅŸÃ¼k gÃ¼ven (varsayÄ±lan 'normal' atanÄ±r)
   const totalKeywords = detectedKeywords.length;
   const confidence = totalKeywords === 0
-    ? 0.3 // Eşleşme yok — düşük güven ile varsayılan
+    ? 0.3 // EÅŸleÅŸme yok â€” dÃ¼ÅŸÃ¼k gÃ¼ven ile varsayÄ±lan
     : Math.min(1.0, 0.5 + (totalKeywords * 0.1));
 
-  // Heuristik kurallar (anahtar kelime dışı)
-  // Kural-1: Ünlem işareti yoğunluğu → yükseltme
+  // Heuristik kurallar (anahtar kelime dÄ±ÅŸÄ±)
+  // Kural-1: Ãœnlem iÅŸareti yoÄŸunluÄŸu â†’ yÃ¼kseltme
   const exclamationCount = (text.match(/!/g) || []).length;
   if (exclamationCount >= 3 && winningPriority !== 'kritik') {
     winningPriority = 'yuksek';
-    detectedKeywords.push('!!! (ünlem yoğunluğu)');
+    detectedKeywords.push('!!! (Ã¼nlem yoÄŸunluÄŸu)');
   }
 
-  // Kural-2: BÜYÜK HARF kullanımı → aciliyet sinyali
-  const uppercaseRatio = (taskTitle.replace(/[^A-ZÇĞİÖŞÜ]/g, '').length) / Math.max(taskTitle.length, 1);
+  // Kural-2: BÃœYÃœK HARF kullanÄ±mÄ± â†’ aciliyet sinyali
+  const uppercaseRatio = (taskTitle.replace(/[^A-ZÃ‡ÄÄ°Ã–ÅÃœ]/g, '').length) / Math.max(taskTitle.length, 1);
   if (uppercaseRatio > 0.6 && winningPriority !== 'kritik') {
     if (winningPriority === 'normal' || winningPriority === 'dusuk') {
       winningPriority = 'yuksek';
-      detectedKeywords.push('BÜYÜK HARF (aciliyet sinyali)');
+      detectedKeywords.push('BÃœYÃœK HARF (aciliyet sinyali)');
     }
   }
 
-  // Kural-3: Çok kısa başlık (< 5 karakter) → belirsizlik → normal
+  // Kural-3: Ã‡ok kÄ±sa baÅŸlÄ±k (< 5 karakter) â†’ belirsizlik â†’ normal
   if (taskTitle.trim().length < 5 && totalKeywords === 0) {
     winningPriority = 'normal';
   }
 
   const reasoning = totalKeywords > 0
-    ? `Lokal analiz: ${totalKeywords} anahtar kelime tespit edildi [${detectedKeywords.slice(0, 5).join(', ')}]. Ağırlıklı puan: ${maxScore}.`
-    : 'Lokal analiz: Belirleyici anahtar kelime bulunamadı. Varsayılan öncelik (normal) atandı.';
+    ? `Lokal analiz: ${totalKeywords} anahtar kelime tespit edildi [${detectedKeywords.slice(0, 5).join(', ')}]. AÄŸÄ±rlÄ±klÄ± puan: ${maxScore}.`
+    : 'Lokal analiz: Belirleyici anahtar kelime bulunamadÄ±. VarsayÄ±lan Ã¶ncelik (normal) atandÄ±.';
 
   return {
     priority: winningPriority,
@@ -199,34 +164,34 @@ export function analyzeLocalPriority(taskTitle: string, taskDescription?: string
 }
 
 // ============================================================
-// 2. AI ANALİZ (Ollama → OpenAI → Lokal Fallback Zinciri)
+// 2. AI ANALÄ°Z (Ollama â†’ OpenAI â†’ Lokal Fallback Zinciri)
 // ============================================================
-// aiProvider soyutlama katmanını kullanır.
-// Öncelik: Ollama (yerel, ücretsiz) → OpenAI (dış) → Lokal.
+// aiProvider soyutlama katmanÄ±nÄ± kullanÄ±r.
+// Ã–ncelik: Ollama (yerel, Ã¼cretsiz) â†’ OpenAI (dÄ±ÅŸ) â†’ Lokal.
 // ============================================================
 export async function analyzeWithAI(
   taskTitle: string,
   taskDescription?: string | null
 ): Promise<PriorityAnalysisResult> {
-  const systemPrompt = `Sen bir görev önceliklendirme asistanısın. Verilen görev başlığı ve açıklamasını analiz edip öncelik seviyesi belirle.
+  const systemPrompt = `Sen bir gÃ¶rev Ã¶nceliklendirme asistanÄ±sÄ±n. Verilen gÃ¶rev baÅŸlÄ±ÄŸÄ± ve aÃ§Ä±klamasÄ±nÄ± analiz edip Ã¶ncelik seviyesi belirle.
 
-ÖNCELİK SEVİYELERİ:
-- "kritik": Sistem çökmesi, güvenlik açığı, veri kaybı, üretim durması — ANINDA müdahale gerektirir.
-- "yuksek": Önemli hatalar, performans sorunları, müşteri şikayetleri, yakın tarihli deadline — aynı gün içinde çözülmeli.
-- "normal": Rutin geliştirme, iyileştirme, bakım işleri — standart iş akışında çözülür.
-- "dusuk": Araştırma, dokümantasyon, kozmetik düzeltmeler, uzun vadeli fikirler — zamanı geldiğinde yapılır.
+Ã–NCELÄ°K SEVÄ°YELERÄ°:
+- "kritik": Sistem Ã§Ã¶kmesi, gÃ¼venlik aÃ§Ä±ÄŸÄ±, veri kaybÄ±, Ã¼retim durmasÄ± â€” ANINDA mÃ¼dahale gerektirir.
+- "yuksek": Ã–nemli hatalar, performans sorunlarÄ±, mÃ¼ÅŸteri ÅŸikayetleri, yakÄ±n tarihli deadline â€” aynÄ± gÃ¼n iÃ§inde Ã§Ã¶zÃ¼lmeli.
+- "normal": Rutin geliÅŸtirme, iyileÅŸtirme, bakÄ±m iÅŸleri â€” standart iÅŸ akÄ±ÅŸÄ±nda Ã§Ã¶zÃ¼lÃ¼r.
+- "dusuk": AraÅŸtÄ±rma, dokÃ¼mantasyon, kozmetik dÃ¼zeltmeler, uzun vadeli fikirler â€” zamanÄ± geldiÄŸinde yapÄ±lÄ±r.
 
-CEVAP FORMATI (sadece JSON, başka bir şey yazma):
+CEVAP FORMATI (sadece JSON, baÅŸka bir ÅŸey yazma):
 {
   "priority": "kritik" | "yuksek" | "normal" | "dusuk",
-  "reasoning": "Kısa gerekçe (max 100 karakter)",
+  "reasoning": "KÄ±sa gerekÃ§e (max 100 karakter)",
   "confidence": 0.0-1.0
 }`;
 
-  const userMessage = `Görev Başlığı: ${taskTitle}${taskDescription ? `\nGörev Açıklaması: ${taskDescription}` : ''}`;
+  const userMessage = `GÃ¶rev BaÅŸlÄ±ÄŸÄ±: ${taskTitle}${taskDescription ? `\nGÃ¶rev AÃ§Ä±klamasÄ±: ${taskDescription}` : ''}`;
 
   try {
-    // aiProvider fallback zinciri: Ollama → OpenAI → null
+    // aiProvider fallback zinciri: Ollama â†’ OpenAI â†’ null
     const response = await aiComplete({
       systemPrompt,
       userMessage,
@@ -235,7 +200,7 @@ CEVAP FORMATI (sadece JSON, başka bir şey yazma):
       jsonMode: true,
     });
 
-    // Tüm AI sağlayıcılar devre dışı → lokal devralır
+    // TÃ¼m AI saÄŸlayÄ±cÄ±lar devre dÄ±ÅŸÄ± â†’ lokal devralÄ±r
     if (!response) {
       return analyzeLocalPriority(taskTitle, taskDescription);
     }
@@ -254,7 +219,7 @@ CEVAP FORMATI (sadece JSON, başka bir şey yazma):
       return analyzeLocalPriority(taskTitle, taskDescription);
     }
 
-    // Geçerlilik kontrolü
+    // GeÃ§erlilik kontrolÃ¼
     const validPriorities: TaskPriority[] = ['kritik', 'yuksek', 'normal', 'dusuk'];
     const aiPriority = validPriorities.includes(parsed.priority as TaskPriority)
       ? (parsed.priority as TaskPriority)
@@ -264,10 +229,10 @@ CEVAP FORMATI (sadece JSON, başka bir şey yazma):
       ? Math.max(0, Math.min(1, parsed.confidence))
       : 0.7;
 
-    // Audit log — AI analiz kaydı
+    // Audit log â€” AI analiz kaydÄ±
     await logAudit({
       operation_type: 'EXECUTE',
-      action_description: `AI görev analizi tamamlandı: "${taskTitle}" → ${aiPriority.toUpperCase()} [${response.provider}]`,
+      action_description: `AI gÃ¶rev analizi tamamlandÄ±: "${taskTitle}" â†’ ${aiPriority.toUpperCase()} [${response.provider}]`,
       metadata: {
         action_code: 'AI_PRIORITY_ANALYSIS',
         provider: response.provider,
@@ -280,12 +245,12 @@ CEVAP FORMATI (sadece JSON, başka bir şey yazma):
         cost: response.provider === 'ollama' ? 0 : undefined,
       },
     }).catch(() => {
-      // Audit yazma hatası — processError zaten auditService içinde loglanıyor
+      // Audit yazma hatasÄ± â€” processError zaten auditService iÃ§inde loglanÄ±yor
     });
 
     return {
       priority: aiPriority,
-      reasoning: parsed.reasoning || `${response.provider} analiz: ${aiPriority} öncelik atandı (güven: ${aiConfidence})`,
+      reasoning: parsed.reasoning || `${response.provider} analiz: ${aiPriority} Ã¶ncelik atandÄ± (gÃ¼ven: ${aiConfidence})`,
       source: 'ai',
       confidence: aiConfidence,
       detectedKeywords: [],
@@ -296,24 +261,24 @@ CEVAP FORMATI (sadece JSON, başka bir şey yazma):
       islem: 'AI_COMPLETE',
     });
 
-    // Fallback: Lokal analiz devralır
+    // Fallback: Lokal analiz devralÄ±r
     return analyzeLocalPriority(taskTitle, taskDescription);
   }
 }
 
 // ============================================================
-// 3. ANA ANALİZ FONKSİYONU (ORKESTRATÖR)
+// 3. ANA ANALÄ°Z FONKSÄ°YONU (ORKESTRATÃ–R)
 // ============================================================
-// Dış dünya bu fonksiyonu çağırır.
-// AI mevcut ve çalışıyorsa → AI analizi.
-// AI mevcut değilse veya hata oluşursa → Lokal analiz.
-// Her durumda bir sonuç döner — sistem asla bloke olmaz.
+// DÄ±ÅŸ dÃ¼nya bu fonksiyonu Ã§aÄŸÄ±rÄ±r.
+// AI mevcut ve Ã§alÄ±ÅŸÄ±yorsa â†’ AI analizi.
+// AI mevcut deÄŸilse veya hata oluÅŸursa â†’ Lokal analiz.
+// Her durumda bir sonuÃ§ dÃ¶ner â€” sistem asla bloke olmaz.
 // ============================================================
 
 export interface AnalysisOptions {
-  /** true ise AI analizi dener, yoksa sadece lokal. Varsayılan: true */
+  /** true ise AI analizi dener, yoksa sadece lokal. VarsayÄ±lan: true */
   useAI?: boolean;
-  /** AI yanıt timeout süresi (ms). Varsayılan: 10000 */
+  /** AI yanÄ±t timeout sÃ¼resi (ms). VarsayÄ±lan: 10000 */
   timeoutMs?: number;
 }
 
@@ -324,12 +289,12 @@ export async function analyzeTaskPriority(
 ): Promise<PriorityAnalysisResult> {
   const { useAI = true, timeoutMs = 10000 } = options;
 
-  // AI devre dışı bırakılmışsa doğrudan lokal
+  // AI devre dÄ±ÅŸÄ± bÄ±rakÄ±lmÄ±ÅŸsa doÄŸrudan lokal
   if (!useAI) {
     return analyzeLocalPriority(taskTitle, taskDescription);
   }
 
-  // AI analizi — timeout korumalı
+  // AI analizi â€” timeout korumalÄ±
   try {
     const aiPromise = analyzeWithAI(taskTitle, taskDescription);
     const timeoutPromise = new Promise<PriorityAnalysisResult>((_, reject) => {
@@ -344,45 +309,46 @@ export async function analyzeTaskPriority(
       fallback: 'LOCAL',
     }, 'WARNING');
 
-    // Timeout veya beklenmeyen hata → lokal devralır
+    // Timeout veya beklenmeyen hata â†’ lokal devralÄ±r
     return analyzeLocalPriority(taskTitle, taskDescription);
   }
 }
 
 // ============================================================
-// 4. YARDIMCI FONKSİYONLAR
+// 4. YARDIMCI FONKSÄ°YONLAR
 // ============================================================
 
-/** AI sağlayıcının (Ollama veya OpenAI) mevcut olup olmadığını kontrol eder */
+/** AI saÄŸlayÄ±cÄ±nÄ±n (Ollama veya OpenAI) mevcut olup olmadÄ±ÄŸÄ±nÄ± kontrol eder */
 export function isAIAvailable(): boolean {
-  // Ollama veya OpenAI — biri bile varsa AI mevcut
-  return !!(apiKey && apiKey !== '' && !apiKey.includes('your-api-key')) ||
+  // Ollama veya OpenAI â€” biri bile varsa AI mevcut
+  const openaiKey = process.env.OPENAI_API_KEY ?? '';
+  return !!(openaiKey && openaiKey !== '' && !openaiKey.includes('your-api-key')) ||
     !!(process.env.OLLAMA_BASE_URL || process.env.OLLAMA_MODEL);
 }
 
-/** Aktif AI sağlayıcı durumunu döndürür */
+/** Aktif AI saÄŸlayÄ±cÄ± durumunu dÃ¶ndÃ¼rÃ¼r */
 export async function getActiveAIProvider() {
   return getProviderStatus();
 }
 
-/** Öncelik seviyesini Türkçe etiket olarak döndürür */
+/** Ã–ncelik seviyesini TÃ¼rkÃ§e etiket olarak dÃ¶ndÃ¼rÃ¼r */
 export function getPriorityLabel(priority: TaskPriority): string {
   const labels: Record<TaskPriority, string> = {
-    kritik: '🔴 KRİTİK',
-    yuksek: '🟠 YÜKSEK',
-    normal: '🟡 NORMAL',
-    dusuk: '🟢 DÜŞÜK',
+    kritik: 'ğŸ”´ KRÄ°TÄ°K',
+    yuksek: 'ğŸŸ  YÃœKSEK',
+    normal: 'ğŸŸ¡ NORMAL',
+    dusuk: 'ğŸŸ¢ DÃœÅÃœK',
   };
-  return labels[priority] || '🟡 NORMAL';
+  return labels[priority] || 'ğŸŸ¡ NORMAL';
 }
 
-/** Öncelik seviyesine göre Telegram emoji döndürür */
+/** Ã–ncelik seviyesine gÃ¶re Telegram emoji dÃ¶ndÃ¼rÃ¼r */
 export function getPriorityEmoji(priority: TaskPriority): string {
   const emojis: Record<TaskPriority, string> = {
-    kritik: '🚨',
-    yuksek: '⚠️',
-    normal: '📋',
-    dusuk: '📝',
+    kritik: 'ğŸš¨',
+    yuksek: 'âš ï¸',
+    normal: 'ğŸ“‹',
+    dusuk: 'ğŸ“',
   };
-  return emojis[priority] || '📋';
+  return emojis[priority] || 'ğŸ“‹';
 }

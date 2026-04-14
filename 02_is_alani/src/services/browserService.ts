@@ -26,6 +26,19 @@ import { chromium, type Browser, type Page, type BrowserContext } from 'playwrig
 import { ERR, processError } from '@/lib/errorCore';
 import { logAudit } from './auditService';
 
+// ─── VERCEL ORTAM KORUYUCUSU ────────────────────────────────
+// Vercel serverless ortamında Chromium ÇALIŞTIRILAMAZ.
+// Her exported fonksiyon başında bu kontrol tetiklenir.
+// ─────────────────────────────────────────────────────────────
+
+function isVercelEnvironment(): boolean {
+  return !!(process.env.VERCEL || process.env.VERCEL_ENV || process.env.VERCEL_URL);
+}
+
+function vercelGuardError(operation: string): string {
+  return `browserService.${operation}() Vercel serverless ortamında çalışmaz. Docker/VPS/lokal geliştirme gerektirir. VERCEL env aktif.`;
+}
+
 // ─── YAPILANDIRMA ───────────────────────────────────────────
 
 const BROWSER_CONFIG = {
@@ -175,6 +188,9 @@ async function safeClose(browser: Browser | null, context: BrowserContext | null
 // ============================================================
 
 export async function navigateAndExtract(url: string): Promise<BrowseResult> {
+  if (isVercelEnvironment()) {
+    return { success: false, url, title: '', content: '', metadata: { title: '', description: '', ogTitle: '', lang: '', canonical: '', linkCount: 0, statusCode: 0 }, error: vercelGuardError('navigateAndExtract'), durationMs: 0 };
+  }
   const startTime = Date.now();
   let browser: Browser | null = null;
   let context: BrowserContext | null = null;
@@ -266,6 +282,9 @@ export async function navigateAndExtract(url: string): Promise<BrowseResult> {
 // ============================================================
 
 export async function searchWeb(query: string, maxResults: number = 10): Promise<SearchResponse> {
+  if (isVercelEnvironment()) {
+    return { success: false, query, results: [], resultCount: 0, error: vercelGuardError('searchWeb'), durationMs: 0 };
+  }
   const startTime = Date.now();
   let browser: Browser | null = null;
   let context: BrowserContext | null = null;
@@ -354,6 +373,9 @@ export async function searchWeb(query: string, maxResults: number = 10): Promise
 // ============================================================
 
 export async function takeScreenshot(url: string): Promise<ScreenshotResult> {
+  if (isVercelEnvironment()) {
+    return { success: false, url, imageBase64: '', error: vercelGuardError('takeScreenshot'), durationMs: 0 };
+  }
   const startTime = Date.now();
   let browser: Browser | null = null;
   let context: BrowserContext | null = null;
@@ -424,6 +446,9 @@ export async function takeScreenshot(url: string): Promise<ScreenshotResult> {
 // ============================================================
 
 export async function extractStructuredData(request: StructuredDataRequest): Promise<StructuredDataResult> {
+  if (isVercelEnvironment()) {
+    return { success: false, url: request.url, data: {}, error: vercelGuardError('extractStructuredData'), durationMs: 0 };
+  }
   const startTime = Date.now();
   let browser: Browser | null = null;
   let context: BrowserContext | null = null;
