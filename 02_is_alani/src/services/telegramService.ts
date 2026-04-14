@@ -110,12 +110,90 @@ function isAuthorized(chatId: number): boolean {
 // Sesli mesaj geldiğinde kullanıcıdan yazılı doğrulama istenir.
 // Gelecekte lokal Ollama/Whisper entegrasyonu eklenebilir ($0).
 // ─────────────────────────────────────────────────────────────
-// NOT: transcribeVoice fonksiyonu şu an devre dışıdır.
-// Sesli mesajlar için "yazılı tekrar et" akışı kullanılır.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function transcribeVoice(_fileUrl: string): Promise<string | null> {
-  // OpenAI API KULLANILMAZ — sıfır maliyet
-  return null;
+// NOT: Lokal Whisper Entegrasyonu (Zero-Cost / Sıfır Maliyet)
+// Masaüstünde çalışan (http://127.0.0.1:8000) LocalAI Docker container'ına bağlanır.
+type HermaiaReport = {
+  durum: 'Doğru' | 'Eksik/Yetersiz' | 'Hatalı';
+  wer_tahmini: number;
+  neden: string[];
+};
+
+type TranscribeResult = { success: boolean; text?: string; errorMsg?: string; hermaia?: HermaiaReport };
+
+async function transcribeVoice(fileUrl: string): Promise<TranscribeResult> {
+  try {
+    const response = await fetch(fileUrl);
+    if (!response.ok) throw new Error('Telegram ses dosyası indirilemedi');
+    
+    // Telegram'dan gelen dosyayı FormData'ya uygun Blob'a çeviriyoruz
+    const fileBlob = await response.blob();
+    const formData = new FormData();
+    formData.append('file', fileBlob, 'audio.ogg');
+    formData.append('model', 'whisper-1'); // İsim fark etmez, local server yönlendirir
+    formData.append('response_format', 'verbose_json'); // HERMAIA Metrikleri
+
+    // Masaüstündeki Local Whisper API'sine istek at
+    const whisperRes = await fetch('http://127.0.0.1:8000/v1/audio/transcriptions', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!whisperRes.ok) {
+      throw new Error(`Lokal API Hatası (HTTP ${whisperRes.status})`);
+    }
+
+    const json = await whisperRes.json();
+
+    // --- HERMAIA MOTORU ---
+    let errRate = 0;
+    const reasons: string[] = [];
+    
+    if (json.segments && json.segments.length > 0) {
+      let totalLogProb = 0;
+      let maxNoSpeech = 0;
+      
+      json.segments.forEach((seg: any) => {
+        totalLogProb += seg.avg_logprob || 0;
+        if (seg.no_speech_prob > maxNoSpeech) maxNoSpeech = seg.no_speech_prob;
+      });
+      
+      const avgLogProb = totalLogProb / json.segments.length;
+      const confidence = Math.exp(avgLogProb);
+      errRate = 1 - confidence;
+
+      if (maxNoSpeech > 0.15) reasons.push('arka plan gürültüsü ortamda yüksek');
+      if (errRate > 0.10) reasons.push('belirsiz akustik telaffuz / devrik ifade');
+      if (json.duration && (json.text?.split(' ').length || 0) / json.duration > 3.0) {
+        reasons.push('konuşma hızı normale göre yüksek');
+      }
+    }
+
+    if (reasons.length === 0 && errRate > 0.05) {
+      reasons.push('kelime/harf yutulması veya benzer kelime karışması');
+    }
+
+    let durum: 'Doğru' | 'Eksik/Yetersiz' | 'Hatalı' = 'Doğru';
+    if (errRate > 0.15) durum = 'Hatalı';
+    else if (errRate > 0.05) durum = 'Eksik/Yetersiz';
+
+    const hermaia: HermaiaReport = {
+      durum,
+      wer_tahmini: errRate,
+      neden: reasons
+    };
+
+    return { success: true, text: json.text || '', hermaia };
+  } catch (error) {
+    const errMsg = error instanceof Error ? error.message : 'Bilinmeyen bağlantı hatası';
+    // Sunucu kapalıysa veya hata varsa hatayı logla
+    processError(ERR.AI_ANALYSIS, error, {
+       kaynak: 'telegramService.ts',
+       islem: 'WHISPER_TRANSCRIBE'
+    }, 'WARNING');
+    
+    // Hata mesajını dışarı aktar ki Telegram panelinde kullanıcıya gösterilsin
+    return { success: false, errorMsg: errMsg };
+  }
 }
 
 // ─── GÖREV OLUŞTUR (Supabase) ──────────────────────────────
@@ -588,12 +666,18 @@ function registerHandlers(botInstance: Bot): void {
       const file = await ctx.getFile();
       const fileUrl = `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${file.file_path}`;
 
-      const transcription = await transcribeVoice(fileUrl);
+      const result = await transcribeVoice(fileUrl);
 
-      if (!transcription) {
-        await sendReply(ctx, '❌ Ses tanıma başarısız. Lütfen yazılı mesaj gönderin.');
+      if (!result.success || !result.text) {
+        const fallbackMsg = result.errorMsg 
+          ? `❌ <b>SİSTEM UYARISI</b>\n\nLokal Yapay Zeka Sunucusuna ulaşılamadı veya hata verdi.\n\n<code>Hata Detayı: ${result.errorMsg}</code>\n\n📌 <i>Çözüm: Lütfen masaüstündeki STP_LOCAL_AI klasöründeki baslat.bat dosyasını çalıştırdığınızdan emin olun.</i>\n\nŞimdilik lütfen yazılı mesaj gönderin.`
+          : '❌ Ses tanıma başarısız. Lütfen yazılı mesaj gönderin.';
+        
+        await sendReply(ctx, fallbackMsg);
         return;
       }
+
+      const transcription = result.text;
 
       // ── SES DOĞRULAMA KATMANI ──────────────────────────────
       // Sesi metne çevirdik — şimdi kullanıcıya onay soruyoruz.
@@ -616,10 +700,15 @@ function registerHandlers(botInstance: Bot): void {
         [
           `🎙️ <b>SES TANIMA SONUCU</b>`,
           ``,
-          `📝 Algılanan metin:`,
+          `📝 <b>Sistem Çıktısı:</b>`,
           `<blockquote>${transcription}</blockquote>`,
           ``,
-          `⚠️ <b>Bu metin doğru mu?</b>`,
+          `📊 <b>HERMAIA Kalite Denetimi</b>`,
+          `Durum: ${result.hermaia?.durum === 'Doğru' ? '🟢' : result.hermaia?.durum === 'Eksik/Yetersiz' ? '🟡' : '🔴'} <b>${result.hermaia?.durum}</b> (WER Tahmini: %${Math.round((result.hermaia?.wer_tahmini || 0) * 100)})`,
+          `Gerekçe: <i>${result.hermaia?.neden.length ? result.hermaia.neden.join(' / ') : 'Kusursuz Tanımlandı'}</i>`,
+          ``,
+          `⚠️ <b>Bu metin işleme alınsın mı?</b>`,
+
           `Doğruysa ✅ DOĞRU butonuna basın.`,
           `Yanlışsa ❌ YANLIŞ butonuna basın veya yazılı gönderin.`,
         ].join('\n'),

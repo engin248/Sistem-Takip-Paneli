@@ -1,12 +1,12 @@
-# SİSTEM KURALLARI — THE ORDER / NİZAM
+# SİSTEM KURALLARI — Sistem Takip Paneli
 > **Kurucu:** Engin  
-> **Sistem:** THE ORDER / NİZAM  
+> **Sistem:** Sistem Takip Paneli  
 > **Birleştirme Tarihi:** 13 Nisan 2026  
 > **Kaynak Dosyalar:**  
 > - `01_SISTEM_FELSEFESI_VE_ANA_VIZYON.md` (Sohbet Analizi)  
 > - `07_SISTEM_KURALLARI_VE_DISIPLIN.md` (Sohbet Analizi)  
 > - `SISTEM_KURALLARI_FINAL.md` (Mizanet Final)  
-> - `THE_ORDER_NIZAM_ANAYASASI_V1.md` (Arşiv 47)  
+> - `SISTEM_ANAYASASI_V1.md` (Arşiv 47)  
 > - `SISTEM_ANAYASASI_110_MADDE.md` (Arşiv 47)  
 > - `rules.md` (Aktif Antigravity User Rules)
 
@@ -275,7 +275,7 @@ Her konu aşağıdaki 5 düşünce ekseninden analiz edilir:
 
 | Parametre | Değer |
 |-----------|-------|
-| **Sistem Adı** | THE ORDER / NİZAM |
+| **Sistem Adı** | Sistem Takip Paneli |
 | **Kurucu** | Engin |
 | **Veritabanı** | Supabase |
 | **Ana Proje** | Mizanet (ERP) + STP (Takip) |

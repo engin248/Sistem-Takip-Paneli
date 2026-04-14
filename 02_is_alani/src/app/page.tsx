@@ -534,7 +534,7 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center gap-3">
             <span className="text-[9px] font-mono text-slate-500 tracking-wider">
-              NİZAM PROTOKOLÜ
+              SİSTEM TAKİP PANELİ
             </span>
             <span className="text-[9px] font-mono neon-text-cyan font-bold">
               v2.0

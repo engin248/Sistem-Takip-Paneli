@@ -1,6 +1,6 @@
 # STP — MİMARİ VE PROTOKOL REFERANSI
 > **Versiyon:** 2.0 | **Tarih:** 13 Nisan 2026  
-> **Kurucu:** Engin | **Doktrin:** THE ORDER / NİZAM  
+> **Kurucu:** Engin | **Proje:** Sistem Takip Paneli
 > **Kaynak:** 5_KATMAN_PROTOKOLU + GOREV_ISLEM_MIMARISI_ARGE + ARGE_ARASTIRMA_SONUCLARI konsolidasyonu  
 > **Durum:** KONSOLİDE — TEK KAYNAK
 

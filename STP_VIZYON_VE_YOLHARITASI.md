@@ -1,6 +1,6 @@
 # STP — VİZYON VE YOL HARİTASI (2026–2031)
 > **Versiyon:** 2.0 | **Tarih:** 13 Nisan 2026  
-> **Kurucu:** Engin | **Doktrin:** THE ORDER / NİZAM  
+> **Kurucu:** Engin | **Doktrin:** Sistem Takip Paneli  
 > **Kaynak:** PROJE_PLANI (bölüm 3-5) + STP_KONSOLIDASYON (konu 10,11,12) konsolidasyonu  
 > **Durum:** KONSOLİDE — TEK KAYNAK
 

@@ -1,6 +1,6 @@
 # STP — TEKNİK REFERANS VE SİSTEM HARİTASI
 > **Versiyon:** 2.0 | **Tarih:** 13 Nisan 2026  
-> **Kurucu:** Engin | **Doktrin:** THE ORDER / NİZAM  
+> **Kurucu:** Engin | **Doktrin:** Sistem Takip Paneli  
 > **Kaynak:** PROJE_PLANI + SISTEM_HARITASI + INTEGRASYON_RAPORU + KALICI_HAFIZA + STP_KONSOLIDASYON konsolidasyonu  
 > **Durum:** KONSOLİDE — TEK KAYNAK
 
