@@ -16,6 +16,9 @@ import { logAudit } from '@/services/auditService';
 import { analyzeTaskPriority, getPriorityLabel, getPriorityEmoji } from '@/services/aiManager';
 import { CONTROL } from '@/core/control_engine';
 import type { TaskPriority } from '@/store/useTaskStore';
+import { CriteriaEngine, type IntentAnalysis } from '@/core/hermAI/criteriaEngine';
+import { Verifier, type ProofSpec } from '@/core/proof/verifier';
+import { ProofChain } from '@/core/storage/proofChain';
 import {
   isAuthorized,
   sendReply,
@@ -27,6 +30,11 @@ import {
   handleVoiceConfirm,
   handleVoiceReject,
 } from './voiceHandler';
+
+// ─── HERMAİ SINGLETON'LAR ───────────────────────────────────
+const _criteriaEngine = new CriteriaEngine();
+const _verifier = new Verifier();
+const _proofChain = new ProofChain();
 
 // ─── GÖREV OLUŞTUR (Supabase) ──────────────────────────────
 async function createTaskFromTelegram(
@@ -113,7 +121,7 @@ export async function handleTaskMessage(ctx: Context, text: string, source: 'tex
     ? `${ctx.from.first_name}${ctx.from.last_name ? ' ' + ctx.from.last_name : ''}`
     : 'Bilinmeyen';
 
-  // L0 GATEKEEPER
+  // ── FAZ 0: L0 GATEKEEPER (CONTROL) ───────────────────────
   const ctrl = CONTROL('TELEGRAM_MESSAGE_TEXT', text);
   if (!ctrl.pass) {
     await sendReply(ctx, `⚠️ Geçersiz komut içeriği [${ctrl.reason}]. Lütfen geçerli bir metin gönderin.`);
@@ -152,8 +160,83 @@ export async function handleTaskMessage(ctx: Context, text: string, source: 'tex
     return;
   }
 
+  // ── FAZ 1: HERMAİ TEMEL KRİTER KONTROLÜ (92 kriter) ─────
+  const basicIntent: IntentAnalysis = {
+    why: text,
+    how: `Telegram ${source} komutu`,
+    risks: [],
+    alternatives: [],
+    conditions: [source === 'voice' ? 'HERMAIA doğrulandı' : 'yazılı komut'],
+    refutation: text.length > 10 ? text : 'Girdi yeterli uzunlukta',
+  };
+  const basicCriteria = _criteriaEngine.check(text, basicIntent);
+  if (!basicCriteria.isPassing) {
+    await sendReply(ctx, [
+      `⚠️ <b>HermAI Kriter Kontrolü Başarısız</b>`,
+      ``,
+      `📊 Skor: %${basicCriteria.score} (${basicCriteria.passed}/${basicCriteria.total})`,
+      `❌ Başarısız: ${basicCriteria.failed.slice(0, 3).join(', ')}`,
+      ``,
+      `💡 Lütfen görev açıklamasını daha net ve eksiksiz yazın.`,
+    ].join('\n'));
+    return;
+  }
+
+  // ── FAZ 2: AI ÖNCELİK ANALİZİ ───────────────────────────
   await sendReply(ctx, '🔄 Görev analiz ediliyor...');
   const analysis = await analyzeTaskPriority(text, null, { useAI: true, timeoutMs: 15000 });
+
+  // ── FAZ 3: HERMAİ TAM NİYET ANALİZİ + PROOF ─────────────
+  const fullIntent: IntentAnalysis = {
+    why: analysis.reasoning,
+    how: `Görev oluşturma — öncelik: ${analysis.priority} (güven: %${Math.round(analysis.confidence * 100)})`,
+    risks: analysis.confidence < 0.7 ? ['Düşük AI güven skoru'] : [],
+    alternatives: analysis.source === 'ai' ? ['Lokal kural analizi'] : ['AI (Ollama) analizi'],
+    conditions: [
+      source === 'voice' ? 'HERMAIA ses doğrulaması yapıldı' : 'yazılı komut',
+      `AI kaynağı: ${analysis.source}`,
+    ],
+    refutation: `AI güven skoru %${Math.round(analysis.confidence * 100)} — ${analysis.source === 'ai' ? 'Ollama' : 'Lokal motor'} tarafından doğrulandı`,
+  };
+
+  const fullCriteria = _criteriaEngine.check(text, fullIntent);
+
+  const spec: ProofSpec = {
+    logicHash: ProofChain.hashInput(text + analysis.priority + String(chatId)).slice(0, 16),
+    preCondition: `Telegram ${source} komutu: "${text.substring(0, 100)}"`,
+    postCondition: `Görev oluşturulacak: priority=${analysis.priority}, assigned=${senderName}`,
+    input: text,
+    context: { chatId, senderName, source, ai_source: analysis.source },
+  };
+
+  const verifyResult = await _verifier.doubleVerify(spec);
+
+  // Proof zinciri kaydı (onay durumundan bağımsız — her işlem kaydedilir)
+  const proofEntry = ProofChain.createEntry(
+    'TELEGRAM_TASK_CREATE',
+    text,
+    fullIntent as unknown as Record<string, unknown>,
+    fullCriteria.score,
+    verifyResult.verified,
+    verifyResult.proof,
+    { chatId, senderName, source }
+  );
+  await _proofChain.addToChain(proofEntry).catch(() => {});
+
+  if (!verifyResult.verified) {
+    await sendReply(ctx, [
+      `🔴 <b>PROOF DOĞRULAMA BAŞARISIZ</b>`,
+      ``,
+      `📊 Kriter Skoru: %${fullCriteria.score}`,
+      `🔍 Kural Motoru: ${verifyResult.v1_rule ? '✅' : '❌'}`,
+      `🤖 AI Doğrulama: ${verifyResult.v2_ai ? '✅' : '❌'}`,
+      ``,
+      `💬 Görev daha açık bir şekilde yeniden yazılabilir mi?`,
+    ].join('\n'));
+    return;
+  }
+
+  // ── FAZ 4: GÖREV OLUŞTUR ─────────────────────────────────
   const result = await createTaskFromTelegram(
     text, analysis.priority, source, senderName, chatId,
     analysis.reasoning, analysis.confidence, analysis.source

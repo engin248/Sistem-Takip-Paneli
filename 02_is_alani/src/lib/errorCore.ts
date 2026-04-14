@@ -77,6 +77,24 @@ export const ERR = {
   AGENT_CLONE:           'ERR-STP001-048',
   AGENT_CAPACITY:        'ERR-STP001-049',
 
+  // ── HERMAİ / PROOF MOTORU (050–065) ────────────────────────
+  INPUT_MISSING:         'ERR-STP001-050',
+  INTENT_MALFORMED:      'ERR-STP001-051',
+  HERMAI_FAIL:           'ERR-STP001-052',
+  TESPIT_FAIL:           'ERR-STP001-053',
+  CRITERIA_INCOMPLETE:   'ERR-STP001-054',
+  DATA_FAIL:             'ERR-STP001-055',
+  SPEC_FAIL:             'ERR-STP001-056',
+  MODEL_FAIL:            'ERR-STP001-057',
+  PROOF_FAIL:            'ERR-STP001-058',
+  PROOF_CHAIN_BREAK:     'ERR-STP001-059',
+  VERIFY_FAIL:           'ERR-STP001-060',
+  VALIDATOR_MISMATCH:    'ERR-STP001-061',
+  REFUTE_FAIL:           'ERR-STP001-062',
+  HERMAI_CONSENSUS_FAIL: 'ERR-STP001-063',
+  EXECUTION_FAIL:        'ERR-STP001-064',
+  RUNTIME_FAIL:          'ERR-STP001-065',
+
   // ── ACİL DURUM — TANIMLANAMAYAN ÇÖKME (999) ────────────────
   UNIDENTIFIED_COLLAPSE: 'ERR-STP001-999',
 } as const;
@@ -126,6 +144,23 @@ export const ERR_DESCRIPTIONS: Record<ErrorCode, string> = {
   'ERR-STP001-047': 'Ajan güncelleme hatası',
   'ERR-STP001-048': 'Ajan klonlama hatası',
   'ERR-STP001-049': 'Kapasite boşluğu giderme başarısız',
+  // ── HERMAİ / PROOF MOTORU ───────────────────────────────────
+  'ERR-STP001-050': 'Girdi eksik veya boş — işlem durdu',
+  'ERR-STP001-051': 'Niyet analizi bozuk — HermAI çıktısı geçersiz',
+  'ERR-STP001-052': 'HermAI analizi başarısız',
+  'ERR-STP001-053': 'Tespit motoru başarısız — kriter taraması durdu',
+  'ERR-STP001-054': '92 kriter tamamlanamadı — eksik doğrulama',
+  'ERR-STP001-055': 'Veri doğrulaması başarısız',
+  'ERR-STP001-056': 'Formal Spec oluşturulamadı',
+  'ERR-STP001-057': 'Model hatası — spec işlenemedi',
+  'ERR-STP001-058': 'Proof üretimi başarısız',
+  'ERR-STP001-059': 'Proof zinciri kırıldı — hash uyuşmazlığı',
+  'ERR-STP001-060': 'Doğrulayıcı başarısız',
+  'ERR-STP001-061': 'Çift doğrulayıcı uyuşmazlığı — kural ≠ AI kararı',
+  'ERR-STP001-062': 'Çürütme motoru başarısız',
+  'ERR-STP001-063': 'HermAI konsensüs başarısız',
+  'ERR-STP001-064': 'Güvenli çalıştırma başarısız',
+  'ERR-STP001-065': 'Runtime invariant ihlali tespit edildi',
   'ERR-STP001-999': 'TABLO ÇÖKMESI — TANIMLANAMAYAN HATA',
 };
 

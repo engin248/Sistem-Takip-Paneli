@@ -23,7 +23,7 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@/core/*": ["./core/*"]
+      "@/core/*": ["./core/*", "./src/core/*"]
     }
   },
   "include": [
