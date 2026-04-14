@@ -162,7 +162,7 @@ export function validateInput<T>(
   // 1. KATMAN: L0 GENERIC CONTROL (Gatekeeper)
   const controlResult = CONTROL(context.islem, input);
   if (!controlResult.pass) {
-    const errorMsg = `L0 Zırh Hatası: ${controlResult.proof}`;
+    const errorMsg = `L0 Zırh Hatası: ${controlResult.reason}`;
     processError(ERR.SYSTEM_GENERAL, new Error(errorMsg), {
       kaynak: context.kaynak,
       islem: context.islem,
@@ -173,9 +173,9 @@ export function validateInput<T>(
   }
 
   // 2. KATMAN: L1 STRICT CONTROL (Zod)
-  const strictResult = STRICT_CONTROL(context.islem, schema, input);
+  const strictResult = STRICT_CONTROL(schema, input);
   if (!strictResult.pass) {
-    const errorMsg = `L1 Şema Hatası: ${strictResult.proof}`;
+    const errorMsg = `L1 Şema Hatası: ${strictResult.reason}`;
     processError(ERR.SYSTEM_GENERAL, new Error(errorMsg), {
       kaynak: context.kaynak,
       islem: context.islem,

@@ -32,10 +32,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     const control = CONTROL('TELEGRAM_WEBHOOK', update);
     if (!control.pass) {
-      processError(ERR.SYSTEM_GENERAL, new Error(`Webhook L0 Zırh İhlali: ${control.proof}`), {
+      processError(ERR.SYSTEM_GENERAL, new Error(`Webhook L0 Zırh İhlali: ${control.reason}`), {
         kaynak: 'api/telegram/route.ts',
         islem: 'WEBHOOK_POST',
-        hatalar: [control.proof]
+        hatalar: [control.reason]
       }, 'WARNING');
 
       return NextResponse.json(

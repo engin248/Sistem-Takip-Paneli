@@ -181,10 +181,10 @@ export async function navigateAndExtract(url: string): Promise<BrowseResult> {
   // L0 GATEKEEPER KONTROLÜ
   const control = CONTROL('BROWSER_REQUEST', url);
   if (!control.pass) {
-    processError(ERR.SYSTEM_GENERAL, new Error(`Browser URL Zırh İhlali: ${control.proof}`), {
+    processError(ERR.SYSTEM_GENERAL, new Error(`Browser URL Zırh İhlali: ${control.reason}`), {
       kaynak: 'browserService.ts',
       islem: 'NAVIGATE_AND_EXTRACT',
-      hatalar: [control.proof]
+      hatalar: [control.reason]
     }, 'WARNING');
     return {
       success: false,

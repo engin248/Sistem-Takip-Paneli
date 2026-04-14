@@ -352,7 +352,7 @@ async function handleTaskMessage(ctx: Context, text: string, source: 'text' | 'v
     await sendReply(ctx, '⚠️ Geçersiz veya boş veri gönderildi.');
     await logAudit({
       operation_type: 'REJECT',
-      action_description: `Geçersiz Telegram komutu: ${controlResult.proof}`,
+      action_description: `Geçersiz Telegram komutu: ${controlResult.reason}`,
       metadata: { action_code: 'TELEGRAM_L0_REJECT', chat_id: chatId, sender: senderName }
     }).catch(() => {});
     return;
