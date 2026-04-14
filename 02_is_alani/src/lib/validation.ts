@@ -10,6 +10,7 @@
 
 import { z } from 'zod';
 import { ERR, processError } from '@/lib/errorCore';
+import { CONTROL, STRICT_CONTROL } from '@/core/control_engine';
 
 // ─── GÖREV DURUMLARI ────────────────────────────────────────
 export const TaskStatusEnum = z.enum([
@@ -158,26 +159,33 @@ export function validateInput<T>(
   input: unknown,
   context: { kaynak: string; islem: string }
 ): ValidationResult<T> {
-  const result = schema.safeParse(input);
-
-  if (result.success) {
-    return { success: true, data: result.data };
+  // 1. KATMAN: L0 GENERIC CONTROL (Gatekeeper)
+  const controlResult = CONTROL(context.islem, input);
+  if (!controlResult.pass) {
+    const errorMsg = `L0 Zırh Hatası: ${controlResult.proof}`;
+    processError(ERR.SYSTEM_GENERAL, new Error(errorMsg), {
+      kaynak: context.kaynak,
+      islem: context.islem,
+      hatalar: [errorMsg],
+      girdi_tipi: typeof input,
+    }, 'WARNING');
+    return { success: false, errors: [errorMsg] };
   }
 
-  const zodErrors = result.error.issues ?? [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const errors = zodErrors.map((e: any) =>
-    `${(e.path ?? []).join('.')}: ${e.message ?? 'Geçersiz'}`
-  );
+  // 2. KATMAN: L1 STRICT CONTROL (Zod)
+  const strictResult = STRICT_CONTROL(context.islem, schema, input);
+  if (!strictResult.pass) {
+    const errorMsg = `L1 Şema Hatası: ${strictResult.proof}`;
+    processError(ERR.SYSTEM_GENERAL, new Error(errorMsg), {
+      kaynak: context.kaynak,
+      islem: context.islem,
+      hatalar: strictResult.reason?.split(' | ') || [errorMsg],
+      girdi_tipi: typeof input,
+    }, 'WARNING');
+    return { success: false, errors: strictResult.reason?.split(' | ') || [errorMsg] };
+  }
 
-  processError(ERR.SYSTEM_GENERAL, new Error(`ZOD Validasyon Hatası: ${errors.join('; ')}`), {
-    kaynak: context.kaynak,
-    islem: context.islem,
-    hatalar: errors,
-    girdi_tipi: typeof input,
-  }, 'WARNING');
-
-  return { success: false, errors };
+  return { success: true, data: strictResult.data };
 }
 
 // ─── TİP ÇIKARIMlari ───────────────────────────────────────

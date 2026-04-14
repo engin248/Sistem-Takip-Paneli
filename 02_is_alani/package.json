@@ -1,6 +1,6 @@
 {
   "name": "02_is_alani",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "scripts": {
     "predev": "node scripts/check-no-middleware.mjs",
@@ -8,7 +8,7 @@
     "dev": "next dev -p 3000 -H 127.0.0.1",
     "build": "next build",
     "start": "next start -p 3000 -H 127.0.0.1",
-    "lint": "eslint",
+    "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -18,13 +18,17 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@langchain/langgraph": "^1.2.8",
+    "@restatedev/restate-sdk": "^1.13.0",
     "@supabase/supabase-js": "^2.102.1",
+    "drizzle-orm": "^0.45.2",
     "grammy": "^1.42.0",
-    "next": "16.2.2",
+    "next": "^16.2.3",
     "openai": "^6.33.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "sonner": "^2.0.7",
+    "wasmtime": "^0.0.2",
     "zod": "^4.3.6",
     "zustand": "^5.0.12"
   },
@@ -43,7 +47,7 @@
     "pg": "^8.20.0",
     "playwright": "^1.59.1",
     "tailwindcss": "^4",
-    "typescript": "^5",
+    "typescript": "^5.9.3",
     "vitest": "^4.1.4"
   }
 }
