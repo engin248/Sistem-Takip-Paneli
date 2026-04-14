@@ -65,6 +65,8 @@ export interface PriorityAnalysisResult {
   confidence: number;
   /** Tespit edilen anahtar kelimeler */
   detectedKeywords: string[];
+  /** AI'ın Formal Verification Motoruna gönderdiği kurallar */
+  formal_spec?: import('@/core/formal_verifier').FormalSpec;
 }
 
 // ─── ANAHTAR KELİME SÖZLÜĞÜ ────────────────────────────────
@@ -220,7 +222,13 @@ CEVAP FORMATI (sadece JSON, başka bir şey yazma):
 {
   "priority": "kritik" | "yuksek" | "normal" | "dusuk",
   "reasoning": "Kısa gerekçe (max 100 karakter)",
-  "confidence": 0.0-1.0
+  "confidence": 0.0-1.0,
+  "formal_spec": {
+    "goal": "işlemin amacı",
+    "constraints": ["kısıt1", "kısıt2"],
+    "rules": ["kural1"],
+    "forbidden": ["yapılmaması gerekenler"]
+  }
 }`;
 
   const userMessage = `Görev Başlığı: ${taskTitle}${taskDescription ? `\nGörev Açıklaması: ${taskDescription}` : ''}`;
@@ -241,7 +249,7 @@ CEVAP FORMATI (sadece JSON, başka bir şey yazma):
     }
 
     // JSON parse
-    let parsed: { priority?: string; reasoning?: string; confidence?: number };
+    let parsed: { priority?: string; reasoning?: string; confidence?: number; formal_spec?: any };
     try {
       parsed = JSON.parse(response.content);
     } catch (parseErr) {
@@ -289,6 +297,13 @@ CEVAP FORMATI (sadece JSON, başka bir şey yazma):
       source: 'ai',
       confidence: aiConfidence,
       detectedKeywords: [],
+      formal_spec: parsed.formal_spec || {
+        goal: "determine_priority",
+        constraints: [],
+        rules: [],
+        forbidden: [],
+        proposed_priority: aiPriority
+      }
     };
   } catch (error) {
     processError(ERR.AI_ANALYSIS, error, {

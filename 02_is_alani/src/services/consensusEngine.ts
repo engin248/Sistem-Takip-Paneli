@@ -14,6 +14,7 @@
 import OpenAI from 'openai';
 import { ERR, processError } from '@/lib/errorCore';
 import { aiComplete } from '@/lib/aiProvider';
+import { runFormalVerification } from '@/core/formal_verifier';
 
 // ─── TİP TANIMLARI ──────────────────────────────────────────
 
@@ -265,6 +266,32 @@ export async function runBoardVoting(request: BoardVotingRequest): Promise<Board
 
   let votes: AgentVote[];
   let source: 'ai' | 'local';
+
+  // OMNI-MATRIX Formal Verification Gate
+  // Bütün kararlar artık önce matematiksel rule engine'den geçmek zorunda.
+  const formalCheck = await runFormalVerification({
+    goal: `Consensus for: ${title}`,
+    constraints: ['Must reach agreement', 'Must follow security guidelines'],
+    rules: ['Majority wins if greater than 50%'],
+    forbidden: ['DROP TABLE', 'DELETE FROM'],
+    proposed_priority: category
+  }, `CONSENSUS_${Date.now()}`);
+
+  if (!formalCheck.verified) {
+    processError(ERR.SYSTEM_GENERAL, new Error(`FORMAL VERIFICATION REDDEDILDI: ${formalCheck.reason}`), {
+      kaynak: 'consensusEngine.ts',
+      islem: 'BOARD_VOTING'
+    }, 'CRITICAL');
+
+    // Güvenlik gereği deterministik ret
+    return {
+      consensusResult: 'REDDEDİLDİ',
+      votes: [],
+      sealHash: null,
+      sealedAt: null,
+      source: 'local'
+    };
+  }
 
   // Önce aiProvider (Ollama → OpenAI) ile dene
   try {
