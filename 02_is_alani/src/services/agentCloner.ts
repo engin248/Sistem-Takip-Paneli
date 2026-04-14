@@ -270,10 +270,11 @@ export async function klonlaAjan(request: CloneRequest): Promise<CloneResult> {
   }
 
   // 4. Yeni ajan kartı oluştur
+  // V6 Kuralı: Yeni klonlanan ajanlar kesinlikle 'pasif' doğar ve Yönetim onayı bekler
   const yeniAjan: AgentCard = {
     id: yeniId,
     kod_adi: request.yeniKodAdi,
-    rol: request.yeniRol,
+    rol: `[ONAY BEKLİYOR] ${request.yeniRol}`,
     katman: request.hedefKatman || kaynak.katman,
     beceri_listesi: yeniBeceriler,
     kapsam_siniri: request.kapsamSiniri || [...kaynak.kapsam_siniri],
@@ -282,7 +283,7 @@ export async function klonlaAjan(request: CloneRequest): Promise<CloneResult> {
       ...kaynak.bagimliliklari,
       ...(request.ekBagimliliklar || []),
     ],
-    durum: 'aktif' as AgentStatus,
+    durum: 'pasif' as AgentStatus,
     tamamlanan_gorev: 0,
     hata_sayisi: 0,
     son_aktif: new Date().toISOString(),
@@ -306,12 +307,12 @@ export async function klonlaAjan(request: CloneRequest): Promise<CloneResult> {
     };
   }
 
-  // 6. Audit log
+  // 6. Audit log (Yönetim Onay Talebi)
   await logAudit({
     operation_type: 'EXECUTE',
-    action_description: `Ajan klonlandı: ${kaynak.kod_adi} → ${yeniAjan.kod_adi} (${yeniId})`,
+    action_description: `YENİ AJAN KLONLANDI (ONAY BEKLİYOR): ${kaynak.kod_adi} → ${yeniAjan.kod_adi} (${yeniId}). V6 Anayasası gereği ajan 'pasif' statüdedir ve Yönetim Kurulu onayı olmadan hiçbir işlem yapamaz.`,
     metadata: {
-      action_code: 'AGENT_CLONE',
+      action_code: 'AGENT_CLONE_PENDING',
       kaynak_id: kaynak.id,
       kaynak_kod_adi: kaynak.kod_adi,
       yeni_id: yeniId,

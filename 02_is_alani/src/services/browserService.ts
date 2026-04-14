@@ -22,9 +22,10 @@
 //   ERR-STP001-028 → Sayfa içerik çıkarma hatası
 // ============================================================
 
-import { chromium, type Browser, type Page, type BrowserContext } from 'playwright';
+import { chromium, type Browser, type Page, type BrowserContext, type Route } from 'playwright';
 import { ERR, processError } from '@/lib/errorCore';
 import { logAudit } from './auditService';
+import { CONTROL } from '@/core/control_engine';
 
 // ─── YAPILANDIRMA ───────────────────────────────────────────
 
@@ -176,14 +177,53 @@ async function safeClose(browser: Browser | null, context: BrowserContext | null
 
 export async function navigateAndExtract(url: string): Promise<BrowseResult> {
   const startTime = Date.now();
+
+  // L0 GATEKEEPER KONTROLÜ
+  const control = CONTROL('BROWSER_REQUEST', url);
+  if (!control.pass) {
+    processError(ERR.SYSTEM_GENERAL, new Error(`Browser URL Zırh İhlali: ${control.proof}`), {
+      kaynak: 'browserService.ts',
+      islem: 'NAVIGATE_AND_EXTRACT',
+      hatalar: [control.proof]
+    }, 'WARNING');
+    return {
+      success: false,
+      url,
+      title: '',
+      content: '',
+      metadata: { title: '', description: '', ogTitle: '', lang: '', canonical: '', linkCount: 0, statusCode: 0 },
+      error: `Geçersiz URL: ${control.reason}`,
+      durationMs: Date.now() - startTime
+    };
+  }
+
   let browser: Browser | null = null;
   let context: BrowserContext | null = null;
   let page: Page | null = null;
 
   try {
+    // İŞLEM ÖNCESİ KANIT KAYDI
+    await logAudit({
+      operation_type: 'EXECUTE',
+      action_description: `AR-GE BİLGİ TOPLAMASI BAŞLADI: ${url}`,
+      metadata: { action_code: 'BROWSER_START', url }
+    }).catch(() => {});
+
     browser = await createBrowser();
     context = await createContext(browser);
     page = await context.newPage();
+
+    // SIKIYÖNETİM: SADECE OKUMA (READ-ONLY) MÜHRÜ
+    // Dışarı çıkan tarayıcı form dolduramaz, butonla veri silemez (Sadece GET izni).
+    await page.route('**/*', (route: Route) => {
+      const request = route.request();
+      if (request.method() !== 'GET') {
+        // GET dışındaki tüm istekler (POST, PUT, DELETE) otonom engellenir.
+        route.abort('blockedbyclient');
+      } else {
+        route.continue();
+      }
+    });
 
     // Navigasyon
     const response = await page.goto(url, {
