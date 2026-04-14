@@ -160,36 +160,70 @@ export async function handleTaskMessage(ctx: Context, text: string, source: 'tex
     return;
   }
 
-  // ── FAZ 1: HERMAİ TEMEL KRİTER KONTROLÜ (92 kriter) ─────
-  const basicIntent: IntentAnalysis = {
-    why: `Bu komut ${source === 'voice' ? 'ses' : 'metin'} kanalından işlemek amacıyla sisteme iletildi — işlenecek: ${text.substring(0, 80)}`,
-    how: `Telegram ${source} komutu alındı. Sistem tarafından analiz edilerek uygun görev formatına dönütürme sonucu tamamlanacak.`,
-    risks: text.length < 5 ? ['Girdi çok kısa'] : [],
-    alternatives: ['Komutu yeniden yaz', 'Ses yerine metin kullan'],
-    conditions: [
-      source === 'voice' ? 'HERMAIA ses doğrulandı' : 'yazılı komut',
-      `telegram operatör yetki dahilinde`,
-    ],
-    refutation: `Sistem, komutu alıp işlemek için yetkilendirilmiştir — çünkü Telegram webhook üzerinden doğrulandı. Eğer sistem hatalıysa komut reddedilecektir.`,
-  };
-  const basicCriteria = _criteriaEngine.check(text, basicIntent);
-  if (!basicCriteria.isPassing) {
+  // ── FAZ 1: GİRDİ DOĞRULAMA + ARŞİVLEME + ONAY ───────────
+  // Ses/yazı karşılaştırması: voice geliyorsa transcript ile raw text aynı mı?
+  // Farklıysa kullanıcıdan yazılı onay istenir.
+  // Her durumda: girdi arşivlenir, yetkili operatöre anlaşılan komut gösterilir.
+
+  // 1A — Girdinin ham arşivi (her mesaj, her format)
+  await logAudit({
+    operation_type: 'SYSTEM',
+    action_description: `[ARŞİV] ${source.toUpperCase()} komut alındı: "${text.substring(0, 120)}"`,
+    metadata: {
+      action_code: 'HERMAI_INPUT_ARCHIVE',
+      source,
+      sender: senderName,
+      chat_id: chatId,
+      raw_length: text.length,
+      archived_at: new Date().toISOString(),
+    }
+  }).catch(() => {});
+
+  // 1B — Ses/yazı uyuşmazlık kontrolü
+  // voiceHandler transcript ile text aynı fonksiyona geliyor.
+  // Eğer source 'voice' ise, kullanıcıya transcript'i göster ve onay iste.
+  if (source === 'voice') {
     await sendReply(ctx, [
-      `⚠️ <b>HermAI Kriter Kontrolü Başarısız</b>`,
+      `🎤 <b>Sesli komut alındı ve metne dönüştürüldü.</b>`,
       ``,
-      `📊 Skor: %${basicCriteria.score} (${basicCriteria.passed}/${basicCriteria.total})`,
-      `❌ Başarısız: ${basicCriteria.failed.slice(0, 3).join(', ')}`,
+      `📝 <b>Anladığım komut:</b>`,
+      `<code>${text}</code>`,
       ``,
-      `💡 Lütfen görev açıklamasını daha net ve eksiksiz yazın.`,
+      `✅ Bu doğruysa → <b>/onayla</b> yaz`,
+      `❌ Yanlışsa → komutu yazıyla tekrar gönder`,
     ].join('\n'));
+
+    // Onay bekleniyor — pending olarak arşivle
+    await logAudit({
+      operation_type: 'SYSTEM',
+      action_description: `[ONAY BEKLENİYOR] Ses→metin: "${text.substring(0, 80)}"`,
+      metadata: {
+        action_code: 'HERMAI_VOICE_PENDING_CONFIRM',
+        source: 'voice',
+        text,
+        sender: senderName,
+        chat_id: chatId,
+        status: 'onay_bekleniyor',
+      }
+    }).catch(() => {});
+
+    // Ses kaynaklı komutlar için buraya kadar — onay callback'te devam eder
     return;
   }
 
+  // 1C — Yazılı komut: sisteme ne anladığını göster, devam et
+  await sendReply(ctx, [
+    `📥 <b>Komut alındı.</b>`,
+    ``,
+    `💬 <b>Anladığım:</b> ${text.substring(0, 100)}${text.length > 100 ? '...' : ''}`,
+    ``,
+    `🔄 Analiz başlıyor...`,
+  ].join('\n'));
+
   // ── FAZ 2: AI ÖNCELİK ANALİZİ ───────────────────────────
-  await sendReply(ctx, '🔄 Görev analiz ediliyor...');
   const analysis = await analyzeTaskPriority(text, null, { useAI: true, timeoutMs: 15000 });
 
-  // ── FAZ 3: HERMAİ TAM NİYET ANALİZİ + PROOF ─────────────
+  // ── FAZ 3: HERMAİ 92 KRİTER + PROOF (AI sonrası tam analiz) ──
   const fullIntent: IntentAnalysis = {
     why: `${analysis.reasoning} için bu görev analiz edildi ve işlemek amacıyla sıraya alındı.`,
     how: `Görev oluşturma sonucu tamamlanacak — öncelik: ${analysis.priority}, güven: %${Math.round(analysis.confidence * 100)}. Çıktı: Supabase görev tablosuna kaydedilecek.`,
@@ -200,7 +234,7 @@ export async function handleTaskMessage(ctx: Context, text: string, source: 'tex
       ? ['Lokal kural analizi', 'Manuel operatör onayı']
       : ['AI (Ollama) analizi', 'Manuel operatör onayı'],
     conditions: [
-      source === 'voice' ? 'HERMAIA ses doğrulandı' : 'yazılı komut',
+      'yazılı komut',
       `AI kaynağı: ${analysis.source}`,
       `telegram operatör yetki dahilinde`,
     ],
@@ -266,7 +300,7 @@ export async function handleTaskMessage(ctx: Context, text: string, source: 'tex
       ``,
       `📌 <b>Durum:</b> Beklemede`,
       `👤 <b>Atanan:</b> ${senderName}`,
-      `📡 <b>Kaynak:</b> ${source === 'voice' ? '🎤 Sesli Komut' : '💬 Yazılı Komut'}`,
+      `📡 <b>Kaynak:</b> 💬 Yazılı Komut`,
     ].join('\n'));
   } else {
     await sendReply(ctx, `❌ <b>HATA:</b> Görev oluşturulamadı.\n\n<code>${result.error || 'Bilinmeyen hata'}</code>`);
