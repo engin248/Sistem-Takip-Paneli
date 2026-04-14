@@ -47,28 +47,22 @@ export class ProofChain {
   // Zincire yeni kayıt ekle
   async addToChain(entry: ProofEntry): Promise<ChainEntry | null> {
     try {
-      // Son zincir kaydını al (önceki hash için)
+      // Son zincir kaydını al — JSONB filtresiyle direkt DB'de filtrele
       const { data: lastEntries } = await supabase
         .from('audit_logs')
         .select('details')
-        .eq('action_code' as string, 'SYSTEM_' as string)
+        .filter('details->>action_code', 'eq', 'HERMAI_PROOF_CHAIN')
         .order('timestamp', { ascending: false })
         .limit(50);
 
-      // details->action_code = 'HERMAI_PROOF_CHAIN' olan son kayıt
-      const lastMeta = (lastEntries ?? [])
-        .map(r => (r as Record<string, unknown>).details as Record<string, unknown>)
-        .find(d => d?.action_code === 'HERMAI_PROOF_CHAIN');
+      // Son kayıttan prevHash al
+      const lastMeta = (lastEntries?.[0] as Record<string, unknown>)?.details as Record<string, unknown> | undefined;
 
       const prevHash: string = (lastMeta?.currentHash as string)
         ?? '0000000000000000000000000000000000000000000000000000000000000000';
 
-      // Zincir indeksini hesapla
-      const allEntries = (lastEntries ?? []).filter(r => {
-        const d = (r as Record<string, unknown>).details as Record<string, unknown>;
-        return d?.action_code === 'HERMAI_PROOF_CHAIN';
-      });
-      const chainIndex = allEntries.length;
+      // Zincir indeksini hesapla — DB zaten filtreli döndü
+      const chainIndex = lastEntries?.length ?? 0;
       const currentHash = this.computeHash(entry, prevHash);
 
       const chainEntry: ChainEntry = {
@@ -107,13 +101,11 @@ export class ProofChain {
       const { data, error } = await supabase
         .from('audit_logs')
         .select('details, timestamp')
+        .filter('details->>action_code', 'eq', 'HERMAI_PROOF_CHAIN')
         .order('timestamp', { ascending: true });
 
-      // Sadece proof chain kayıtlarını filtrele
-      const proofData = (data ?? []).filter(r => {
-        const d = (r as Record<string, unknown>).details as Record<string, unknown>;
-        return d?.action_code === 'HERMAI_PROOF_CHAIN';
-      });
+      // DB zaten filtreli döndü — JS filtresi gerekmez
+      const proofData = data ?? [];
 
       if (error) {
         processError(ERR.PROOF_CHAIN_BREAK, new Error(error.message), {

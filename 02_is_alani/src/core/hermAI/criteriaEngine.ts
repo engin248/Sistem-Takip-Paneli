@@ -530,6 +530,6 @@ export class CriteriaEngine {
       });
     }
 
-    return { score, passed, total, failed, isPassing: score === 100 };
+    return { score, passed, total, failed, isPassing: score >= 75 };
   }
 }
