@@ -1,23 +1,28 @@
 // ============================================================
-// OLLAMA API ROUTE — Yerel AI Köprüsü Endpoint
+// OLLAMA API ROUTE — Yerel AI Yönetim Endpoint'i
 // ============================================================
 // GET  → Ollama sağlık durumu ve model listesi
-// POST → AI analiz, oylama, metin üretimi
+// POST → AI analiz, kurul oylama, metin üretimi, model yönetimi
+//
+// OTORİTE HARİTASI (tek kaynak ilkesi):
+//   analyze → aiManager.analyzeTaskPriority()   (görev öncelik)
+//   vote    → consensusEngine.runBoardVoting()   (kurul oylama)
+//   generate→ aiProvider.aiComplete()            (metin üretimi)
+//   pull    → ollamaBridge.pullModel()           (model yönetimi)
 // ============================================================
 
 import { NextRequest, NextResponse } from 'next/server';
 import {
   getOllamaBridgeHealth,
-  analyzeTaskWithOllama,
-  voteWithOllama,
-  generateText,
   pullModel,
   generateCostReport,
 } from '@/services/ollamaBridge';
-import { getProviderStatus } from '@/lib/aiProvider';
+import { getProviderStatus, aiComplete } from '@/lib/aiProvider';
 import { agentRegistry } from '@/services/agentRegistry';
+import { analyzeTaskPriority } from '@/services/aiManager';
+import { runBoardVoting } from '@/services/consensusEngine';
+import type { DecisionCategory } from '@/services/consensusEngine';
 import { processError, ERR } from '@/lib/errorCore';
-import type { AgentRole, DecisionCategory } from '@/services/consensusEngine';
 
 // ─── GET: Sağlık kontrolü + durum raporu ────────────────────
 
@@ -41,7 +46,7 @@ export async function GET() {
       },
       provider: providerStatus,
       agents: agentStats,
-      costReport: generateCostReport(0, 0), // İlk çağrıda boş
+      costReport: generateCostReport(0, 0),
     }, { status: 200 });
   } catch (error) {
     processError(ERR.OLLAMA_CONNECTION, error, {
@@ -65,7 +70,6 @@ interface OllamaPostBody {
   taskTitle?: string;
   taskDescription?: string;
   // vote
-  agent?: AgentRole;
   title?: string;
   description?: string;
   category?: DecisionCategory;
@@ -91,7 +95,8 @@ export async function POST(request: NextRequest) {
     }
 
     switch (body.action) {
-      // ── GÖREV ÖNCELİK ANALİZİ ──────────────────────────────
+
+      // ── GÖREV ÖNCELİK ANALİZİ — aiManager (tek otorite) ───
       case 'analyze': {
         if (!body.taskTitle) {
           return NextResponse.json({
@@ -100,40 +105,42 @@ export async function POST(request: NextRequest) {
           }, { status: 400 });
         }
 
-        const result = await analyzeTaskWithOllama(body.taskTitle, body.taskDescription);
-
-        return NextResponse.json({
-          success: !!result,
-          data: result,
-          fallback: result === null ? 'Ollama devre dışı — lokal kurallar gerekli' : undefined,
-          timestamp: new Date().toISOString(),
-        });
-      }
-
-      // ── KONSENSÜS OYLAMA ────────────────────────────────────
-      case 'vote': {
-        if (!body.agent || !body.title || !body.category) {
-          return NextResponse.json({
-            success: false,
-            error: 'agent, title ve category alanları zorunlu',
-          }, { status: 400 });
-        }
-
-        const vote = await voteWithOllama(
-          body.agent,
-          body.title,
-          body.description || '',
-          body.category
+        const result = await analyzeTaskPriority(
+          body.taskTitle,
+          body.taskDescription,
+          { useAI: true, timeoutMs: 15000 }
         );
 
         return NextResponse.json({
-          success: !!vote,
-          data: vote,
+          success: true,
+          data: result,
           timestamp: new Date().toISOString(),
         });
       }
 
-      // ── GENEL METİN ÜRETİMİ ────────────────────────────────
+      // ── KURUL OYLAMA — consensusEngine (tek otorite) ────────
+      case 'vote': {
+        if (!body.title || !body.category) {
+          return NextResponse.json({
+            success: false,
+            error: 'title ve category alanları zorunlu',
+          }, { status: 400 });
+        }
+
+        const result = await runBoardVoting({
+          title: body.title,
+          description: body.description || '',
+          category: body.category,
+        });
+
+        return NextResponse.json({
+          success: true,
+          data: result,
+          timestamp: new Date().toISOString(),
+        });
+      }
+
+      // ── GENEL METİN ÜRETİMİ — aiProvider (doğrudan) ────────
       case 'generate': {
         if (!body.systemPrompt || !body.userMessage) {
           return NextResponse.json({
@@ -142,25 +149,29 @@ export async function POST(request: NextRequest) {
           }, { status: 400 });
         }
 
-        const result = await generateText(body.systemPrompt, body.userMessage, {
+        const result = await aiComplete({
+          systemPrompt: body.systemPrompt,
+          userMessage: body.userMessage,
           temperature: body.temperature,
           maxTokens: body.maxTokens,
           jsonMode: body.jsonMode,
-        });
+        }, { forceDisableOpenAI: true });
 
         return NextResponse.json({
           success: !!result,
-          data: result ? {
-            content: result.content,
-            provider: result.provider,
-            model: result.model,
-            durationMs: result.durationMs,
-          } : null,
+          data: result
+            ? {
+              content: result.content,
+              provider: result.provider,
+              model: result.model,
+              durationMs: result.durationMs,
+            }
+            : null,
           timestamp: new Date().toISOString(),
         });
       }
 
-      // ── MODEL İNDİRME ───────────────────────────────────────
+      // ── MODEL İNDİRME — ollamaBridge.pullModel ──────────────
       case 'pull_model': {
         if (!body.modelName) {
           return NextResponse.json({
@@ -178,7 +189,7 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // ── DURUM RAPORU ────────────────────────────────────────
+      // ── DURUM RAPORU ─────────────────────────────────────────
       case 'status': {
         const [health, providerStatus] = await Promise.all([
           getOllamaBridgeHealth(),
