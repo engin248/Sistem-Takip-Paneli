@@ -20,6 +20,8 @@ import {
   type AgentVote,
   type ConsensusResult,
 } from './consensusEngine';
+import { CONTROL } from '@/core/control_engine';
+
 
 // ─── TİP TANIMLARI ──────────────────────────────────────────
 

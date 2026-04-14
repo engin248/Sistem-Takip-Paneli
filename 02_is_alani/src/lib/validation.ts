@@ -10,6 +10,7 @@
 
 import { z } from 'zod';
 import { ERR, processError } from '@/lib/errorCore';
+import { CONTROL, STRICT_CONTROL } from '@/core/control_engine';
 
 // ─── GÖREV DURUMLARI ────────────────────────────────────────
 export const TaskStatusEnum = z.enum([
@@ -56,7 +57,6 @@ export const CreateTaskSchema = z.object({
 });
 
 // ─── GÖREV DÜZENLEME ŞEMASI (PUT/PATCH) ─────────────────────
-// Partial update: Sadece gönderilen alanlar güncellenir
 export const UpdateTaskSchema = z.object({
   title: z
     .string()
@@ -142,6 +142,7 @@ export const AuditLogSchema = z.object({
 // ============================================================
 // GUARD FONKSİYONU — Tüm validasyonlar buradan geçer
 // ============================================================
+// L0: CONTROL (Generic Gatekeeper) → L1: STRICT_CONTROL (Zod Schema)
 // Başarılı → { success: true, data: T }
 // Başarısız → { success: false, errors: string[] }
 // Her başarısız girişim errorCore'a loglanır.
@@ -158,26 +159,33 @@ export function validateInput<T>(
   input: unknown,
   context: { kaynak: string; islem: string }
 ): ValidationResult<T> {
-  const result = schema.safeParse(input);
-
-  if (result.success) {
-    return { success: true, data: result.data };
+  // L0 KATMAN: Generic CONTROL (Gatekeeper)
+  const controlResult = CONTROL(context.islem, input);
+  if (!controlResult.pass) {
+    const errorMsg = `L0 Zırh Hatası: ${controlResult.proof}`;
+    processError(ERR.SYSTEM_GENERAL, new Error(errorMsg), {
+      kaynak: context.kaynak,
+      islem: context.islem,
+      hatalar: [errorMsg],
+      girdi_tipi: typeof input,
+    }, 'WARNING');
+    return { success: false, errors: [errorMsg] };
   }
 
-  const zodErrors = result.error.issues ?? [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const errors = zodErrors.map((e: any) =>
-    `${(e.path ?? []).join('.')}: ${e.message ?? 'Geçersiz'}`
-  );
+  // L1 KATMAN: Zod STRICT_CONTROL (Schema)
+  const strictResult = STRICT_CONTROL(context.islem, schema, input);
+  if (!strictResult.pass) {
+    const errorMsg = `L1 Şema Hatası: ${strictResult.proof}`;
+    processError(ERR.SYSTEM_GENERAL, new Error(errorMsg), {
+      kaynak: context.kaynak,
+      islem: context.islem,
+      hatalar: strictResult.reason?.split(' | ') || [errorMsg],
+      girdi_tipi: typeof input,
+    }, 'WARNING');
+    return { success: false, errors: strictResult.reason?.split(' | ') || [errorMsg] };
+  }
 
-  processError(ERR.SYSTEM_GENERAL, new Error(`ZOD Validasyon Hatası: ${errors.join('; ')}`), {
-    kaynak: context.kaynak,
-    islem: context.islem,
-    hatalar: errors,
-    girdi_tipi: typeof input,
-  }, 'WARNING');
-
-  return { success: false, errors };
+  return { success: true, data: strictResult.data };
 }
 
 // ─── TİP ÇIKARIMlari ───────────────────────────────────────

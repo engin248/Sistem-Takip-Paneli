@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 // AI MANAGER â€” GÃ–REV ANALÄ°Z VE Ã–NCELÄ°K ATAMA MOTORU
 // ============================================================
 // Gelen gÃ¶revleri analiz edip TaskPriority atar.
@@ -17,6 +17,8 @@ import { ERR, processError } from '@/lib/errorCore';
 import { logAudit } from './auditService';
 import { aiComplete, getProviderStatus } from '@/lib/aiProvider';
 import type { TaskPriority } from '@/store/useTaskStore';
+import { CONTROL } from '@/core/control_engine';
+
 
 // â”€â”€â”€ Ã–NCELÄ°K ANALÄ°Z SONUCU â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export interface PriorityAnalysisResult {

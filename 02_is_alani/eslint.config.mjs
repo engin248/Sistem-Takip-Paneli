@@ -12,6 +12,13 @@ const eslintConfig = defineConfig([
         argsIgnorePattern: "^_",
         varsIgnorePattern: "^_",
       }],
+      // Dosya büyüklük koruması — 400 satır üstü uyarı verir.
+      // Bir daha tekrarlanmaması için: Her PR'da ESLint bu kuralı kontrol eder.
+      "max-lines": ["warn", {
+        max: 400,
+        skipBlankLines: true,
+        skipComments: true,
+      }],
     },
   },
   // Override default ignores of eslint-config-next.

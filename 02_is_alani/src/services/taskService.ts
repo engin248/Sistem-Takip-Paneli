@@ -4,6 +4,8 @@ import { logAudit, logAuditError } from './auditService';
 import { validateSupabaseConnection } from '@/lib/supabase';
 import { ERR, processError } from '@/lib/errorCore';
 import { guardWritePermission, getTaskOwner } from '@/lib/permissionGuard';
+import { CONTROL } from '@/core/control_engine';
+
 
 // ============================================================
 // BAĞLANTI ÖN KONTROLÜ

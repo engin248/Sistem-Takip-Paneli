@@ -1,6 +1,6 @@
 {
   "name": "02_is_alani",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "scripts": {
     "predev": "node scripts/check-no-middleware.mjs",
@@ -18,17 +18,13 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@langchain/langgraph": "^1.2.8",
-    "@restatedev/restate-sdk": "^1.13.0",
     "@supabase/supabase-js": "^2.102.1",
-    "drizzle-orm": "^0.45.2",
     "grammy": "^1.42.0",
     "next": "^16.2.3",
     "openai": "^6.33.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "sonner": "^2.0.7",
-    "wasmtime": "^0.0.2",
     "zod": "^4.3.6",
     "zustand": "^5.0.12"
   },
