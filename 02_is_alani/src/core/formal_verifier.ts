@@ -48,10 +48,18 @@ export async function runFormalVerification(
     // 1. Hedefe ulaşılmalı ve yasaklı eylem yapılmamalı
     solver.add(goalVar.eq(Z3.Bool.val(true)));
 
-    // 2. Eğer forbidden listesi varsa ve kural ihlali yapılmışsa
+    // 2. Eğer forbidden listesi tanımlanmışsa, hedeflenen aksiyonun (goal) bu yasakları içerip içermediğini kontrol et
     if (spec.forbidden && spec.forbidden.length > 0) {
-      // Sıkı kural: AI yasaklı işlem listesini tetikliyorsa red
-      if (spec.forbidden.some(f => f.toLowerCase().includes('delete') || f.toLowerCase().includes('drop'))) {
+      const goalStr = spec.goal.toLowerCase();
+
+      // Goal içerisinde "delete" veya "drop" kelimeleri geçiyorsa ve bu eylemler yasaklanmışsa reddet
+      const isForbiddenActionAttempted = spec.forbidden.some(f => {
+        const forbiddenWord = f.toLowerCase();
+        return (forbiddenWord.includes('delete') && goalStr.includes('delete')) ||
+               (forbiddenWord.includes('drop') && goalStr.includes('drop'));
+      });
+
+      if (isForbiddenActionAttempted) {
         solver.add(noForbidden.eq(Z3.Bool.val(false)));
       } else {
         solver.add(noForbidden.eq(Z3.Bool.val(true)));
