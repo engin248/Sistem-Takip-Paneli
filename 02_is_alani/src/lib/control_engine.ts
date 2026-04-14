@@ -43,7 +43,7 @@ export function STRICT_CONTROL<T>(schema: z.ZodType<T>, data: unknown): { pass: 
   if (!result.success) {
     return {
       pass: false,
-      reason: result.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
+      reason: result.error.issues.map((e: z.ZodIssue) => `${e.path.join('.')}: ${e.message}`).join(', ')
     };
   }
 
