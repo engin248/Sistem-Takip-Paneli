@@ -14,6 +14,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { handleWebhookUpdate, isTelegramBotAvailable } from '@/services/telegramService';
 import { ERR, processError } from '@/lib/errorCore';
+import { CONTROL } from '@/core/control_engine';
 
 // ─── POST: Telegram Webhook ─────────────────────────────────
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -29,9 +30,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     // Request body'yi parse et
     const update = await req.json();
 
-    if (!update || typeof update !== 'object') {
+    const control = CONTROL('TELEGRAM_WEBHOOK', update);
+    if (!control.pass) {
+      processError(ERR.SYSTEM_GENERAL, new Error(`Webhook L0 Zırh İhlali: ${control.proof}`), {
+        kaynak: 'api/telegram/route.ts',
+        islem: 'WEBHOOK_POST',
+        hatalar: [control.proof]
+      }, 'WARNING');
+
       return NextResponse.json(
-        { error: 'Geçersiz payload' },
+        { error: `Geçersiz payload: ${control.reason}` },
         { status: 400 }
       );
     }

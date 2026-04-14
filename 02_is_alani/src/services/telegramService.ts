@@ -24,6 +24,7 @@ import { supabase, validateSupabaseConnection } from '@/lib/supabase';
 import { ERR, processError } from '@/lib/errorCore';
 import { logAudit } from './auditService';
 import { analyzeTaskPriority, getPriorityLabel, getPriorityEmoji } from './aiManager';
+import { CONTROL } from '@/core/control_engine';
 import type { TaskPriority } from '@/store/useTaskStore';
 
 // ─── ORTAM DEĞİŞKENLERİ ────────────────────────────────────
@@ -345,8 +346,20 @@ async function handleTaskMessage(ctx: Context, text: string, source: 'text' | 'v
     return;
   }
 
-  // Boş mesaj kontrolü
-  if (!text || text.trim().length < 3) {
+  // ── L0 GENERIC CONTROL (Gatekeeper) ─────────────
+  const controlResult = CONTROL('TELEGRAM_MSG_TEXT', text);
+  if (!controlResult.pass) {
+    await sendReply(ctx, '⚠️ Geçersiz veya boş veri gönderildi.');
+    await logAudit({
+      operation_type: 'REJECT',
+      action_description: `Geçersiz Telegram komutu: ${controlResult.proof}`,
+      metadata: { action_code: 'TELEGRAM_L0_REJECT', chat_id: chatId, sender: senderName }
+    }).catch(() => {});
+    return;
+  }
+
+  // Boş mesaj kontrolü (Ekstra uzunluk kısıtlaması)
+  if (text.trim().length < 3) {
     await sendReply(ctx, '⚠️ Görev metni çok kısa. En az 3 karakter gereklidir.');
     return;
   }
