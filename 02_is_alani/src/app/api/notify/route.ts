@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendTelegramNotification, formatSystemAlert, isTelegramNotificationAvailable } from '@/services/telegramNotifier';
 import { ERR, processError } from '@/lib/errorCore';
+import { CONTROL } from '../../../../core/control_engine';
 
 // ============================================================
 // TELEGRAM BİLDİRİM API — /api/notify
@@ -28,6 +29,16 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+
+    // ── L0 GATEKEEPER: CONTROL() ──────────────────────────────
+    const ctrl = CONTROL('NOTIFY_API_PAYLOAD', body);
+    if (!ctrl.pass) {
+      return NextResponse.json(
+        { success: false, error: `Geçersiz payload [${ctrl.reason}]`, proof: ctrl.proof },
+        { status: 400 }
+      );
+    }
+
     const { message, title, severity } = body as {
       message: string;
       title?: string;

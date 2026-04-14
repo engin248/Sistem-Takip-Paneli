@@ -1,10 +1,10 @@
 // ============================================================
 // BRIDGE SERVICE — DIŞ SİSTEM KÖPRÜSÜ (MİZANET)
 // ============================================================
-// STP'nin Mizanet sistemini (cauptlsn...) izlemesi ve 
+// STP'nin dış hedef sistemleri (cauptlsn... vb) izlemesi ve 
 // durumunu takip etmesi için köprü servisi.
 //
-// Mizanet DB Tablo Yapısı:
+// Dış Sistem DB Tablo Yapısı:
 //   b0_* — Sistem katmanı (loglar, güvenlik, telegram)
 //   b1_* — İş katmanı (ARGE, ajanlar, mesajlar, uyarılar)
 //   b2_* — İşlem katmanı (siparisler, stok, müşteriler)
@@ -31,7 +31,7 @@ import { logAudit } from './auditService';
 
 // ─── TİP TANIMLARI ──────────────────────────────────────────
 
-export interface MizanetSistemLog {
+export interface ExternalSystemLog {
   id: string;
   islem: string;
   detay: string | null;
@@ -40,7 +40,7 @@ export interface MizanetSistemLog {
   created_at: string;
 }
 
-export interface MizanetUyari {
+export interface ExternalAlert {
   id: string;
   baslik: string;
   icerik: string | null;
@@ -50,7 +50,7 @@ export interface MizanetUyari {
   created_at: string;
 }
 
-export interface MizanetAjanGorev {
+export interface ExternalAgentTask {
   id: string;
   ajan_adi: string;
   gorev_tipi: string | null;
@@ -59,7 +59,7 @@ export interface MizanetAjanGorev {
   created_at: string;
 }
 
-export interface MizanetArgeTrend {
+export interface ExternalArgeTrend {
   id: string;
   urun_adi: string | null;
   kategori: string | null;
@@ -78,10 +78,10 @@ export interface BridgeStatus {
 
 export interface ExternalSystemSummary {
   bridge: BridgeStatus;
-  sistemLoglari: MizanetSistemLog[];
-  uyarilar: MizanetUyari[];
-  ajanGorevleri: MizanetAjanGorev[];
-  argeTrendler: MizanetArgeTrend[];
+  sistemLoglari: ExternalSystemLog[];
+  uyarilar: ExternalAlert[];
+  ajanGorevleri: ExternalAgentTask[];
+  argeTrendler: ExternalArgeTrend[];
   istatistikler: {
     logSayisi: number;
     acikUyari: number;
@@ -186,7 +186,7 @@ export async function pingExternalDB(): Promise<BridgeStatus> {
 // 2. SİSTEM LOGLARINI GETİR (b0_sistem_loglari)
 // ============================================================
 
-export async function getSistemLoglari(limit: number = 20): Promise<BaseSonuc & { loglar?: MizanetSistemLog[] }> {
+export async function getSistemLoglari(limit: number = 20): Promise<BaseSonuc & { loglar?: ExternalSystemLog[] }> {
   const client = getExternalSupabase();
   if (!client) return { basarili: false, hata: 'Dış bağlantı yapılandırılmamış' };
 
@@ -204,7 +204,7 @@ export async function getSistemLoglari(limit: number = 20): Promise<BaseSonuc & 
       return { basarili: false, hata: error.message };
     }
 
-    return { basarili: true, loglar: (data || []) as MizanetSistemLog[] };
+    return { basarili: true, loglar: (data || []) as ExternalSystemLog[] };
   } catch (err) {
     processError(ERR.BRIDGE_QUERY, err, {
       kaynak: 'bridgeService.ts', islem: 'GET_SISTEM_LOGLARI',
@@ -217,7 +217,7 @@ export async function getSistemLoglari(limit: number = 20): Promise<BaseSonuc & 
 // 3. SİSTEM UYARILARINI GETİR (b1_sistem_uyarilari)
 // ============================================================
 
-export async function getSistemUyarilari(): Promise<BaseSonuc & { uyarilar?: MizanetUyari[] }> {
+export async function getSistemUyarilari(): Promise<BaseSonuc & { uyarilar?: ExternalAlert[] }> {
   const client = getExternalSupabase();
   if (!client) return { basarili: false, hata: 'Dış bağlantı yapılandırılmamış' };
 
@@ -235,7 +235,7 @@ export async function getSistemUyarilari(): Promise<BaseSonuc & { uyarilar?: Miz
       return { basarili: false, hata: error.message };
     }
 
-    return { basarili: true, uyarilar: (data || []) as MizanetUyari[] };
+    return { basarili: true, uyarilar: (data || []) as ExternalAlert[] };
   } catch (err) {
     processError(ERR.BRIDGE_QUERY, err, {
       kaynak: 'bridgeService.ts', islem: 'GET_SISTEM_UYARILARI',
@@ -248,7 +248,7 @@ export async function getSistemUyarilari(): Promise<BaseSonuc & { uyarilar?: Miz
 // 4. AJAN GÖREVLERİNİ GETİR (b1_ajan_gorevler)
 // ============================================================
 
-export async function getAjanGorevleri(limit: number = 20): Promise<BaseSonuc & { gorevler?: MizanetAjanGorev[] }> {
+export async function getAjanGorevleri(limit: number = 20): Promise<BaseSonuc & { gorevler?: ExternalAgentTask[] }> {
   const client = getExternalSupabase();
   if (!client) return { basarili: false, hata: 'Dış bağlantı yapılandırılmamış' };
 
@@ -266,7 +266,7 @@ export async function getAjanGorevleri(limit: number = 20): Promise<BaseSonuc & 
       return { basarili: false, hata: error.message };
     }
 
-    return { basarili: true, gorevler: (data || []) as MizanetAjanGorev[] };
+    return { basarili: true, gorevler: (data || []) as ExternalAgentTask[] };
   } catch (err) {
     processError(ERR.BRIDGE_QUERY, err, {
       kaynak: 'bridgeService.ts', islem: 'GET_AJAN_GOREVLERI',
@@ -279,7 +279,7 @@ export async function getAjanGorevleri(limit: number = 20): Promise<BaseSonuc & 
 // 5. ARGE TRENDLERİ GETİR (b1_arge_trendler)
 // ============================================================
 
-export async function getArgeTrendler(limit: number = 15): Promise<BaseSonuc & { trendler?: MizanetArgeTrend[] }> {
+export async function getArgeTrendler(limit: number = 15): Promise<BaseSonuc & { trendler?: ExternalArgeTrend[] }> {
   const client = getExternalSupabase();
   if (!client) return { basarili: false, hata: 'Dış bağlantı yapılandırılmamış' };
 
@@ -297,7 +297,7 @@ export async function getArgeTrendler(limit: number = 15): Promise<BaseSonuc & {
       return { basarili: false, hata: error.message };
     }
 
-    return { basarili: true, trendler: (data || []) as MizanetArgeTrend[] };
+    return { basarili: true, trendler: (data || []) as ExternalArgeTrend[] };
   } catch (err) {
     processError(ERR.BRIDGE_QUERY, err, {
       kaynak: 'bridgeService.ts', islem: 'GET_ARGE_TRENDLER',
@@ -352,7 +352,7 @@ export async function getSystemSummary(): Promise<ExternalSystemSummary> {
   // Audit log — köprü sorgusu kaydı
   await logAudit({
     operation_type: 'READ',
-    action_description: `Bridge Mizanet özet: ${summary.istatistikler.logSayisi} log, ${summary.istatistikler.acikUyari} uyarı, ${bridge.latencyMs}ms`,
+    action_description: `Bridge Dış Sistem özet: ${summary.istatistikler.logSayisi} log, ${summary.istatistikler.acikUyari} uyarı, ${bridge.latencyMs}ms`,
     metadata: {
       action_code: 'BRIDGE_MIZANET_SUMMARY',
       latency_ms: bridge.latencyMs,
@@ -367,7 +367,7 @@ export async function getSystemSummary(): Promise<ExternalSystemSummary> {
 }
 
 // ============================================================
-// 7. MİZANET URL SAĞLIK KONTROLÜ (HTTP)
+// 7. DIŞ WEB SİSTEMİ SAĞLIK KONTROLÜ (HTTP)
 // ============================================================
 
 export async function httpHealthCheck(url: string, timeoutMs: number = 10000): Promise<{

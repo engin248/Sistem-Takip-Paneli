@@ -1,7 +1,7 @@
 // ============================================================
 // HEALTH CHECK API — SİSTEM SAĞLIK KONTROLÜ
 // ============================================================
-// İç (STP) ve dış (Mizanet) sistemlerin sağlık durumunu
+// İç (STP) ve dış sistemlerin sağlık durumunu
 // tek endpoint'ten döndürür.
 //
 // GET /api/health-check → Tam sağlık raporu
@@ -27,7 +27,7 @@ interface HealthReport {
   status: 'healthy' | 'degraded' | 'down';
   timestamp: string;
   systems: SystemHealth[];
-  mizanet: {
+  externalSystem: {
     dbConnected: boolean;
     dbLatencyMs: number;
     siteReachable: boolean;
@@ -53,24 +53,24 @@ export async function GET() {
       },
     });
 
-    // ── 2. MİZANET DB (KÖPRÜ) ─────────────────────────────
-    // NOT: EXTERNAL_SUPABASE_URL tanımlı değilse Mizanet kontrolü atlanır.
+    // ── 2. DIŞ SİSTEM (KÖPRÜ) ─────────────────────────────
+    // NOT: EXTERNAL_SUPABASE_URL tanımlı değilse dış kontrol atlanır.
     // STP bağımsız çalışır — dış bağımlılık olmadan healthy döner.
-    const mizanetInfo = {
+    const externalInfo = {
       dbConnected: false,
       dbLatencyMs: 0,
       siteReachable: false,
       siteLatencyMs: 0,
-      siteUrl: 'https://mizanet.com',
+      siteUrl: 'https://external-target.com',
     };
 
     if (isExternalConfigured()) {
       const bridgePing = await pingExternalDB();
-      mizanetInfo.dbConnected = bridgePing.connected;
-      mizanetInfo.dbLatencyMs = bridgePing.latencyMs;
+      externalInfo.dbConnected = bridgePing.connected;
+      externalInfo.dbLatencyMs = bridgePing.latencyMs;
 
       systems.push({
-        name: 'Mizanet Veritabanı (cauptlsn...)',
+        name: 'Dış Veritabanı (External)',
         status: bridgePing.connected ? 'healthy' : 'down',
         latencyMs: bridgePing.latencyMs,
         details: {
@@ -79,13 +79,13 @@ export async function GET() {
         },
       });
 
-      // ── 3. MİZANET WEB SİTESİ ─────────────────────────────
-      const siteCheck = await httpHealthCheck('https://mizanet.com', 8000);
-      mizanetInfo.siteReachable = siteCheck.reachable;
-      mizanetInfo.siteLatencyMs = siteCheck.latencyMs;
+      // ── 3. DIŞ WEB SİSTEMİ ─────────────────────────────
+      const siteCheck = await httpHealthCheck('https://external-target.com', 8000);
+      externalInfo.siteReachable = siteCheck.reachable;
+      externalInfo.siteLatencyMs = siteCheck.latencyMs;
 
       systems.push({
-        name: 'Mizanet Web (mizanet.com)',
+        name: 'Dış Web Platformu',
         status: siteCheck.reachable ? 'healthy' : 'down',
         latencyMs: siteCheck.latencyMs,
         details: {
@@ -104,7 +104,7 @@ export async function GET() {
       status: overallStatus,
       timestamp: new Date().toISOString(),
       systems,
-      mizanet: mizanetInfo,
+      externalSystem: externalInfo,
     };
 
     // Audit log
@@ -115,8 +115,8 @@ export async function GET() {
         action_code: 'HEALTH_CHECK',
         overall_status: overallStatus,
         system_count: systems.length,
-        mizanet_db: mizanetInfo.dbConnected,
-        mizanet_site: mizanetInfo.siteReachable,
+        external_db: externalInfo.dbConnected,
+        external_site: externalInfo.siteReachable,
         duration_ms: Date.now() - startTime,
       },
     }).catch(() => {});
@@ -136,7 +136,7 @@ export async function GET() {
         timestamp: new Date().toISOString(),
         error: err instanceof Error ? err.message : String(err),
         systems: [],
-        mizanet: { dbConnected: false, dbLatencyMs: 0, siteReachable: false, siteLatencyMs: 0, siteUrl: '' },
+        externalSystem: { dbConnected: false, dbLatencyMs: 0, siteReachable: false, siteLatencyMs: 0, siteUrl: '' },
       },
       { status: 503 }
     );

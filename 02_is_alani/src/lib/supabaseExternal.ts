@@ -2,7 +2,7 @@
 // DIŞ SİSTEM SUPABASE CLIENT — KÖPRÜ BAĞLANTISI
 // ============================================================
 // STP'nin kendi DB'sinden (tesxmqhk...) AYRI bir ikinci
-// Supabase client'ı. Mizanet/SKM DB'sine (cauptlsn...) bağlanır.
+// Supabase client'ı. Dış sistemin DB'sine bağlanır.
 //
 // Kullanım: bridgeService.ts tarafından çağrılır.
 // Güvenlik: SADECE READ işlemleri için tasarlanmıştır.

@@ -10,7 +10,7 @@ import { t } from "@/lib/i18n";
 //
 // ÜST: /api/health-check endpoint'i
 // ALT: bridgeService + supabase validation
-// ÖN: Canlı sağlık kartları (STP DB + Mizanet DB + Mizanet Web)
+// ÖN: Canlı sağlık kartları (STP DB + Dış DB + Dış Web)
 // ARKA: 60 saniyede bir otomatik polling
 // ============================================================
 
@@ -25,7 +25,7 @@ interface HealthReport {
   status: "healthy" | "degraded" | "down";
   timestamp: string;
   systems: SystemHealth[];
-  mizanet: {
+  externalSystem: {
     dbConnected: boolean;
     dbLatencyMs: number;
     siteReachable: boolean;
@@ -56,7 +56,7 @@ export default function HealthDashboard() {
         status: "down",
         timestamp: new Date().toISOString(),
         systems: [],
-        mizanet: { dbConnected: false, dbLatencyMs: 0, siteReachable: false, siteLatencyMs: 0, siteUrl: "" },
+        externalSystem: { dbConnected: false, dbLatencyMs: 0, siteReachable: false, siteLatencyMs: 0, siteUrl: "" },
       });
       setLastCheckTime(new Date().toLocaleTimeString(lang === "ar" ? "ar-SA" : "tr-TR"));
     } finally {

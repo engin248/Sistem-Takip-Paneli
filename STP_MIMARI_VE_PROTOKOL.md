@@ -437,6 +437,15 @@ Başlangıç Günü:
 
 ---
 
+## 11. SİSTEM SINIRLARI VE PROJE BAĞIMSIZLIĞI (MUTLAK KURAL)
+
+Sistem Takip Paneli (STP), tüm projeleri yukarıdan izleyen, denetleyen ve görevi yürüten **ANA ORKESTRATÖR KONTROL MERKEZİDİR**.
+*   **Kural 1:** STP'nin kodlarında, mimarisinde veya bilgi havuzunda hiçbir dış projenin (Mizanet vb.) ismi **hardcoded (sabitlenmiş)** olarak yer alamaz.
+*   **Kural 2:** Mizanet veya diğer projeler, STP için sadece izlenecek bir *"Dış Hedef (External Target)"* veya *"Bağlı API"* statüsündedir.
+*   **Kural 3:** Bu iki alan birbirine karıştırılamaz, hiçbir AI ajanı veya kullanıcı "STP = Mizanet" varsayımı yapamaz. Projeler arası bağ, sadece genel Bridge (Köprü) arayüzleri ile kurulur.
+
+---
+
 > **Mühür:** MİMARİ-PROTOKOL-KONSOLİDE-V2.0-STP  
 > **Kaynak:** 5_KATMAN_PROTOKOLU + GOREV_ISLEM_MIMARISI_ARGE + ARGE_ARASTIRMA_SONUCLARI  
 > **Tarih:** 13 Nisan 2026

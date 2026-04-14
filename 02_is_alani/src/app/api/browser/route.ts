@@ -22,12 +22,23 @@ import {
   extractStructuredData,
 } from '@/services/browserService';
 import { ERR, processError } from '@/lib/errorCore';
+import { CONTROL } from '../../../../core/control_engine';
 
 type BrowserAction = 'navigate' | 'search' | 'screenshot' | 'extract' | 'health';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+
+    // ── L0 GATEKEEPER: CONTROL() ──────────────────────────────
+    const ctrl = CONTROL('BROWSER_API_PAYLOAD', body);
+    if (!ctrl.pass) {
+      return NextResponse.json(
+        { success: false, error: `Geçersiz payload [${ctrl.reason}]`, proof: ctrl.proof },
+        { status: 400 }
+      );
+    }
+
     const { action } = body as { action?: string };
 
     if (!action) {

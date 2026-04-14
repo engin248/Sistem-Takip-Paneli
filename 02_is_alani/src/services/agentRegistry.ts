@@ -334,7 +334,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
   {
     id: 'A-11',
     kod_adi: 'KOPRU',
-    rol: 'Dış sistem köprüsü — Mizanet ve diğer sistemlerle bağlantı',
+    rol: 'Dış sistem köprüsü — Harici sistemlerle bağlantı',
     katman: 'DESTEK',
     beceri_listesi: [
       'dis_sistem_baglantisi', 'api_entegrasyon', 'veri_senkronizasyon',

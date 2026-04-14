@@ -23,6 +23,7 @@ import { analyzeTaskPriority } from '@/services/aiManager';
 import { runBoardVoting } from '@/services/consensusEngine';
 import type { DecisionCategory } from '@/services/consensusEngine';
 import { processError, ERR } from '@/lib/errorCore';
+import { CONTROL } from '../../../../core/control_engine';
 
 // ─── GET: Sağlık kontrolü + durum raporu ────────────────────
 
@@ -87,6 +88,15 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json() as OllamaPostBody;
 
+    // ── L0 GATEKEEPER: CONTROL() ──────────────────────────────
+    const ctrl = CONTROL('OLLAMA_API_PAYLOAD', body);
+    if (!ctrl.pass) {
+      return NextResponse.json({
+        success: false,
+        error: `Geçersiz payload [${ctrl.reason}]`,
+        proof: ctrl.proof
+      }, { status: 400 });
+    }
     if (!body.action) {
       return NextResponse.json({
         success: false,
