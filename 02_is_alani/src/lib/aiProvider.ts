@@ -58,7 +58,7 @@ export interface AICompletionResponse {
 function getDefaultConfig(): AIProviderConfig {
   return {
     ollamaBaseUrl: process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
-    ollamaModel: process.env.OLLAMA_MODEL || 'llama3.1',
+    ollamaModel: process.env.OLLAMA_MODEL || 'llama3:latest',
     openaiApiKey: process.env.OPENAI_API_KEY || '',
     openaiModel: process.env.OPENAI_MODEL || 'gpt-4o-mini',
     forceDisableOllama: process.env.FORCE_DISABLE_OLLAMA === 'true',
