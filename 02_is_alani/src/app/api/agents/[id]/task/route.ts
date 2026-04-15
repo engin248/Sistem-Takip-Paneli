@@ -1,15 +1,16 @@
 // src/app/api/agents/[id]/task/route.ts
-// POST /api/agents/:id/task — Ajana görev atar, durumunu aktive eder
+// POST /api/agents/:id/task — Ajana görev atar, WORKER ile icra eder
 // ============================================================
 
 import { NextResponse, type NextRequest } from 'next/server';
-import { agentRegistry } from '@/services/agentRegistry';
-import { logAudit } from '@/services/auditService';
+import { runAgentWorker } from '@/core/agentWorker';
+import { agentRegistry }  from '@/services/agentRegistry';
 
 export const dynamic = 'force-dynamic';
 
 interface TaskBody {
-  task: string;
+  task    : string;
+  priority?: number;
 }
 
 export async function POST(
@@ -18,7 +19,7 @@ export async function POST(
 ) {
   const agentId = params.id;
 
-  // ── Ajan kontrolü ─────────────────────────────────────────
+  // ── Ajan var mı? ─────────────────────────────────────────
   const agent = agentRegistry.getById(agentId);
   if (!agent) {
     return NextResponse.json(
@@ -35,7 +36,7 @@ export async function POST(
     );
   }
 
-  // ── Görev metni kontrolü ──────────────────────────────────
+  // ── Body parse ───────────────────────────────────────────
   let body: TaskBody;
   try {
     body = await request.json() as TaskBody;
@@ -46,7 +47,7 @@ export async function POST(
     );
   }
 
-  const { task } = body;
+  const { task, priority = 2 } = body;
 
   if (!task || typeof task !== 'string' || task.trim().length < 3) {
     return NextResponse.json(
@@ -55,32 +56,37 @@ export async function POST(
     );
   }
 
-  // ── Ajana görevi ata (aktive et) ──────────────────────────
-  agentRegistry.updateDurum(agentId, 'aktif');
+  // ── WORKER ile icra et ────────────────────────────────────
+  try {
+    const workerResult = await runAgentWorker({
+      agent_id : agentId,
+      task     : task.trim(),
+      priority,
+    });
 
-  // ── Audit log ─────────────────────────────────────────────
-  await logAudit({
-    operation_type: 'EXECUTE',
-    action_description: `Ajana görev atandı: ${agentId} (${agent.kod_adi}) — ${task.trim().slice(0, 100)}`,
-    metadata: {
-      action_code : 'AGENT_TASK_ASSIGN',
-      agent_id    : agentId,
-      kod_adi     : agent.kod_adi,
-      katman      : agent.katman,
-      onceki_durum: agent.durum,
-      yeni_durum  : 'aktif',
-      gorev_ozeti : task.trim().slice(0, 200),
-    },
-  }).catch(() => {});
+    return NextResponse.json({
+      success     : workerResult.status === 'tamamlandi',
+      message     : workerResult.status === 'tamamlandi'
+        ? `${workerResult.kod_adi} görevi tamamladı (${workerResult.ai_kullandi ? 'AI' : 'LOKAL'}, ${workerResult.duration_ms}ms)`
+        : `Görev başarısız: ${workerResult.status}`,
+      job_id      : workerResult.job_id,
+      agent_id    : workerResult.agent_id,
+      kod_adi     : workerResult.kod_adi,
+      katman      : workerResult.katman,
+      status      : workerResult.status,
+      ai_kullandi : workerResult.ai_kullandi,
+      duration_ms : workerResult.duration_ms,
+      result      : workerResult.result,
+      timestamp   : workerResult.timestamp,
+    });
 
-  return NextResponse.json({
-    success   : true,
-    message   : `Görev alındı — ${agent.kod_adi} aktive edildi`,
-    agent_id  : agentId,
-    kod_adi   : agent.kod_adi,
-    katman    : agent.katman,
-    yeni_durum: 'aktif',
-    gorev     : task.trim(),
-    timestamp : new Date().toISOString(),
-  });
+  } catch (err) {
+    return NextResponse.json(
+      {
+        success: false,
+        message: err instanceof Error ? err.message : 'Worker hatası',
+      },
+      { status: 500 }
+    );
+  }
 }
