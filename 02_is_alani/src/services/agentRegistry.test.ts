@@ -2,16 +2,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { agentRegistry, type AgentCard } from './agentRegistry';
 
 // ============================================================
-// Agent Registry — 16 Kişilik Hibrit Kadro Unit Testleri
+// Agent Registry — 50 Kişilik Hibrit Kadro Unit Testleri
 // Sorgulama, kayıt, güncelleme, istatistik
 // ============================================================
 
 describe('AgentRegistry', () => {
   // ── BAŞLANGIÇ KADROSU ─────────────────────────────────────
   describe('başlangıç kadrosu', () => {
-    it('16 kişilik kadro yüklü', () => {
+    it('50 kişilik kadro yüklü', () => {
       const all = agentRegistry.getAll();
-      expect(all.length).toBe(16);
+      expect(all.length).toBe(50);
     });
 
     it('4 komuta kartı var', () => {
@@ -25,33 +25,45 @@ describe('AgentRegistry', () => {
       expect(komutan!.kod_adi).toBe('KOMUTAN');
     });
 
-    it('GOZCU kod adı ile bulunabilir', () => {
-      const gozcu = agentRegistry.getByKodAdi('GOZCU');
-      expect(gozcu).toBeDefined();
-      expect(gozcu!.katman).toBe('L2');
+    it('DENETÇİ-KOD B-01 kod adı ile bulunabilir', () => {
+      const denetci = agentRegistry.getByKodAdi('DENETÇİ-KOD');
+      expect(denetci).toBeDefined();
+      expect(denetci!.katman).toBe('L2');
     });
   });
 
   // ── SORGULAMA ─────────────────────────────────────────────
   describe('sorgulama', () => {
-    it('katmana göre filtreler — L1 = 4 ajan', () => {
-      expect(agentRegistry.getByKatman('L1').length).toBe(4);
+    it('katmana göre filtreler — L1 = 10 ajan', () => {
+      expect(agentRegistry.getByKatman('L1').length).toBe(10);
+    });
+
+    it('katmana göre filtreler — L2 = 6 ajan', () => {
+      expect(agentRegistry.getByKatman('L2').length).toBe(6);
+    });
+
+    it('katmana göre filtreler — L3 = 2 ajan', () => {
+      expect(agentRegistry.getByKatman('L3').length).toBe(2);
+    });
+
+    it('katmana göre filtreler — DESTEK = 28 ajan', () => {
+      expect(agentRegistry.getByKatman('DESTEK').length).toBe(28);
     });
 
     it('duruma göre filtreler — tümü aktif', () => {
       const aktif = agentRegistry.getByDurum('aktif');
-      expect(aktif.length).toBe(16);
+      expect(aktif.length).toBe(50);
     });
 
-    it('beceriye göre arar', () => {
+    it('beceriye göre arar — react bulunur', () => {
       const react = agentRegistry.getByBeceri('react');
       expect(react.length).toBeGreaterThan(0);
-      expect(react.some(a => a.kod_adi === 'ICRACI-FE')).toBe(true);
+      expect(react.some(a => a.kod_adi === 'İCRACI-FE')).toBe(true);
     });
 
-    it('görev yapabilecek ajanları bulur', () => {
+    it('görev yapabilecek ajanları bulur — api_gelistirme', () => {
       const capable = agentRegistry.findCapableAgents('api_gelistirme');
-      expect(capable.some(a => a.kod_adi === 'ICRACI-BE')).toBe(true);
+      expect(capable.some(a => a.kod_adi === 'İCRACI-BE')).toBe(true);
     });
 
     it('olmayan ID undefined döner', () => {
@@ -118,11 +130,12 @@ describe('AgentRegistry', () => {
   describe('istatistik', () => {
     it('stats doğru hesaplanır', () => {
       const stats = agentRegistry.getStats();
-      expect(stats.toplam).toBeGreaterThanOrEqual(16);
+      expect(stats.toplam).toBe(50);
       expect(stats.komuta).toBe(4);
-      expect(stats.katmanDagilimi.L1).toBe(4);
-      expect(stats.katmanDagilimi.L2).toBe(2);
-      expect(stats.katmanDagilimi.L3).toBe(1);
+      expect(stats.katmanDagilimi.L1).toBe(10);
+      expect(stats.katmanDagilimi.L2).toBe(6);
+      expect(stats.katmanDagilimi.L3).toBe(2);
+      expect(stats.katmanDagilimi.DESTEK).toBe(28);
     });
 
     it('sonraki ajan ID üretilir', () => {
