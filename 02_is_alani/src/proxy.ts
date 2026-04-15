@@ -118,18 +118,11 @@ export function proxy(request: NextRequest) {
     }
   }
 
-  // ── 2. AUTH KONTROLÜ — Sayfa route'larını korur (K-4) ────
+  // ── 2. SAYFA ROUTE'LARI — Doğrudan geçir ────────────────────
+  // Auth kontrolü middleware'de YAPILMIYOR.
+  // /login sayfası mevcut değil — redirect 404 üretiyor.
+  // Auth yönetimi uygulama içinde (client-side AuthProvider) yapılır.
   if (!pathname.startsWith('/api/')) {
-    const authEnabled = process.env.NEXT_PUBLIC_SUPABASE_AUTH_ENABLED === 'true';
-    if (authEnabled) {
-      const token = request.cookies.get('sb-access-token')?.value
-                 ?? request.cookies.get('sb-tesxmqhkegotxenoljzl-auth-token')?.value;
-      if (!token && pathname !== '/login' && !pathname.startsWith('/_next')) {
-        const loginUrl = new URL('/login', request.url);
-        loginUrl.searchParams.set('redirectTo', pathname);
-        return NextResponse.redirect(loginUrl);
-      }
-    }
     return addSecurityHeaders(NextResponse.next());
   }
 
