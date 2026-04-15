@@ -415,4 +415,222 @@ export function registerHandlers(botInstance: Bot): void {
   botInstance.callbackQuery('voice_reject', async (ctx) => {
     await handleVoiceReject(ctx);
   });
+
+  // ── /ara <kelime> — RAG: Supabase'den canlı görev/log araması ──
+  botInstance.command('ara', async (ctx) => {
+    const chatId = ctx.chat?.id ?? 0;
+    if (!isAuthorized(chatId)) { await sendReply(ctx, '⛔ YETKİSİZ ERİŞİM.'); return; }
+    const query = ctx.match?.trim();
+    if (!query) { await sendReply(ctx, '⚠️ Kullanım: /ara <aranacak kelime>'); return; }
+
+    await sendReply(ctx, `🔍 <b>"${query}"</b> aranıyor...`);
+
+    try {
+      // Görevlerde ara
+      const { data: tasks } = await supabase
+        .from('tasks')
+        .select('task_code, title, status, priority, created_at')
+        .or(`title.ilike.%${query}%,task_code.ilike.%${query}%`)
+        .eq('is_archived', false)
+        .order('created_at', { ascending: false })
+        .limit(8);
+
+      // Audit log'larda ara
+      const { data: logs } = await supabase
+        .from('audit_logs')
+        .select('action_description, timestamp')
+        .ilike('action_description', `%${query}%`)
+        .order('timestamp', { ascending: false })
+        .limit(5);
+
+      const pe: Record<string, string> = { kritik: '🔴', yuksek: '🟠', normal: '🟡', dusuk: '🟢' };
+
+      const lines: string[] = [`🔎 <b>ARAMA SONUÇLARI — "${query}"</b>`, ''];
+
+      if (tasks && tasks.length > 0) {
+        lines.push(`<b>📋 Görevler (${tasks.length}):</b>`);
+        tasks.forEach((t, i) => {
+          lines.push(`${i + 1}. ${pe[t.priority] ?? '🟡'} <code>${t.task_code}</code> — ${t.title} [${t.status}]`);
+        });
+      } else {
+        lines.push('📋 Görevlerde eşleşme bulunamadı.');
+      }
+
+      if (logs && logs.length > 0) {
+        lines.push('', `<b>📜 Log Kayıtları (${logs.length}):</b>`);
+        logs.forEach((l, i) => {
+          const ts = new Date(l.timestamp).toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' });
+          lines.push(`${i + 1}. [${ts}] ${l.action_description.substring(0, 80)}`);
+        });
+      }
+
+      if ((!tasks || tasks.length === 0) && (!logs || logs.length === 0)) {
+        lines.push('❌ Hiçbir kayıtta eşleşme bulunamadı.');
+      }
+
+      await sendReply(ctx, lines.join('\n'));
+    } catch (err) {
+      processError(ERR.TASK_FETCH, err, { kaynak: 'commandRouter.ts', islem: 'ARA_CMD' });
+      await sendReply(ctx, '❌ Arama sırasında hata oluştu.');
+    }
+  });
+
+  // ── /rapor — RAG: Canlı sistem özet raporu ───────────────────
+  botInstance.command('rapor', async (ctx) => {
+    const chatId = ctx.chat?.id ?? 0;
+    if (!isAuthorized(chatId)) { await sendReply(ctx, '⛔ YETKİSİZ ERİŞİM.'); return; }
+
+    await sendReply(ctx, '📊 Rapor hazırlanıyor...');
+
+    try {
+      const [tasksRes, logsRes] = await Promise.all([
+        supabase.from('tasks').select('status, priority').eq('is_archived', false),
+        supabase.from('audit_logs').select('timestamp').order('timestamp', { ascending: false }).limit(1),
+      ]);
+
+      const tasks = tasksRes.data ?? [];
+      const byStatus: Record<string, number> = {};
+      const byPriority: Record<string, number> = {};
+
+      tasks.forEach(t => {
+        byStatus[t.status]     = (byStatus[t.status]     || 0) + 1;
+        byPriority[t.priority] = (byPriority[t.priority] || 0) + 1;
+      });
+
+      const lastLog = logsRes.data?.[0]?.timestamp
+        ? new Date(logsRes.data[0].timestamp).toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' })
+        : 'Bilinmiyor';
+
+      await sendReply(ctx, [
+        `📊 <b>SİSTEM RAPORU</b>`,
+        `🕐 ${new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' })}`,
+        ``,
+        `<b>📋 Görev Durumu (${tasks.length} aktif):</b>`,
+        `⏳ Beklemede: ${byStatus['beklemede'] ?? 0}`,
+        `⚡ Devam: ${byStatus['devam_ediyor'] ?? 0}`,
+        `🔍 Doğrulama: ${byStatus['dogrulama'] ?? 0}`,
+        `✅ Tamamlanan: ${byStatus['tamamlandi'] ?? 0}`,
+        `🚫 İptal: ${byStatus['iptal'] ?? 0}`,
+        ``,
+        `<b>🎯 Öncelik Dağılımı:</b>`,
+        `🔴 Kritik: ${byPriority['kritik'] ?? 0}`,
+        `🟠 Yüksek: ${byPriority['yuksek'] ?? 0}`,
+        `🟡 Normal: ${byPriority['normal'] ?? 0}`,
+        `🟢 Düşük: ${byPriority['dusuk'] ?? 0}`,
+        ``,
+        `📜 Son Log: ${lastLog}`,
+      ].join('\n'));
+    } catch (err) {
+      processError(ERR.TASK_FETCH, err, { kaynak: 'commandRouter.ts', islem: 'RAPOR_CMD' });
+      await sendReply(ctx, '❌ Rapor alınırken hata oluştu.');
+    }
+  });
+
+  // ── /ajanlst — Ajan kadrosu listesi ─────────────────────────
+  botInstance.command('ajanlst', async (ctx) => {
+    const chatId = ctx.chat?.id ?? 0;
+    if (!isAuthorized(chatId)) { await sendReply(ctx, '⛔ YETKİSİZ ERİŞİM.'); return; }
+
+    const { agentRegistry } = await import('@/services/agentRegistry');
+    const stats = agentRegistry.getStats();
+    const all   = agentRegistry.getAll();
+
+    const komuta = all.filter(a => a.katman === 'KOMUTA');
+    const l1     = all.filter(a => a.katman === 'L1');
+    const aktif  = all.filter(a => a.durum === 'aktif');
+
+    const lines = [
+      `🤖 <b>AJAN KADROSU</b>`,
+      ``,
+      `📊 Toplam: ${stats.toplam} | Aktif: ${aktif.length} | Komuta: ${komuta.length} | L1: ${l1.length}`,
+      `✅ Tamamlanan Görev: ${stats.toplamGorev} | ❌ Hata: ${stats.toplamHata}`,
+      ``,
+      `<b>KOMUTA:</b>`,
+      ...komuta.map(a => `  • ${a.id} — ${a.kod_adi} [${a.durum}]`),
+      ``,
+      `<b>L1 İcra:</b>`,
+      ...l1.slice(0, 8).map(a => `  • ${a.id} — ${a.kod_adi} [${a.durum}]`),
+      l1.length > 8 ? `  ...ve ${l1.length - 8} ajan daha` : '',
+    ].filter(l => l !== '');
+
+    await sendReply(ctx, lines.join('\n'));
+  });
+
+  // ── /calistir <komut> — Tool: Sistem aksiyon tetikleme ───────
+  botInstance.command('calistir', async (ctx) => {
+    const chatId = ctx.chat?.id ?? 0;
+    if (!isAuthorized(chatId)) { await sendReply(ctx, '⛔ YETKİSİZ ERİŞİM.'); return; }
+    const arg = ctx.match?.trim().toLowerCase();
+    if (!arg) {
+      await sendReply(ctx, [
+        `🔧 <b>ARAÇ KOMUTLARI</b>`,
+        ``,
+        `/calistir bootstrap — Sistem sağlık kontrolü`,
+        `/calistir webhook — Telegram webhook durumu`,
+        `/calistir temizle — Eski tamamlanan görevleri arşivle`,
+      ].join('\n'));
+      return;
+    }
+
+    if (arg === 'bootstrap') {
+      await sendReply(ctx, '⚙️ Bootstrap çalıştırılıyor...');
+      try {
+        const { runBootstrap } = await import('@/core/bootstrap');
+        const result = await runBootstrap();
+        const lines = [
+          `⚙️ <b>BOOTSTRAP SONUCU: ${result.status}</b>`,
+          '',
+          ...result.checks.map(c => `${c.passed ? '✅' : '❌'} ${c.name}: ${c.message}`),
+        ];
+        await sendReply(ctx, lines.join('\n'));
+      } catch (err) {
+        await sendReply(ctx, `❌ Bootstrap hatası: ${String(err)}`);
+      }
+      return;
+    }
+
+    if (arg === 'webhook') {
+      await sendReply(ctx, '📡 Webhook kontrol ediliyor...');
+      try {
+        const { getWebhookInfo } = await import('./botSetup');
+        const info = await getWebhookInfo();
+        if (info.ok && info.info) {
+          await sendReply(ctx, [
+            `📡 <b>WEBHOOK DURUMU</b>`,
+            ``,
+            `URL: <code>${info.info.url || 'BOŞ'}</code>`,
+            `Bekleyen: ${info.info.pending_update_count}`,
+            `Son hata: ${info.info.last_error_message ?? 'YOK'}`,
+          ].join('\n'));
+        } else {
+          await sendReply(ctx, `❌ Webhook sorgu hatası: ${info.error}`);
+        }
+      } catch (err) {
+        await sendReply(ctx, `❌ Webhook hatası: ${String(err)}`);
+      }
+      return;
+    }
+
+    if (arg === 'temizle') {
+      await sendReply(ctx, '🧹 Tamamlanan görevler arşivleniyor...');
+      try {
+        const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 gün önce
+        const { data, error } = await supabase
+          .from('tasks')
+          .update({ is_archived: true, updated_at: new Date().toISOString() })
+          .in('status', ['tamamlandi', 'iptal'])
+          .lt('updated_at', cutoff)
+          .select('id');
+
+        if (error) { await sendReply(ctx, `❌ Arşivleme hatası: ${error.message}`); return; }
+        await sendReply(ctx, `✅ ${data?.length ?? 0} görev arşivlendi.`);
+      } catch (err) {
+        await sendReply(ctx, `❌ Arşivleme hatası: ${String(err)}`);
+      }
+      return;
+    }
+
+    await sendReply(ctx, `❓ Bilinmeyen komut: <code>${arg}</code>\n\n/calistir yazarak komut listesini gör.`);
+  });
 }
+
