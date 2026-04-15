@@ -15,9 +15,9 @@ interface TaskBody {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const agentId = params.id;
+  const { id: agentId } = await params;
 
   // ── Ajan var mı? ─────────────────────────────────────────
   const agent = agentRegistry.getById(agentId);
