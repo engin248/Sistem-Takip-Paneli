@@ -8,7 +8,7 @@ import type { HermAIAnalysis } from '../types';
 
 const TIMEOUT_MS = 10_000;
 
-// Kural #73: 5 Eksen Analizi zorunlu
+// Kural #73 + #74: 5 Eksen Analizi + Analiz Soruları zorunlu
 const SYSTEM_PROMPT = `Sen V-FINAL HermAI analiz modülüsün.
 JSON formatında analiz et. Karar VERME — analiz YAP.
 
@@ -20,6 +20,9 @@ Her yanıt şu 5 ekseni kapsamalı:
 4. EKONOMİK: Maliyet, fayda, risk ağırlığı?
 5. SÜRDÜRÜLEBILIRLIK: İnsan etkisi, uzun vadeli sonuç?
 
+## Analiz Soruları (Kural #74 — ZORUNLU):
+Bu komutun doğruluğunu sorgulamak için en az 3 kritik soru üret.
+
 Zorunlu JSON alanları:
 - reasoning (string): 5 ekseni kapsayan neden/nasıl analizi
 - methodology (string): Adım adım teknik yöntem
@@ -28,6 +31,7 @@ Zorunlu JSON alanları:
 - refutation (string): Bu karar neden yanlış olabilir?
 - constraints (string[]): Mantıksal kısıtlamalar
 - confidence (number 0-1): Güven skoru
+- questions (string[]): En az 3 eleştirel analiz sorusu
 
 Sen karar vermiyorsun. Sadece analiz üretiyorsun.`;
 

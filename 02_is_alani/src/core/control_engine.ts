@@ -35,6 +35,43 @@ function checkRateLimit(userId: string): void {
   _rateMap.set(userId, times);
 }
 
+// ── Kural #49: 3 Ardışık Hata → Otomatik Blok ─────────────────
+const ERROR_BLOCK_MS  = 5 * 60_000; // 5 dk blok süresi
+const MAX_ERRORS      = 3;           // 3 hata → blok
+const _errorCountMap  = new Map<string, { count: number; since: number }>();
+
+function checkErrorBlock(userId: string): void {
+  const now    = Date.now();
+  const record = _errorCountMap.get(userId);
+  if (!record) return;
+
+  // Süre aştı → sayacı sıfırla
+  if (now - record.since > ERROR_BLOCK_MS) {
+    _errorCountMap.delete(userId);
+    return;
+  }
+
+  if (record.count >= MAX_ERRORS) {
+    throw new Error(
+      `ERR-STP010: ${MAX_ERRORS} ardışık hata — userId ${userId} ${ERROR_BLOCK_MS / 60000} dk boyunca bloklandı (Kural #49)`
+    );
+  }
+}
+
+export function recordError(userId: string): void {
+  const now    = Date.now();
+  const record = _errorCountMap.get(userId);
+  if (!record || now - record.since > ERROR_BLOCK_MS) {
+    _errorCountMap.set(userId, { count: 1, since: now });
+  } else {
+    _errorCountMap.set(userId, { count: record.count + 1, since: record.since });
+  }
+}
+
+export function clearErrorRecord(userId: string): void {
+  _errorCountMap.delete(userId);
+}
+
 export async function L0_GATEKEEPER(
   rawInput: string,
   context: CommandContext
@@ -47,8 +84,9 @@ export async function L0_GATEKEEPER(
     throw new Error(`ERR-STP004: Context geçersiz — ${parsed.error.issues[0]?.message ?? 'bilinmeyen'}`);
   }
 
-  // ── ADIM 0: Rate limit kontrolü (Kural #20) ────────────
+  // ── ADIM 0: Rate limit + Hata blok kontrolü (Kural #20 + #49) ─
   checkRateLimit(context.userId);
+  checkErrorBlock(context.userId);
 
   // ── ADIM 1: Null / boş / kısa (A4) ─────────────────────
   if (!rawInput || rawInput.trim().length < 3) {

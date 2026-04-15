@@ -3,7 +3,7 @@
 // 9 Katman, 6 Aksiyom, 3 Mod
 
 import { supabase } from '@/lib/supabase';
-import { L0_GATEKEEPER } from './control_engine';
+import { L0_GATEKEEPER, recordError, clearErrorRecord } from './control_engine';
 import { runHermAIAnalysis } from './hermAI/analysisEngine';
 import { validateK2Criteria } from './hermAI/criteriaEngine';
 import { generateFormalSpec } from './formalSpec';
@@ -156,6 +156,29 @@ export async function executePipeline(
 
         // ═══ ONAY ═══════════════════════════════════════════
         await updateStatus(r.l0.commandId, 'completed');
+
+        // Kural #97: Başarılı işlem → operatör kaydı
+        await supabase.from('operator_certs').insert({
+            user_id:   context.userId,
+            cert_type: `PIPELINE_${mode}_APPROVED`,
+            issued_at: new Date().toISOString(),
+        }).then(({ error }) => {
+            if (error) console.warn('[Kural#97] operator_certs yazılamadı:', error.message);
+        });
+
+        // Kural #85: Pipeline benchmark metrikleri
+        const totalMs = Date.now() - t0;
+        await supabase.from('performance_metrics').insert([
+            { module: 'pipeline', metric_name: 'total_pipeline_ms',    value: totalMs },
+            { module: 'pipeline', metric_name: 'criteria_score',       value: r.criteria?.score ?? 0 },
+            { module: 'pipeline', metric_name: 'consensus_confidence', value: r.consensus?.confidence ?? 0 },
+        ]).then(({ error }) => {
+            if (error) console.warn('[Kural#85] performance_metrics yazılamadı:', error.message);
+        });
+
+        // Kural #49: Başarılı işlem → hata sayıcısını sıfırla
+        clearErrorRecord(context.userId);
+
         return finish(r, 'APPROVED', 'K9', errors, t0);
 
     } catch (err: unknown) {
@@ -172,6 +195,9 @@ export async function executePipeline(
                 details:         { commandId: r.l0.commandId, error: msg },
             });
         }
+
+        // Kural #49: Hata sayıcısını artır
+        recordError(context.userId);
 
         return finish(r, 'ERROR', 'CRASH', errors, t0);
     }
