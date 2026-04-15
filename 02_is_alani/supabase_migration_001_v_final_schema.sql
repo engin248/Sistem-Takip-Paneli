@@ -96,11 +96,11 @@ CREATE TABLE IF NOT EXISTS immutable_logs (
 
 -- immutable_logs: DELETE/UPDATE yasak (A6)
 CREATE OR REPLACE FUNCTION prevent_modify_logs()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER LANGUAGE plpgsql AS $func$
 BEGIN
-  RAISE EXCEPTION 'immutable_logs değiştirilemez (V-FINAL A6)';
+  RAISE EXCEPTION 'immutable_logs degistirilemez (V-FINAL A6)';
 END;
-$$ LANGUAGE plpgsql;
+$func$;
 
 DROP TRIGGER IF EXISTS no_update_logs ON immutable_logs;
 CREATE TRIGGER no_update_logs
@@ -236,8 +236,15 @@ CREATE INDEX IF NOT EXISTS idx_proof_cache_expires   ON proof_cache(expires_at);
 
 -- ═══════ RLS ═══════
 
-ALTER TABLE commands      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE commands       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE immutable_logs ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS insert_commands ON commands      FOR INSERT WITH CHECK (true);
-CREATE POLICY IF NOT EXISTS insert_logs     ON immutable_logs FOR INSERT WITH CHECK (true);
+DO $do$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='commands' AND policyname='insert_commands') THEN
+    CREATE POLICY insert_commands ON commands FOR INSERT WITH CHECK (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='immutable_logs' AND policyname='insert_logs') THEN
+    CREATE POLICY insert_logs ON immutable_logs FOR INSERT WITH CHECK (true);
+  END IF;
+END $do$;
