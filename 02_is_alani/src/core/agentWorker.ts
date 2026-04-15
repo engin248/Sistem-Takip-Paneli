@@ -13,6 +13,8 @@ import { aiComplete }         from '@/lib/aiProvider';
 import { agentRegistry }      from '@/services/agentRegistry';
 import { logAudit }           from '@/services/auditService';
 import { pushJobHistory, generateJobId } from '@/core/taskQueue';
+import { ragContext }          from '@/services/ragService';
+import { webContext }          from '@/services/webSearch';
 import type { QueueJob }      from '@/core/taskQueue';
 
 // ── AJAN SİSTEM PROMPT OLUŞTURUCU ────────────────────────────
@@ -66,9 +68,11 @@ function buildLocalResponse(agent: { kod_adi: string; rol: string; katman: strin
 // ── ANA WORKER FONKSİYONU ─────────────────────────────────────
 
 export interface WorkerInput {
-  agent_id   : string;
-  task       : string;
-  priority  ?: number;
+  agent_id    : string;
+  task        : string;
+  priority   ?: number;
+  use_rag    ?: boolean; // Bilgi tabanı kullan (varsayılan: true)
+  use_web    ?: boolean; // Web araması yap (varsayılan: görev tipine göre)
 }
 
 export interface WorkerResult {
@@ -80,6 +84,8 @@ export interface WorkerResult {
   result     : string;
   status     : 'tamamlandi' | 'hata' | 'reddedildi';
   ai_kullandi: boolean;
+  rag_kullandi: boolean;
+  web_kullandi: boolean;
   duration_ms: number;
   timestamp  : string;
 }
@@ -109,6 +115,7 @@ export async function runAgentWorker(input: WorkerInput): Promise<WorkerResult> 
       katman: 'BILINMIYOR', task: input.task,
       result: `HATA: Ajan bulunamadı (${input.agent_id})`,
       status: 'reddedildi', ai_kullandi: false,
+      rag_kullandi: false, web_kullandi: false,
       duration_ms: Date.now() - startAt,
       timestamp: new Date().toISOString(),
     };
@@ -127,6 +134,7 @@ export async function runAgentWorker(input: WorkerInput): Promise<WorkerResult> 
       job_id, agent_id: agent.id, kod_adi: agent.kod_adi, katman: agent.katman,
       task: input.task, result: 'HATA: Görev metni geçersiz',
       status: 'reddedildi', ai_kullandi: false,
+      rag_kullandi: false, web_kullandi: false,
       duration_ms: Date.now() - startAt, timestamp: new Date().toISOString(),
     };
   }
@@ -135,13 +143,37 @@ export async function runAgentWorker(input: WorkerInput): Promise<WorkerResult> 
   agentRegistry.updateDurum(agent.id, 'aktif');
 
   // ── 4. System prompt oluştur ─────────────────────────────
-  const systemPrompt = buildSystemPrompt({
+  const basePrompt = buildSystemPrompt({
     id           : agent.id,
     kod_adi      : agent.kod_adi,
     rol          : agent.rol,
     katman       : agent.katman,
     beceri_listesi: agent.beceri_listesi,
   });
+
+  // ── 4b. RAG + Web bağlamı ekle ───────────────────────────
+  let ragKullandi = false;
+  let webKullandi = false;
+  let extraContext = '';
+
+  const useRag = input.use_rag !== false; // Varsayılan: true
+  const useWeb = input.use_web === true;  // Varsayılan: false
+
+  if (useRag) {
+    try {
+      const rc = ragContext(input.task);
+      if (rc) { extraContext += rc; ragKullandi = true; }
+    } catch { /* RAG hatası görev akışını durdurmasın */ }
+  }
+
+  if (useWeb) {
+    try {
+      const wc = await webContext(input.task);
+      if (wc) { extraContext += wc; webKullandi = true; }
+    } catch { /* Web hatası görev akışını durdurmasın */ }
+  }
+
+  const systemPrompt = basePrompt + extraContext;
 
   // ── 5. AI ile icra et ────────────────────────────────────
   let result     = '';
@@ -210,6 +242,7 @@ export async function runAgentWorker(input: WorkerInput): Promise<WorkerResult> 
     job_id, agent_id: agent.id, kod_adi: agent.kod_adi,
     katman: agent.katman, task: input.task, result,
     status: 'tamamlandi', ai_kullandi: aiKullandi,
+    rag_kullandi: ragKullandi, web_kullandi: webKullandi,
     duration_ms, timestamp,
   };
 }
