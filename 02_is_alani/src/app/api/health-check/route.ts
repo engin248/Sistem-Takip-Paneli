@@ -56,12 +56,15 @@ export async function GET() {
     // ── 2. DIŞ SİSTEM (KÖPRÜ) ─────────────────────────────
     // NOT: EXTERNAL_SUPABASE_URL tanımlı değilse dış kontrol atlanır.
     // STP bağımsız çalışır — dış bağımlılık olmadan healthy döner.
+    const externalSiteUrl = process.env.EXTERNAL_SITE_URL
+                         ?? process.env.EXTERNAL_SUPABASE_URL
+                         ?? 'not-configured';
     const externalInfo = {
       dbConnected: false,
       dbLatencyMs: 0,
       siteReachable: false,
       siteLatencyMs: 0,
-      siteUrl: 'https://external-target.com',
+      siteUrl: externalSiteUrl,
     };
 
     if (isExternalConfigured()) {
@@ -80,7 +83,7 @@ export async function GET() {
       });
 
       // ── 3. DIŞ WEB SİSTEMİ ─────────────────────────────
-      const siteCheck = await httpHealthCheck('https://external-target.com', 8000);
+      const siteCheck = await httpHealthCheck(externalSiteUrl, 8000);
       externalInfo.siteReachable = siteCheck.reachable;
       externalInfo.siteLatencyMs = siteCheck.latencyMs;
 

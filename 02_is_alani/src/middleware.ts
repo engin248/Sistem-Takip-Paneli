@@ -3,7 +3,13 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
-const PUBLIC_PATHS = ['/api/telegram/webhook', '/api/health', '/api/bootstrap'];
+const PUBLIC_PATHS = [
+  '/api/telegram/webhook',
+  '/api/telegram',
+  '/api/health',
+  '/api/health-check',
+  '/api/bootstrap',
+];
 
 // ── In-memory Rate Limiter ───────────────────────────────────
 // 60 saniyede max 30 istek / IP
@@ -80,8 +86,17 @@ export function middleware(req: NextRequest) {
         }
     }
 
-    // Auth kontrolü — login sayfası oluşturulana kadar devre dışı
-    // const authEnabled = process.env.NEXT_PUBLIC_SUPABASE_AUTH_ENABLED === 'true';
+    // Auth kontrolü — API dışı sayfa isteklerini korur
+    const authEnabled = process.env.NEXT_PUBLIC_SUPABASE_AUTH_ENABLED === 'true';
+    if (authEnabled && !path.startsWith('/api/')) {
+        const token = req.cookies.get('sb-access-token')?.value
+                   ?? req.cookies.get('sb-tesxmqhkegotxenoljzl-auth-token')?.value;
+        if (!token && path !== '/login' && !path.startsWith('/_next')) {
+            const loginUrl = new URL('/login', req.url);
+            loginUrl.searchParams.set('redirectTo', path);
+            return NextResponse.redirect(loginUrl);
+        }
+    }
 
     return NextResponse.next();
 }

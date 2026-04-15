@@ -485,7 +485,7 @@ class AgentRegistryManager {
     return true;
   }
 
-  /** Görev tamamlandığında sayaç güncelle */
+  /** Görev tamamlandığında sayıç güncelle + Supabase'e audit yaz */
   recordGorevTamamlama(id: string, basarili: boolean): boolean {
     const agent = this.agents.get(id);
     if (!agent) return false;
@@ -496,6 +496,22 @@ class AgentRegistryManager {
       agent.hata_sayisi++;
     }
     agent.son_aktif = new Date().toISOString();
+
+    // K-2 Fix: Sayıçları audit_logs'a yaz — in-memory kaybını önler
+    logAudit({
+      operation_type: 'EXECUTE',
+      action_description: `Ajan sayıç güncelleme: ${id} (${agent.kod_adi}) — ${basarili ? 'başarılı' : 'hata'}`,
+      metadata: {
+        action_code: 'AGENT_COUNTER_UPDATE',
+        agent_id: id,
+        kod_adi: agent.kod_adi,
+        tamamlanan_gorev: agent.tamamlanan_gorev,
+        hata_sayisi: agent.hata_sayisi,
+        son_aktif: agent.son_aktif,
+        basarili,
+      },
+    }).catch(() => {}); // fire-and-forget, bloklamaz
+
     return true;
   }
 
