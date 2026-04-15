@@ -38,6 +38,13 @@ const nextConfig: NextConfig = {
     ],
   },
 
+  // ── Görsel Kaynakları ────────────────────────────────────
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: '*.supabase.co' },
+    ],
+  },
+
   // ── Güvenlik Başlıkları ─────────────────────────────────
   async headers() {
     return [
