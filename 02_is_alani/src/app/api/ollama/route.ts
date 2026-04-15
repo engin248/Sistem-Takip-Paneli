@@ -23,7 +23,7 @@ import { analyzeTaskPriority } from '@/services/aiManager';
 import { runBoardVoting } from '@/services/consensusEngine';
 import type { DecisionCategory } from '@/services/consensusEngine';
 import { processError, ERR } from '@/lib/errorCore';
-import { CONTROL } from '../../../../core/control_engine';
+import { CONTROL } from '@/core/control_engine';
 
 // ─── GET: Sağlık kontrolü + durum raporu ────────────────────
 

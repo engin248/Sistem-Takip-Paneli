@@ -14,7 +14,7 @@ import { supabase, validateSupabaseConnection } from '@/lib/supabase';
 import { ERR, processError } from '@/lib/errorCore';
 import { logAudit } from '@/services/auditService';
 import { analyzeTaskPriority, getPriorityLabel, getPriorityEmoji } from '@/services/aiManager';
-import { CONTROL } from '@/core/control_engine';
+import { L0_GATEKEEPER, type L0Result } from '@/core/control_engine';
 import type { TaskPriority } from '@/store/useTaskStore';
 import { CriteriaEngine, type IntentAnalysis } from '@/core/hermAI/criteriaEngine';
 import { Verifier, type ProofSpec } from '@/core/proof/verifier';
@@ -120,102 +120,48 @@ export async function handleTaskMessage(ctx: Context, text: string, source: 'tex
   const senderName = ctx.from?.first_name
     ? `${ctx.from.first_name}${ctx.from.last_name ? ' ' + ctx.from.last_name : ''}`
     : 'Bilinmeyen';
+  // message_id: replay koruması için nonce tabanı
+  const messageId = ctx.message?.message_id
+    ?? (ctx as { callbackQuery?: { message?: { message_id?: number } } }).callbackQuery?.message?.message_id
+    ?? Date.now();
 
-  // ── FAZ 0: L0 GATEKEEPER (CONTROL) ───────────────────────
-  const ctrl = CONTROL('TELEGRAM_MESSAGE_TEXT', text);
-  if (!ctrl.pass) {
-    await sendReply(ctx, `⚠️ Geçersiz komut içeriği [${ctrl.reason}]. Lütfen geçerli bir metin gönderin.`);
+  // ── FAZ 0+1: L0 GATEKEEPER ────────────────────────────────
+  // Null, yetki, replay, sanitization, DB arşivi tek adımda.
+  // Referans: src/core/control_engine.ts
+  let l0Result: L0Result;
+  try {
+    l0Result = await L0_GATEKEEPER(text, {
+      userId: String(chatId),
+      channel: source === 'voice' ? 'voice' : 'telegram',
+      isAuthorized: isAuthorized(chatId),
+      role: 'operator',
+      scope: ['task:create', 'task:read', 'task:update'],
+      nonce: `tg-${chatId}-${messageId}`,
+      isVoice: source === 'voice',        // ses/yazı ayrımı DB'ye doğru yansır
+      voiceConfirmed: source === 'voice', // buraya geldiğinde voiceHandler zaten onayladı
+    });
+  } catch (err) {
+    const errMsg = err instanceof Error ? err.message : String(err);
+    await sendReply(ctx, `⚠️ ${errMsg}`);
     await logAudit({
       operation_type: 'REJECT',
-      action_description: `CONTROL L0 RED: ${ctrl.proof}`,
-      metadata: { action_code: 'L0_CONTROL_REJECTED', chat_id: chatId, sender: senderName, reason: ctrl.reason }
+      action_description: `L0 GATEKEEPER RED: ${errMsg}`,
+      metadata: { action_code: 'L0_GATEKEEPER_REJECTED', chat_id: chatId, sender: senderName }
     }).catch(() => {});
     return;
   }
 
-  // Komut alındı kaydı
-  await logAudit({
-    operation_type: 'SYSTEM',
-    action_description: `Telegram komut alındı: "${text.substring(0, 80)}${text.length > 80 ? '...' : ''}" [${source.toUpperCase()}]`,
-    metadata: {
-      action_code: 'IA_COMMAND_RECEIVED',
-      message_type: source, chat_id: chatId, sender: senderName,
-      message_length: text.length, received_at: new Date().toISOString(),
-    }
-  }).catch(() => {});
-
-  // Yetki
-  if (!isAuthorized(chatId)) {
-    await sendReply(ctx, '⛔ YETKİSİZ ERİŞİM. Bu bot yalnızca yetkilendirilmiş operatörler tarafından kullanılabilir.');
-    await logAudit({
-      operation_type: 'REJECT',
-      action_description: `Yetkisiz Telegram erişim: ${senderName} (${chatId})`,
-      metadata: { action_code: 'TELEGRAM_UNAUTHORIZED', chat_id: chatId, sender: senderName }
-    }).catch(() => {});
+  if (l0Result.status !== 'PROCEED') {
+    await sendReply(ctx, `⚠️ Komut işleme alınamadı [${l0Result.status}].`);
     return;
   }
 
-  if (!text || text.trim().length < 3) {
-    await sendReply(ctx, '⚠️ Görev metni çok kısa. En az 3 karakter gereklidir.');
-    return;
-  }
-
-  // ── FAZ 1: GİRDİ DOĞRULAMA + ARŞİVLEME + ONAY ───────────
-  // Ses/yazı karşılaştırması: voice geliyorsa transcript ile raw text aynı mı?
-  // Farklıysa kullanıcıdan yazılı onay istenir.
-  // Her durumda: girdi arşivlenir, yetkili operatöre anlaşılan komut gösterilir.
-
-  // 1A — Girdinin ham arşivi (her mesaj, her format)
-  await logAudit({
-    operation_type: 'SYSTEM',
-    action_description: `[ARŞİV] ${source.toUpperCase()} komut alındı: "${text.substring(0, 120)}"`,
-    metadata: {
-      action_code: 'HERMAI_INPUT_ARCHIVE',
-      source,
-      sender: senderName,
-      chat_id: chatId,
-      raw_length: text.length,
-      archived_at: new Date().toISOString(),
-    }
-  }).catch(() => {});
-
-  // 1B — Ses/yazı uyuşmazlık kontrolü
-  // voiceHandler transcript ile text aynı fonksiyona geliyor.
-  // Eğer source 'voice' ise, kullanıcıya transcript'i göster ve onay iste.
-  if (source === 'voice') {
-    await sendReply(ctx, [
-      `🎤 <b>Sesli komut alındı ve metne dönüştürüldü.</b>`,
-      ``,
-      `📝 <b>Anladığım komut:</b>`,
-      `<code>${text}</code>`,
-      ``,
-      `✅ Bu doğruysa → <b>/onayla</b> yaz`,
-      `❌ Yanlışsa → komutu yazıyla tekrar gönder`,
-    ].join('\n'));
-
-    // Onay bekleniyor — pending olarak arşivle
-    await logAudit({
-      operation_type: 'SYSTEM',
-      action_description: `[ONAY BEKLENİYOR] Ses→metin: "${text.substring(0, 80)}"`,
-      metadata: {
-        action_code: 'HERMAI_VOICE_PENDING_CONFIRM',
-        source: 'voice',
-        text,
-        sender: senderName,
-        chat_id: chatId,
-        status: 'onay_bekleniyor',
-      }
-    }).catch(() => {});
-
-    // Ses kaynaklı komutlar için buraya kadar — onay callback'te devam eder
-    return;
-  }
-
-  // 1C — Yazılı komut: sisteme ne anladığını göster, devam et
+  // Komut alındı bildirimi
   await sendReply(ctx, [
     `📥 <b>Komut alındı.</b>`,
     ``,
     `💬 <b>Anladığım:</b> ${text.substring(0, 100)}${text.length > 100 ? '...' : ''}`,
+    `🔑 <b>ID:</b> <code>${l0Result.commandId}</code>`,
     ``,
     `🔄 Analiz başlıyor...`,
   ].join('\n'));

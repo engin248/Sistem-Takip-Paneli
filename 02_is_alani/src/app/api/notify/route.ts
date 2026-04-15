@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendTelegramNotification, formatSystemAlert, isTelegramNotificationAvailable } from '@/services/telegramNotifier';
 import { ERR, processError } from '@/lib/errorCore';
-import { CONTROL } from '../../../../core/control_engine';
+import { CONTROL } from '@/core/control_engine';
 
 // ============================================================
 // TELEGRAM BİLDİRİM API — /api/notify

@@ -22,7 +22,7 @@ import {
   extractStructuredData,
 } from '@/services/browserService';
 import { ERR, processError } from '@/lib/errorCore';
-import { CONTROL } from '../../../../core/control_engine';
+import { CONTROL } from '@/core/control_engine';
 
 type BrowserAction = 'navigate' | 'search' | 'screenshot' | 'extract' | 'health';
 

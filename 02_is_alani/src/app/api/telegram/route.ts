@@ -18,7 +18,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { handleWebhookUpdate, isTelegramBotAvailable } from '@/services/telegramService';
 import { ERR, processError } from '@/lib/errorCore';
-import { CONTROL } from '../../../../core/control_engine';
+import { CONTROL } from '@/core/control_engine';
 
 // ─── POST: Telegram Webhook ─────────────────────────────────
 export async function POST(req: NextRequest): Promise<NextResponse> {
