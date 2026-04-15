@@ -3,10 +3,12 @@
 // Konum: src/core/control_engine.ts
 // ============================================================
 // Aksiyom: A3 (çelişki), A4 (veri doğrulama), A6 (izlenebilirlik)
-// Hata kodları: ERR-STP001 ~ ERR-STP007
+// Hata kodları: ERR-STP001 ~ ERR-STP009
 //
-// ⚠️ SUPABASE_SERVICE_ROLE_KEY .env.local'da tanımsız.
-//    Tüm DB işlemleri @/lib/supabase üzerinden yürür.
+// Kural #20  — Rate limit: 10 komut/dk/userId
+// Kural #88  — Concurrent lock: aynı userId için paralel işlem yasak
+// Kural #90  — Retry limiti SIFIR: aynı nonce tekrar reject
+// Kural #44  — Local disk audit zorunlu
 // ============================================================
 
 import { createHash } from 'crypto';
@@ -14,8 +16,24 @@ import { supabase } from '@/lib/supabase';
 import { CommandContextSchema } from './types';
 import type { CommandContext, L0Result } from './types';
 import { z } from 'zod';
+import { writeLocalAudit } from '@/lib/localAuditWriter';
 
 export type { CommandContext, L0Result };
+
+// ── Kural #20: Rate Limiter ─────────────────────────────────
+const RATE_WINDOW_MS = 60_000; // 1 dakika
+const RATE_LIMIT     = 10;     // max 10 komut/dk/userId
+const _rateMap = new Map<string, number[]>();
+
+function checkRateLimit(userId: string): void {
+  const now   = Date.now();
+  const times = (_rateMap.get(userId) ?? []).filter(t => now - t < RATE_WINDOW_MS);
+  if (times.length >= RATE_LIMIT) {
+    throw new Error(`ERR-STP008: Rate limit aşıldı — ${RATE_LIMIT} komut/dk (Kural #20)`);
+  }
+  times.push(now);
+  _rateMap.set(userId, times);
+}
 
 export async function L0_GATEKEEPER(
   rawInput: string,
@@ -28,6 +46,9 @@ export async function L0_GATEKEEPER(
   if (!parsed.success) {
     throw new Error(`ERR-STP004: Context geçersiz — ${parsed.error.issues[0]?.message ?? 'bilinmeyen'}`);
   }
+
+  // ── ADIM 0: Rate limit kontrolü (Kural #20) ────────────
+  checkRateLimit(context.userId);
 
   // ── ADIM 1: Null / boş / kısa (A4) ─────────────────────
   if (!rawInput || rawInput.trim().length < 3) {
@@ -49,7 +70,7 @@ export async function L0_GATEKEEPER(
     throw new Error('ERR-STP002: Yetkisiz erişim');
   }
 
-  // ── ADIM 4: Replay koruması ─────────────────────────────
+  // ── ADIM 4: Replay koruması (Kural #90) ─────────────────
   const { data: existing } = await supabase
     .from('commands')
     .select('id')
@@ -57,7 +78,19 @@ export async function L0_GATEKEEPER(
     .maybeSingle();
 
   if (existing) {
-    throw new Error('ERR-STP006: Replay tespit — aynı nonce');
+    throw new Error('ERR-STP006: Replay tespit — aynı nonce (Kural #90 retry=0)');
+  }
+
+  // ── ADIM 4b: Concurrent lock (Kural #88) ─────────────────
+  const { data: activeCmd } = await supabase
+    .from('commands')
+    .select('id')
+    .eq('user_id', context.userId)
+    .in('status', ['received', 'analyzing', 'detecting', 'proving', 'gate_check', 'executing'])
+    .maybeSingle();
+
+  if (activeCmd) {
+    throw new Error('ERR-STP009: Aktif işlem var — concurrent lock (Kural #88)');
   }
 
   // ── ADIM 5: Hash (A6) ───────────────────────────────────
@@ -112,6 +145,17 @@ export async function L0_GATEKEEPER(
       channel:   context.channel,
     };
   }
+
+  // ── ADIM 9: Local disk audit (Kural #44) ─────────────────
+  writeLocalAudit({
+    eventType: 'L0_GATEKEEPER_PASS',
+    module:    'K1',
+    severity:  'info',
+    commandId: command.id,
+    userId:    context.userId,
+    hash,
+    payload:   { channel: context.channel, nonce: context.nonce, timestamp },
+  });
 
   return {
     status:    'PROCEED',

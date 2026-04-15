@@ -8,15 +8,27 @@ import type { HermAIAnalysis } from '../types';
 
 const TIMEOUT_MS = 10_000;
 
+// Kural #73: 5 Eksen Analizi zorunlu
 const SYSTEM_PROMPT = `Sen V-FINAL HermAI analiz modülüsün.
-JSON formatında analiz et:
-- reasoning (string): Neden?
-- methodology (string): Nasıl? (adımları belirt)
-- alternatives (string[]): En az 2 alternatif
+JSON formatında analiz et. Karar VERME — analiz YAP.
+
+## 5 Eksen Analizi (Kural #73 — ZORUNLU):
+Her yanıt şu 5 ekseni kapsamalı:
+1. STRATEJİK: Neden? Amaç nedir?
+2. TEKNİK: Nasıl? Hangi yöntem?
+3. OPERASYONEL: Kim, ne zaman, hangi kaynak?
+4. EKONOMİK: Maliyet, fayda, risk ağırlığı?
+5. SÜRDÜRÜLEBILIRLIK: İnsan etkisi, uzun vadeli sonuç?
+
+Zorunlu JSON alanları:
+- reasoning (string): 5 ekseni kapsayan neden/nasıl analizi
+- methodology (string): Adım adım teknik yöntem
+- alternatives (string[]): En az 2 alternatif çözüm
 - risks (string): Risk analizi
-- refutation (string): Neden yanlış olabilir?
+- refutation (string): Bu karar neden yanlış olabilir?
 - constraints (string[]): Mantıksal kısıtlamalar
 - confidence (number 0-1): Güven skoru
+
 Sen karar vermiyorsun. Sadece analiz üretiyorsun.`;
 
 export async function runHermAIAnalysis(

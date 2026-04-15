@@ -4,6 +4,7 @@
 
 import { createHash } from 'crypto';
 import { supabase } from '@/lib/supabase';
+import { writeLocalAudit } from '@/lib/localAuditWriter';
 import type { ProofResult } from './types';
 import type { ExecutionResult } from './executionEngine';
 
@@ -81,6 +82,37 @@ export async function runPostExec(
         hash:       merkleRoot,
         prev_hash:  lastLog?.hash ?? '',
     });
+
+    // 7. Kural #47: Otomatik rapor — Local disk + problem_reports
+    const reportSummary = {
+        commandId,
+        status:         invariantsHeld ? 'SUCCESS' : 'FAILED',
+        healthStatus,
+        chainValid:     chainValid,
+        merkleRoot,
+        processingMs:   execution.processingMs,
+        timestamp:      new Date().toISOString(),
+    };
+
+    // Disk'e yaz (Kural #44 + #47)
+    writeLocalAudit({
+        eventType: 'PIPELINE_COMPLETE_REPORT',
+        module:    'K9',
+        severity:  invariantsHeld ? 'info' : 'critical',
+        commandId,
+        payload:   reportSummary,
+    });
+
+    // Başarısız icra → problem_reports'a kaydet (Kural #52)
+    if (!invariantsHeld) {
+        await supabase.from('problem_reports').insert({
+            title:       `Pipeline başarısız: ${commandId}`,
+            severity:    'high',
+            module:      'K9',
+            description: `execution.status=${execution.status}, healthStatus=${healthStatus}`,
+            status:      'open',
+        });
+    }
 
     return {
         commandId, invariantsHeld, merkleRoot,
