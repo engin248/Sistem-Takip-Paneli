@@ -48,3 +48,7 @@ export type { PostExecResult } from './postExec';
 // Pipeline
 export { executePipeline } from './pipeline';
 export type { PipelineResult } from './pipeline';
+
+// K0 — Bootstrap
+export { runBootstrap } from './bootstrap';
+export type { BootstrapResult } from './bootstrap';
