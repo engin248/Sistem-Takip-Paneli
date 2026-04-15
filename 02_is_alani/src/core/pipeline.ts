@@ -1,198 +1,208 @@
 // src/core/pipeline.ts
-// V-FINAL Ana Pipeline — K1 → K2.1 → K2.3 → K5 → Karar
-// Tüm modülleri doktrin sırasıyla çağırır.
+// V-FINAL Tam Pipeline — K1 → K2.1 → K2.3 → K3 → K5 → K4 → K6 → K7 → K8 → K9
+// 9 Katman, 6 Aksiyom, 3 Mod
 
-import { createHash } from 'crypto';
 import { supabase } from '@/lib/supabase';
 import { L0_GATEKEEPER } from './control_engine';
 import { runHermAIAnalysis } from './hermAI/analysisEngine';
 import { validateK2Criteria } from './hermAI/criteriaEngine';
+import { generateFormalSpec } from './formalSpec';
 import { solveProof, verifyProof } from './proof/proofEngine';
+import { runRedTeam } from './redTeam';
+import { runConsensus } from './consensus';
+import { runGateCheck } from './gateCheck';
+import { executeCommand } from './executionEngine';
+import { runPostExec } from './postExec';
 import type {
-    CommandContext,
-    SystemMode,
-    L0Result,
-    HermAIAnalysis,
-    CriteriaResult,
-    ProofResult,
+    CommandContext, SystemMode, L0Result, HermAIAnalysis,
+    CriteriaResult, ProofResult,
 } from './types';
-
-// ─── SONUÇ TİPİ ────────────────────────────────────────────
+import type { FormalSpec } from './formalSpec';
+import type { RedTeamResult } from './redTeam';
+import type { ConsensusResult } from './consensus';
+import type { GateCheckResult } from './gateCheck';
+import type { ExecutionResult } from './executionEngine';
+import type { PostExecResult } from './postExec';
 
 export interface PipelineResult {
-    commandId: string;
-    status:    'APPROVED' | 'REJECTED' | 'ESCALATED' | 'ERROR';
-    l0:        L0Result | null;   // L0 öncesi hata → null olabilir
-    analysis:  HermAIAnalysis | null;
-    criteria:  CriteriaResult | null;
-    proof:     ProofResult | null;
-    errors:    string[];
-    totalMs:   number;
-    timestamp: number;
+    commandId:  string;
+    status:     'APPROVED' | 'REJECTED' | 'ESCALATED' | 'ERROR';
+    stage:      string;
+    l0:         L0Result | null;
+    analysis:   HermAIAnalysis | null;
+    criteria:   CriteriaResult | null;
+    formalSpec: FormalSpec | null;
+    proof:      ProofResult | null;
+    redTeam:    RedTeamResult | null;
+    consensus:  ConsensusResult | null;
+    gateCheck:  GateCheckResult | null;
+    execution:  ExecutionResult | null;
+    postExec:   PostExecResult | null;
+    errors:     string[];
+    totalMs:    number;
+    timestamp:  number;
 }
 
 /**
- * V-FINAL EXECUTION PIPELINE
+ * V-FINAL TAM EXECUTION PIPELINE
  *
- * Akış:
- *   K1.2 L0 Gatekeeper → sanitize, yetki, replay, hash
- *   K2.1 HermAI Analiz  → 6'lı analiz (Ollama/OpenAI)
- *   K2.3 Kriter Motoru  → 92 kriter doğrulama
- *   K5.1 Proof Solve    → constraint çözümleme
- *   K5.2 Proof Verify   → bağımsız doğrulama (A2)
- *   → KARAR: APPROVED / REJECTED / ESCALATED
+ * K1.2 → K2.1 → K2.3 → K3 → K5.1 → K5.2 → K4 → K6 → K7 → K8 → K9
  *
- * Aksiyomlar:
- *   A1: Proof yoksa işlem yok
- *   A2: Verify ayrı adım
- *   A3: Çelişki varsa DUR
- *   A4: Veri doğrulanmamışsa iptal
- *   A5: Invariant ihlali → anında müdahale
- *   A6: Tüm işlemler izlenebilir
+ * handler: Gate Check geçtikten SONRA çalışacak iş mantığı fonksiyonu.
+ * Eğer handler verilmezse, pipeline sadece doğrulama yapar (dry-run).
  */
 export async function executePipeline(
     rawInput: string,
     context:  CommandContext,
-    mode:     SystemMode = 'NORMAL'
+    mode:     SystemMode = 'NORMAL',
+    handler?: () => Promise<Record<string, unknown>>
 ): Promise<PipelineResult> {
     const t0      = Date.now();
     const errors: string[] = [];
-    let l0:       L0Result | null       = null;
-    let analysis: HermAIAnalysis | null = null;
-    let criteria: CriteriaResult | null = null;
-    let proof:    ProofResult | null    = null;
+    const r: Partial<PipelineResult> = {
+        l0: null, analysis: null, criteria: null, formalSpec: null,
+        proof: null, redTeam: null, consensus: null, gateCheck: null,
+        execution: null, postExec: null,
+    };
 
     try {
         // ═══ K1.2: L0 GATEKEEPER ═══════════════════════════
-        l0 = await L0_GATEKEEPER(rawInput, context);
+        r.l0 = await L0_GATEKEEPER(rawInput, context);
 
-        if (l0.status === 'VOICE_PENDING_CONFIRM') {
-            return {
-                commandId: l0.commandId, status: 'ESCALATED',
-                l0, analysis, criteria, proof,
-                errors:    ['Ses komutu teyit bekliyor'],
-                totalMs:   Date.now() - t0, timestamp: Date.now(),
-            };
+        if (r.l0.status === 'VOICE_PENDING_CONFIRM') {
+            return finish(r, 'ESCALATED', 'K1', ['Ses komutu teyit bekliyor'], t0);
         }
 
         // ═══ K2.1: HermAI ANALİZ ════════════════════════════
-        await updateStatus(l0.commandId, 'analyzing');
-        analysis = await runHermAIAnalysis(l0.commandId, rawInput);
+        await updateStatus(r.l0.commandId, 'analyzing');
+        r.analysis = await runHermAIAnalysis(r.l0.commandId, rawInput);
 
-        // ═══ K2.3: 92 KRİTER DOĞRULAMA ═════════════════════
-        await updateStatus(l0.commandId, 'detecting');
-        criteria = await validateK2Criteria(l0.commandId, rawInput, analysis, mode);
+        // ═══ K2.3: 92 KRİTER ════════════════════════════════
+        await updateStatus(r.l0.commandId, 'detecting');
+        r.criteria = await validateK2Criteria(r.l0.commandId, rawInput, r.analysis, mode);
 
-        if (!criteria.passed) {
-            await updateStatus(l0.commandId, 'failed');
-            await logAlert(l0.commandId, 3, 'CRITERIA_FAIL', `Skor: ${criteria.score}/100`);
-            return {
-                commandId: l0.commandId, status: 'REJECTED',
-                l0, analysis, criteria, proof,
-                errors:    [`Kriter skoru yetersiz: ${criteria.score}/100 (eşik: 75)`],
-                totalMs:   Date.now() - t0, timestamp: Date.now(),
-            };
+        if (!r.criteria.passed) {
+            await updateStatus(r.l0.commandId, 'failed');
+            return finish(r, 'REJECTED', 'K2.3',
+                [`Kriter skoru: ${r.criteria.score}/100 (eşik: 75)`], t0);
         }
+
+        // ═══ K3: FORMAL SPEC ════════════════════════════════
+        await updateStatus(r.l0.commandId, 'specifying');
+        r.formalSpec = await generateFormalSpec(r.l0.commandId, rawInput, r.analysis);
 
         // ═══ K5.1: PROOF SOLVE ══════════════════════════════
-        await updateStatus(l0.commandId, 'proving');
+        await updateStatus(r.l0.commandId, 'proving');
+        const constraints = [
+            ...r.analysis.constraints,
+            ...r.formalSpec.preConditions.filter(p => !r.analysis!.constraints.includes(p)),
+        ];
 
-        if (!analysis.constraints || analysis.constraints.length === 0) {
-            errors.push('Constraint boş — proof atlanıyor (degraded)');
-            await logAlert(l0.commandId, 2, 'NO_CONSTRAINTS', 'HermAI constraint üretemedi');
-            return {
-                commandId: l0.commandId, status: 'ESCALATED',
-                l0, analysis, criteria, proof,
-                errors, totalMs: Date.now() - t0, timestamp: Date.now(),
-            };
+        if (constraints.length === 0) {
+            return finish(r, 'ESCALATED', 'K5',
+                ['Constraint boş — proof üretilemez (degraded)'], t0);
         }
 
-        proof = await solveProof(l0.commandId, analysis.constraints);
+        r.proof = await solveProof(r.l0.commandId, constraints);
 
         // ═══ K5.2: PROOF VERIFY (A2) ════════════════════════
-        await updateStatus(l0.commandId, 'verifying');
-        proof = await verifyProof(l0.commandId, proof);
+        await updateStatus(r.l0.commandId, 'verifying');
+        r.proof = await verifyProof(r.l0.commandId, r.proof);
 
-        if (!proof.verified) {
-            await updateStatus(l0.commandId, 'failed');
-            await logAlert(l0.commandId, 4, 'PROOF_VERIFY_FAIL', 'Proof doğrulanamadı');
-            return {
-                commandId: l0.commandId, status: 'REJECTED',
-                l0, analysis, criteria, proof,
-                errors:    ['Proof doğrulama başarısız (A2 ihlali)'],
-                totalMs:   Date.now() - t0, timestamp: Date.now(),
-            };
+        // ═══ K4: RED TEAM ════════════════════════════════════
+        await updateStatus(r.l0.commandId, 'refuting');
+        r.redTeam = await runRedTeam(r.l0.commandId, rawInput, r.analysis, r.criteria);
+
+        // ═══ K6: KONSENSÜS ══════════════════════════════════
+        await updateStatus(r.l0.commandId, 'consensus');
+        r.consensus = await runConsensus(r.l0.commandId, r.criteria, r.proof, r.redTeam);
+
+        if (r.consensus.decision === 'HALT') {
+            await updateStatus(r.l0.commandId, 'failed');
+            return finish(r, 'REJECTED', 'K6',
+                [`Konsensüs: HALT — ${r.consensus.vetoReason ?? 'Quorum red'}`], t0);
+        }
+        if (r.consensus.decision === 'ESCALATE') {
+            return finish(r, 'ESCALATED', 'K6', ['Konsensüs: ESCALATE — insan müdahalesi'], t0);
+        }
+
+        // ═══ K7: 8+1 GATE CHECK ═════════════════════════════
+        await updateStatus(r.l0.commandId, 'gate_check');
+        r.gateCheck = await runGateCheck(
+            r.l0.commandId, r.analysis, r.criteria,
+            r.proof, r.redTeam, r.consensus,
+            r.formalSpec, mode === 'STRICT'
+        );
+
+        if (!r.gateCheck.allPassed) {
+            await updateStatus(r.l0.commandId, 'failed');
+            return finish(r, 'REJECTED', 'K7',
+                [`Gate başarısız: ${r.gateCheck.failedGate}`], t0);
+        }
+
+        // ═══ K8: EXECUTION ══════════════════════════════════
+        if (handler) {
+            await updateStatus(r.l0.commandId, 'executing');
+            r.execution = await executeCommand(r.l0.commandId, handler);
+
+            if (r.execution.status !== 'success') {
+                return finish(r, 'ERROR', 'K8',
+                    [`İcra başarısız: ${r.execution.status}`], t0);
+            }
+
+            // ═══ K9: POST-EXEC ═══════════════════════════════
+            r.postExec = await runPostExec(r.l0.commandId, r.execution, r.proof);
         }
 
         // ═══ ONAY ═══════════════════════════════════════════
-        await updateStatus(l0.commandId, 'completed');
-        return {
-            commandId: l0.commandId, status: 'APPROVED',
-            l0, analysis, criteria, proof,
-            errors, totalMs: Date.now() - t0, timestamp: Date.now(),
-        };
+        await updateStatus(r.l0.commandId, 'completed');
+        return finish(r, 'APPROVED', 'K9', errors, t0);
 
     } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : 'Bilinmeyen hata';
         errors.push(msg);
 
-        if (l0) {
-            await updateStatus(l0.commandId, 'failed');
-            await logAlert(l0.commandId, 5, 'PIPELINE_CRASH', msg);
+        if (r.l0) {
+            await updateStatus(r.l0.commandId, 'failed');
+            await supabase.from('alerts').insert({
+                severity:        5,
+                rule_triggered:  'PIPELINE_CRASH',
+                fail_level:      'critical',
+                module:          'pipeline',
+                details:         { commandId: r.l0.commandId, error: msg },
+            });
         }
 
-        return {
-            commandId: l0?.commandId ?? 'unknown',
-            status:    'ERROR',
-            l0, analysis, criteria, proof,
-            errors, totalMs: Date.now() - t0, timestamp: Date.now(),
-        };
+        return finish(r, 'ERROR', 'CRASH', errors, t0);
     }
 }
 
 // ─── YARDIMCILAR ────────────────────────────────────────────
 
-async function updateStatus(commandId: string, status: string): Promise<void> {
-    await supabase
-        .from('commands')
-        .update({ status })
-        .eq('id', commandId);
+function finish(
+    r:      Partial<PipelineResult>,
+    status: PipelineResult['status'],
+    stage:  string,
+    errors: string[],
+    t0:     number
+): PipelineResult {
+    return {
+        commandId:  r.l0?.commandId ?? 'unknown',
+        status, stage,
+        l0:         r.l0         ?? null,
+        analysis:   r.analysis   ?? null,
+        criteria:   r.criteria   ?? null,
+        formalSpec: r.formalSpec ?? null,
+        proof:      r.proof      ?? null,
+        redTeam:    r.redTeam    ?? null,
+        consensus:  r.consensus  ?? null,
+        gateCheck:  r.gateCheck  ?? null,
+        execution:  r.execution  ?? null,
+        postExec:   r.postExec   ?? null,
+        errors, totalMs: Date.now() - t0, timestamp: Date.now(),
+    };
 }
 
-async function logAlert(
-    commandId: string,
-    severity:  number,
-    rule:      string,
-    details:   string
-): Promise<void> {
-    const level = severity >= 4 ? 'critical' : severity >= 3 ? 'high' : 'info';
-
-    await supabase.from('alerts').insert({
-        severity,
-        rule_triggered: rule,
-        fail_level:     level,
-        module:         'pipeline',
-        details:        { commandId, message: details },
-    });
-
-    // A6: immutable_logs zinciri
-    const { data: lastLog } = await supabase
-        .from('immutable_logs')
-        .select('hash')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-    const hash = createHash('sha256')
-        .update(commandId + rule + details + Date.now())
-        .digest('hex');
-
-    await supabase.from('immutable_logs').insert({
-        module:     'pipeline',
-        event_type: 'ALERT',
-        severity:   severity >= 4 ? 'critical' : 'warning',
-        payload:    { commandId, rule, details },
-        hash,
-        prev_hash:  lastLog?.hash ?? '',
-    });
+async function updateStatus(commandId: string, status: string): Promise<void> {
+    await supabase.from('commands').update({ status }).eq('id', commandId);
 }
