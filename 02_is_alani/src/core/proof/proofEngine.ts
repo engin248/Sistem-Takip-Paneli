@@ -71,6 +71,10 @@ export async function verifyProof(
     proof: ProofResult
 ): Promise<ProofResult> {
     if (!proof.solved) throw new Error('ERR-STP038: Solve edilmemiş');
+    if (!proof.constraints || proof.constraints.length === 0) {
+        // Constraints boş — degraded mod, verify atla
+        return { ...proof, verified: false, degraded: true };
+    }
 
     const check = Z3_AVAILABLE
         ? await solveWithZ3(proof.constraints, Date.now())

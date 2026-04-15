@@ -95,37 +95,52 @@ function redTeamVote(r: RedTeamResult): Vote {
 // ─── Kayıt ──────────────────────────────────────────────────
 
 async function saveConsensus(commandId: string, result: ConsensusResult): Promise<void> {
-    await supabase.from('refutations')
-        .update({
-            consensus_result: result.decision === 'PROCEED' ? 'proceed' :
-                              result.decision === 'HALT'    ? 'halt'    : 'escalate',
-            quorum_votes: {
-                votes:     result.votes,
-                quorumMet: result.quorumMet,
-                vetoUsed:  result.vetoUsed,
-                confidence: result.confidence,
-            },
-        })
-        .eq('command_id', commandId);
+    try {
+        const { error: updateErr } = await supabase.from('refutations')
+            .update({
+                consensus_result: result.decision === 'PROCEED' ? 'proceed' :
+                                  result.decision === 'HALT'    ? 'halt'    : 'escalate',
+                quorum_votes: {
+                    votes:      result.votes,
+                    quorumMet:  result.quorumMet,
+                    vetoUsed:   result.vetoUsed,
+                    confidence: result.confidence,
+                },
+            })
+            .eq('command_id', commandId);
 
-    // immutable_logs — prev_hash zinciri
-    const { data: lastLog } = await supabase
-        .from('immutable_logs')
-        .select('hash')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        if (updateErr) {
+            console.error('[K6] refutations update hatası:', updateErr.message);
+        }
 
-    const hash = createHash('sha256')
-        .update(commandId + result.decision + Date.now())
-        .digest('hex');
+        // immutable_logs — prev_hash zinciri
+        const { data: lastLog } = await supabase
+            .from('immutable_logs')
+            .select('hash')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
 
-    await supabase.from('immutable_logs').insert({
-        module:     'K6',
-        event_type: 'CONSENSUS',
-        severity:   result.decision === 'HALT' ? 'critical' : 'info',
-        payload:    { commandId, decision: result.decision, confidence: result.confidence },
-        hash,
-        prev_hash:  lastLog?.hash ?? '',
-    });
+        const hash = createHash('sha256')
+            .update(commandId + result.decision + Date.now())
+            .digest('hex');
+
+        const { error: logErr } = await supabase.from('immutable_logs').insert({
+            module:     'K6',
+            event_type: 'CONSENSUS',
+            severity:   result.decision === 'HALT' ? 'critical' : 'info',
+            payload:    { commandId, decision: result.decision, confidence: result.confidence },
+            hash,
+            prev_hash:  lastLog?.hash ?? '',
+        });
+
+        if (logErr) {
+            console.error('[K6] immutable_logs insert hatası:', logErr.message);
+        }
+
+    } catch (err: unknown) {
+        // saveConsensus hata fırlatmaz — pipeline durmasın
+        console.error('[K6] saveConsensus beklenmeyen hata:', err);
+    }
 }
+

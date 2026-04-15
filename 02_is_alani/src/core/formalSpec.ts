@@ -55,13 +55,22 @@ export async function generateFormalSpec(
         timestamp: Date.now(),
     };
 
-    await supabase.from('formal_specs').insert({
+    const { error: fsErr } = await supabase.from('formal_specs').insert({
         command_id:      commandId,
         pre_conditions:  preConditions,
         post_conditions: postConditions,
         invariants,
         z3_input:        z3Input,
     });
+
+    if (fsErr) {
+        await supabase.from('immutable_logs').insert({
+            module: 'K3', event_type: 'FORMAL_SPEC_WRITE_ERROR',
+            severity: 'critical',
+            payload: { commandId, error: fsErr.message },
+            hash: `K3_ERR_${commandId}`, prev_hash: '',
+        });
+    }
 
     return spec;
 }

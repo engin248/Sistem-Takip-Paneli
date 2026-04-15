@@ -53,13 +53,22 @@ export async function runRedTeam(
         timestamp: Date.now(),
     };
 
-    await supabase.from('refutations').insert({
+    const { error: rtErr } = await supabase.from('refutations').insert({
         command_id:      commandId,
         red_team_result: { attacks: attacks.map(a => ({ id: a.id, passed: a.passed, reason: a.reason })) },
         monte_carlo:     { score: monteCarloScore, total: attacks.length, passed: passedCount },
         consensus_result: survived ? 'proceed' : 'halt',
         quorum_votes:    {},
     });
+
+    if (rtErr) {
+        await supabase.from('immutable_logs').insert({
+            module: 'K4', event_type: 'RED_TEAM_WRITE_ERROR',
+            severity: 'critical',
+            payload: { commandId, error: rtErr.message },
+            hash: `K4_ERR_${commandId}`, prev_hash: '',
+        });
+    }
 
     return result;
 }
