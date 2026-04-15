@@ -19,12 +19,12 @@ export interface IntentAnalysis {
   refutation: string;
 }
 
-export interface CriteriaResult {
+export interface LegacyCriteriaResult {
   score: number;       // 0–100
   passed: number;      // Geçen kriter sayısı
   total: number;       // Toplam kriter sayısı (92)
   failed: string[];    // Başarısız kriter isimleri
-  isPassing: boolean;  // score === 100 ise true
+  isPassing: boolean;  // score >= 75 ise true
 }
 
 // ─── 92 KRİTER LİSTESİ ──────────────────────────────────────
@@ -134,7 +134,7 @@ export const CRITERIA_LIST: readonly string[] = [
 
 // ─── 92 KRİTER MOTORU ───────────────────────────────────────
 export class CriteriaEngine {
-  check(input: string, intent: IntentAnalysis): CriteriaResult {
+  check(input: string, intent: IntentAnalysis): LegacyCriteriaResult {
     const failed: string[] = [];
     let passed = 0;
 
@@ -530,7 +530,7 @@ export class CriteriaEngine {
       });
     }
 
-    return { score, passed, total, failed, isPassing: score >= 75 };
+    return { score, passed, total, failed, isPassing: score >= 75 } satisfies LegacyCriteriaResult;
   }
 }
 
@@ -545,15 +545,9 @@ export class CriteriaEngine {
 // ============================================================
 
 import { supabase } from '@/lib/supabase';
-import type { HermAIAnalysis, SystemMode, CriteriaCheckResult } from '@/core/types';
+import type { HermAIAnalysis, SystemMode, CriteriaResult, CriterionRule } from '@/core/types';
 
-type RuleCat = 'functional' | 'logical' | 'performance' | 'security' | 'data';
-type RulePri = 'critical' | 'high' | 'standard';
-
-interface K2Rule {
-  id: string; name: string; category: RuleCat; priority: RulePri;
-  fn: (i: string, a: HermAIAnalysis) => boolean;
-}
+interface K2Rule extends CriterionRule {}
 
 // 92 kriter — 5 kategori × 3 öncelik seviyesi
 const K2_RULES: K2Rule[] = [
@@ -682,7 +676,7 @@ export async function validateK2Criteria(
   input: string,
   analysis: HermAIAnalysis,
   mode: SystemMode = 'NORMAL'
-): Promise<CriteriaCheckResult> {
+): Promise<CriteriaResult> {
   const rules = rulesForMode(mode);
   const failed: { id: string; name: string; category: string }[] = [];
   let ok = 0;
@@ -697,7 +691,7 @@ export async function validateK2Criteria(
 
   const score = Math.round((ok / rules.length) * 100);
 
-  const result: CriteriaCheckResult = {
+  const result: CriteriaResult = {
     passed:      score >= 75,
     score,
     total:       rules.length,
