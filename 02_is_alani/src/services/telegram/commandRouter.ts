@@ -138,7 +138,6 @@ export async function handleTaskMessage(ctx: Context, text: string, source: 'tex
       scope: ['task:create', 'task:read', 'task:update'],
       nonce: `tg-${chatId}-${messageId}`,
       isVoice: source === 'voice',        // ses/yazı ayrımı DB'ye doğru yansır
-      voiceConfirmed: source === 'voice', // buraya geldiğinde voiceHandler zaten onayladı
     });
   } catch (err) {
     const errMsg = err instanceof Error ? err.message : String(err);
