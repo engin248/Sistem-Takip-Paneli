@@ -107,7 +107,92 @@ export function getSystemStatusMessage(): string {
     ``,
     `${statusEmoji} <b>Veritabanı:</b> ${statusText}`,
     `🤖 <b>AI Motoru:</b> 🟢 LOKAL MOD (Sıfır Maliyet)`,
-    `📡 <b>Telegram Bot:</b> 🟢 AKTİF`,
+    `📡 <b>Telegram Bot:</b> 🟢 AKTİF (WEBHOOK modu)`,
     `🕐 <b>Zaman:</b> ${new Date().toISOString()}`,
   ].join('\n');
 }
+
+// ── K-3: WEBHOOK YÖNETİMİ ────────────────────────────────────
+// Bot YALNIZCA webhook modunda çalışır — polling kullanılmaz.
+// Polling, sunucu ortamında (Vercel/Node) kaynak tüketir ve
+// serverless ile uyumsuzdur. Telegram güncellemeyi webhook'a iter.
+
+export interface WebhookInfo {
+  url:               string;
+  has_custom_certificate: boolean;
+  pending_update_count:   number;
+  last_error_date?:       number;
+  last_error_message?:    string;
+  max_connections?:       number;
+}
+
+/**
+ * Telegram API'den mevcut webhook bilgisini sorgular.
+ * Bot TOKEN gerektirmez — sadece okuma yapar.
+ */
+export async function getWebhookInfo(): Promise<{
+  ok: boolean;
+  info?: WebhookInfo;
+  error?: string;
+}> {
+  if (!isTelegramBotAvailable()) {
+    return { ok: false, error: 'TELEGRAM_BOT_TOKEN tanımlı değil' };
+  }
+
+  try {
+    const res = await fetch(
+      `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getWebhookInfo`,
+      { method: 'GET', signal: AbortSignal.timeout(5000) }
+    );
+
+    if (!res.ok) {
+      return { ok: false, error: `Telegram API HTTP ${res.status}` };
+    }
+
+    const data = await res.json() as { ok: boolean; result?: WebhookInfo; description?: string };
+
+    if (!data.ok) {
+      return { ok: false, error: data.description ?? 'Telegram API hatası' };
+    }
+
+    return { ok: true, info: data.result };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : String(err) };
+  }
+}
+
+/**
+ * Webhook URL'ini Telegram'a kaydeder.
+ * Deploy sonrası veya URL değiştiğinde çağrılmalıdır.
+ * Endpoint: /api/bootstrap veya manuel curl komutuyla.
+ */
+export async function setWebhook(url: string): Promise<{
+  ok: boolean;
+  error?: string;
+}> {
+  if (!isTelegramBotAvailable()) {
+    return { ok: false, error: 'TELEGRAM_BOT_TOKEN tanımlı değil' };
+  }
+
+  if (!url || !url.startsWith('https://')) {
+    return { ok: false, error: 'Webhook URL HTTPS olmalıdır' };
+  }
+
+  try {
+    const res = await fetch(
+      `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook`,
+      {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ url, drop_pending_updates: true }),
+        signal:  AbortSignal.timeout(10000),
+      }
+    );
+
+    const data = await res.json() as { ok: boolean; description?: string };
+    return { ok: data.ok, error: data.ok ? undefined : (data.description ?? 'setWebhook başarısız') };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : String(err) };
+  }
+}
+
