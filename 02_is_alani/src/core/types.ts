@@ -38,6 +38,7 @@ export const HermAIAnalysisSchema = z.object({
     risks: z.string(),
     refutation: z.string(),
     constraints: z.array(z.string()),
+    questions: z.array(z.string()),
     confidence: z.number().min(0).max(1),
     entropy: z.number().min(0),
     entropyClass: z.enum(['low', 'medium', 'high']),
