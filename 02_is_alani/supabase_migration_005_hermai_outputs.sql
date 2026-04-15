@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS hermai_outputs (
   risk_score      DECIMAL(4,3),
   refutation      JSONB    NOT NULL DEFAULT '{}',
   conditions      JSONB    NOT NULL DEFAULT '[]',
+  questions       JSONB    NOT NULL DEFAULT '[]',  -- Kural #74: 3 eleştirel soru
 
   -- Metrikler
   confidence      DECIMAL(4,3) CHECK (confidence BETWEEN 0 AND 1),
