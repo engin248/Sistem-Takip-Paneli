@@ -21,6 +21,7 @@ import AlarmPanel from '@/components/AlarmPanel';
 import TelegramSender from '@/components/TelegramSender';
 import { exportSystemData } from '@/services/exportService';
 import { toast } from 'sonner';
+import AgentPanel from '@/components/AgentPanel';
 
 // ============================================================
 // KARARGAH PANELİ — 9 EKRANLI FÜTÜRİSTİK KOMUTA MERKEZİ
@@ -46,7 +47,8 @@ const HQ_SCREENS = [
   { id: 'SCR-06', label: 'G-8 ÖĞRENME', icon: '◉', color: 'purple', status: 'AKTİF' },
   { id: 'SCR-07', label: 'ALARM MERKEZİ', icon: '△', color: 'red', status: 'AKTİF' },
   { id: 'SCR-08', label: 'TELEGRAM KÖPRÜSÜ', icon: '◆', color: 'blue', status: 'AKTİF' },
-  { id: 'SCR-09', label: 'DENETİM GÜNLÜĞÜ', icon: '▤', color: 'cyan', status: 'AKTİF' },
+  { id: 'SCR-09', label: 'DENETİM GÜNLÜĞÜ', icon: '▤', color: 'cyan',   status: 'AKTİF' },
+  { id: 'SCR-10', label: 'AJAN KADROSU',    icon: '◉', color: 'amber',  status: 'AKTİF' },
 ] as const;
 
 // ── ZAMAN FORMATLAYICI ───────────────────────────────────────
@@ -194,8 +196,8 @@ export default function Dashboard() {
   // ── SİSTEM METRİKLERİ ────────────────────────────────────
   const systemMetrics = {
     uptime: '99.97%',
-    activeNodes: 9,
-    totalNodes: 9,
+    activeNodes: 10,
+    totalNodes: 10,
     taskCount: tasks.length,
     criticalAlerts: 0,
   };
@@ -509,6 +511,16 @@ export default function Dashboard() {
               isExpanded={expandedScreen === 'SCR-09'}
             >
               <AuditLog />
+            </HQScreen>
+
+            {/* ── EKRAN 10: AJAN KADROSU ───────────────────────── */}
+            <HQScreen
+              screen={HQ_SCREENS[9]!}
+              isActive={activeScreen === 'SCR-10'}
+              onClick={() => handleScreenClick('SCR-10')}
+              isExpanded={expandedScreen === 'SCR-10'}
+            >
+              <AgentPanel />
             </HQScreen>
 
           </section>
