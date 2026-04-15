@@ -9,6 +9,7 @@ const PUBLIC_PATHS = [
   '/api/health',
   '/api/health-check',
   '/api/bootstrap',
+  '/api/agents',
 ];
 
 // ── In-memory Rate Limiter ───────────────────────────────────
