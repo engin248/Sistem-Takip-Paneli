@@ -26,15 +26,8 @@ export function middleware(req: NextRequest) {
         }
     }
 
-    // Auth kontrolü (etkinse)
-    const authEnabled = process.env.NEXT_PUBLIC_SUPABASE_AUTH_ENABLED === 'true';
-
-    if (authEnabled && !path.startsWith('/api/') && path !== '/login') {
-        const session = req.cookies.get('sb-tesxmqhkegotxenoljzl-auth-token');
-        if (!session) {
-            return NextResponse.redirect(new URL('/login', req.url));
-        }
-    }
+    // Auth kontrolü — login sayfası oluşturulana kadar devre dışı
+    // const authEnabled = process.env.NEXT_PUBLIC_SUPABASE_AUTH_ENABLED === 'true';
 
     return NextResponse.next();
 }
