@@ -341,8 +341,6 @@ export default function Dashboard() {
             {/* Sol: Başlık */}
             <div className="flex items-center gap-2 mr-2">
               <h1 className="text-xl lg:text-2xl font-black tracking-tight text-white whitespace-nowrap">
-                <span className="neon-text-cyan">KARARGAH</span>
-                <span className="text-slate-500 mx-1.5">|</span>
                 <span className="text-slate-300">{tr.dashboardTitle}</span>
               </h1>
             </div>
