@@ -15,6 +15,8 @@
 
 import { ERR, processError } from './errorCore';
 import { logAudit } from '@/services/auditService';
+import { cbSarici, getCBDurum } from '@/core/circuitBreaker';
+import { auditLog } from '@/core/localAudit';
 
 // ─── TİP TANIMLARI ──────────────────────────────────────────
 
@@ -248,15 +250,23 @@ export async function aiComplete(
 ): Promise<AICompletionResponse | null> {
   const config = { ...getDefaultConfig(), ...configOverride };
 
-  // ─── ADIM 1: OLLAMA ───────────────────────────────────────
+  // ─── ADIM 1: OLLAMA (Circuit Breaker korumalı) ──────────────────
   if (!config.forceDisableOllama) {
     const ollamaHealthy = await checkOllamaHealth(config.ollamaBaseUrl);
+    const cbDurum = getCBDurum();
 
-    if (ollamaHealthy) {
+    if (ollamaHealthy && cbDurum.state !== 'ACIK') {
       try {
-        const result = await ollamaCompletion(request, config);
+        const result = await cbSarici(
+          () => ollamaCompletion(request, config),
+          undefined,
+        );
 
-        // Başarılı Ollama yanıtı — audit log
+        // Başarılı — SHA-256 audit + Supabase log
+        auditLog('AI_PROVIDER', 'OLLAMA_SUCCESS', {
+          model: config.ollamaModel, sure_ms: result.durationMs,
+          cb_state: getCBDurum().state,
+        });
         await logAudit({
           operation_type: 'EXECUTE',
           action_description: `Ollama AI yanıt: model=${config.ollamaModel}, süre=${result.durationMs}ms`,
@@ -265,12 +275,17 @@ export async function aiComplete(
             model: config.ollamaModel,
             duration_ms: result.durationMs,
             tokens_used: result.tokensUsed || 0,
-            cost: 0, // Yerel = sıfır maliyet
+            cost: 0,
           },
         }).catch(() => {});
 
         return result;
       } catch (error) {
+        // Circuit Breaker hataKaydet zaten cbSarici içinde çağrıldı
+        auditLog('AI_PROVIDER', 'OLLAMA_FAIL', {
+          hata: error instanceof Error ? error.message : String(error),
+          cb_state: getCBDurum().state,
+        });
         processError(ERR.OLLAMA_CONNECTION, error, {
           kaynak: 'aiProvider.ts',
           islem: 'OLLAMA_COMPLETION',
@@ -278,6 +293,11 @@ export async function aiComplete(
         }, 'WARNING');
         // Fallback → OpenAI
       }
+    } else if (cbDurum.state === 'ACIK') {
+      auditLog('AI_PROVIDER', 'CB_BLOCKED', {
+        sure_kaldi_ms: cbDurum.sure_kaldi_ms,
+        toplam_trip: cbDurum.toplam_trip,
+      });
     }
   }
 
