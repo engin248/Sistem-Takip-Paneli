@@ -19,6 +19,7 @@ import { ragContext }           from '@/services/ragService';
 import { toolCalistir, type ToolAdi } from '@/core/toolRunner';
 import { queryMemory, ogrenimKaydet } from '@/core/agentMemory';
 import { gorevOnKontrol, aracKontrol, yanitKontrol } from '@/core/ruleGuard';
+import { getAjanProfil, getIzinliAraclar, getMaxIterasyon } from '@/core/agentProfiles';
 import type { QueueJob }       from '@/core/taskQueue';
 
 const MAX_ITERASYON  = 5;
@@ -65,50 +66,40 @@ async function aiCompleteWithRetry(params: Parameters<typeof aiComplete>[0]): Pr
   throw son_hata;
 }
 
-// ── UZMAN SİSTEM PROMPTLARI (Katman + Rol bazlı) ─────────────
+// ── UZMAN SİSTEM PROMPTLARI — Profil varsa profil, yoksa katman geneli ──
 function buildSystemPrompt(agent: {
   id: string; kod_adi: string; rol: string;
   katman: string; beceri_listesi: string[];
 }): string {
 
-  const katmanKural: Record<string, string> = {
-    KOMUTA: `Sen komuta kademesisin. Strateji üretir, karar verir, görev atarsın.
-YETKIN: onay_red, strateji, görev_atama, kriz_yönetimi, kaynak_planlama
-YASAK: kod yazmak, dosya düzenlemek, veritabanı işlemleri`,
-
-    L1: `Sen doğrudan icraatçısın. Görevi eksiksiz, adım adım tamamlarsın.
-Araçları kullan. Dosya oku, yaz, API çağır, web ara, RAG sorgula.
-YETKIN: ${agent.beceri_listesi.join(', ')}
-YASAK: varsayım, tahmin, "sanırım", "belki"`,
-
-    L2: `Sen denetçisin. Yapılan işi 5 eksenden denetlersin: teknik, güvenlik, performans, operasyonel, UX.
-YETKIN: kod inceleme, doğrulama, hata tespiti, rapor üretme
-YASAK: kod değiştirmek, karar vermek, bağımsız aksiyon`,
-
-    L3: `Sen hakemsin. L1-L2 çelişkilerini çözersin. Objektif, kanıt bazlı karar verirsin.
-YETKIN: çelişki çözüm, nihai karar, konsensüs, mimari değerlendirme
-YASAK: kod yazmak, doğrudan icra`,
-
-    DESTEK: `Sen uzman destek birimisin. Uzmanlık alanında maksimum verim üretirsin.
-YETKIN: ${agent.beceri_listesi.join(', ')}
-YASAK: alan dışı görev, yetkisiz aksiyon`,
-  };
-
-  // Kurallar kod tarafında zorlanıyor (ruleGuard.ts) — prompt'a eklenmez, TOKEN TASARRUFU
-  return `════════════════════════════════════════════════════════
-SİSTEM TAKİP PANELİ — AJAN KİMLİK
-════════════════════════════════════════════════════════
-AJAN: ${agent.kod_adi} | KATMAN: ${agent.katman}
-GÖREV: ${agent.rol}
-KATMAN KURALI: ${katmanKural[agent.katman] ?? `BECERİLER: ${agent.beceri_listesi.join(', ')}`}
-════════════════════════════════════════════════════════
-ARAÇ FORMAT (gerekirse kullan):
+  // 1. Ajan profilinde özel prompt var mı?
+  const profil = getAjanProfil(agent.id);
+  if (profil) {
+    return `AJAN: ${agent.kod_adi} | ID: ${agent.id} | KATMAN: ${agent.katman}
+${profil.sistem_prompt}
+ARAÇ FORMAT (izinli araçlar: ${profil.izinli_araclar.join(', ')}):
 ARAÇ: <ad>
 PARAMS: <json>
-Araçlar: dosyaOku, dosyaYaz, dizinListele, webAra, ragSorgula, apiCagir
+İş bitince: GÖREV TAMAM: <özet>
+Göreve başla.`;
+  }
+
+  // 2. Profil yoksa — genel katman promptu
+  const katmanKural: Record<string, string> = {
+    KOMUTA: `Strateji üretir, karar verir, görev atarsın. YASAK: kod yaz, dosya değiştir.`,
+    L1    : `Görevi araçlarla eksiksiz tamamla. YETKİN: ${agent.beceri_listesi.join(', ')}. YASAK: varsayım.`,
+    L2    : `5 eksenden denetle: teknik, güvenlik, performans, operasyonel, UX. YASAK: kod değiştir.`,
+    L3    : `L1-L2 çelişkilerini çöz, objektif karar ver. YASAK: kod yaz.`,
+    DESTEK: `Uzmanlık alanında çalış. YETKİN: ${agent.beceri_listesi.join(', ')}. YASAK: alan dışı.`,
+  };
+
+  return `AJAN: ${agent.kod_adi} | KATMAN: ${agent.katman}
+${katmanKural[agent.katman] ?? `BECERİLER: ${agent.beceri_listesi.join(', ')}`}
+ARAÇ FORMAT: ARAÇ: <ad> | PARAMS: <json>
 İş bitince: GÖREV TAMAM: <özet>
 Göreve başla.`;
 }
+
 
 // ── ARAÇ ÇAĞRISI PARSER ───────────────────────────────────────
 interface AracCagrisi {
@@ -162,6 +153,13 @@ export interface L2DenetimOzet {
   durum       : 'ONAYLANDI' | 'HATA_VAR' | 'ATLANAMAZ';
   ozet        : string;
   duration_ms : number;
+  l3_hakem   ?: {
+    ajan_id    : string;
+    kod_adi    : string;
+    karar      : 'KABUL' | 'REVIZYON_GEREKLI';
+    ozet       : string;
+    duration_ms: number;
+  };
 }
 
 export interface WorkerResult {
@@ -475,6 +473,55 @@ export async function runAgentWorker(input: WorkerInput): Promise<WorkerResult> 
             durum       : denetimDurum,
           },
         }).catch(() => {});
+
+        // ── L2 HATA_VAR → L3 HAKEM OTOMATİK ──────────────────────
+        if (denetimDurum === 'HATA_VAR') {
+          const l3Ajan = agentRegistry.getById('B-03');
+          if (l3Ajan) {
+            const l3Start = Date.now();
+            try {
+              agentRegistry.updateDurum('B-03', 'aktif');
+              const l3Yanit = await aiComplete({
+                systemPrompt: `Sen L3 HAKEM ajanısın. L1-L2 çelişkisini çöz. Objektif, kanıt bazlı karar ver. KARAR: KABUL veya REVIZYON_GEREKLI.`,
+                userMessage : [
+                  `[L3 HAKEM] L2 hata tespit etti.`,
+                  `L1 Ajan: ${agent.kod_adi} | Görev: ${input.task.slice(0, 100)}`,
+                  `L1 Sonuç: ${sonSonuc.slice(0, 250)}`,
+                  `L2 Bulgusu: ${l2Metin.slice(0, 250)}`,
+                  `Hakemlik yap: hata gerçek mi, kabul mü, revizyon mu?`,
+                ].join('\n'),
+                temperature : 0.15,
+                maxTokens   : 300,
+                jsonMode    : false,
+              });
+
+              const l3Metin = l3Yanit?.content ?? '';
+              l2DenetimOzet.l3_hakem = {
+                ajan_id    : 'B-03',
+                kod_adi    : l3Ajan.kod_adi,
+                karar      : l3Metin.toUpperCase().includes('KABUL') ? 'KABUL' : 'REVIZYON_GEREKLI',
+                ozet       : l3Metin.slice(0, 250),
+                duration_ms: Date.now() - l3Start,
+              };
+
+              agentRegistry.updateDurum('B-03', 'pasif');
+
+              void logAudit({
+                operation_type    : 'EXECUTE',
+                action_description: `[L3-HAKEM] ${l3Ajan.kod_adi} → ${l2DenetimOzet.l3_hakem.karar} (${Date.now() - l3Start}ms)`,
+                metadata: { action_code: 'L3_AUTO_HAKEM', l1_job_id: job_id },
+              }).catch(() => {});
+
+            } catch {
+              agentRegistry.updateDurum('B-03', 'pasif');
+              l2DenetimOzet.l3_hakem = {
+                ajan_id: 'B-03', kod_adi: l3Ajan.kod_adi,
+                karar: 'REVIZYON_GEREKLI', ozet: 'L3 AI çağrısı başarısız — ihtiyatlı ret',
+                duration_ms: Date.now() - l3Start,
+              };
+            }
+          }
+        }
 
       } catch {
         agentRegistry.updateDurum('B-01', 'pasif');

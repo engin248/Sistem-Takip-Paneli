@@ -28,6 +28,7 @@ import ScreenErrorBoundary from '@/components/ScreenErrorBoundary';
 import ActivityFeed from '@/components/ActivityFeed';
 import LiveMetrics from '@/components/LiveMetrics';
 import NizamnamePaneli from '@/components/NizamnamePaneli';
+import JobMonitorPanel from '@/components/JobMonitorPanel';
 
 // ============================================================
 // KARARGAH PANİLİ — 14 EKRANLI FÜTÜRİSTİK KOMUTA MERKEZİ
@@ -65,6 +66,7 @@ const HQ_SCREENS = [
   { id: 'SCR-13', label: 'CANLI METRİKLER', icon: '◇', color: 'blue',   status: 'AKTİF' },
   { id: 'SCR-14', label: 'SİSTEM KALKAN',   icon: '🛡️', color: 'red',    status: 'AKTİF' },
   { id: 'SCR-15', label: 'NİZAMNAME',        icon: '📙', color: 'purple', status: 'AKTİF' },
+  { id: 'SCR-16', label: 'JOB MONITOR',      icon: '📋', color: 'indigo', status: 'AKTİF' },
 ] as const;
 
 // ── ZAMAN FORMATLAYICI ───────────────────────────────────────
@@ -588,6 +590,16 @@ export default function Dashboard() {
               isExpanded={expandedScreen === 'SCR-15'}
             >
               <NizamnamePaneli />
+            </HQScreen>
+
+            {/* ── EKRAN 16: JOB MONITOR ────────────────────────── */}
+            <HQScreen
+              screen={HQ_SCREENS[15]!}
+              isActive={activeScreen === 'SCR-16'}
+              onClick={() => handleScreenClick('SCR-16')}
+              isExpanded={expandedScreen === 'SCR-16'}
+            >
+              <JobMonitorPanel />
             </HQScreen>
 
           </section>
