@@ -116,9 +116,13 @@ export async function GET() {
     });
 
     // ── GENEL DURUM HESAPLAMA ──────────────────────────────────────
-    const hasDown     = systems.some(s => s.status === 'down');
+    // Kritik: STP DB + Ollama. Dış sistem opsiyonel → degraded
+    const kritikSistemler = systems.filter(s => s.name.includes('STP') || s.name.includes('Ollama'));
+    const opsiyonelSistemler = systems.filter(s => !s.name.includes('STP') && !s.name.includes('Ollama'));
+    const kritikDown = kritikSistemler.some(s => s.status === 'down');
+    const opsiyonelDown = opsiyonelSistemler.some(s => s.status === 'down');
     const hasDegraded = systems.some(s => s.status === 'degraded' || s.status === 'unknown');
-    const overallStatus: HealthReport['status'] = hasDown ? 'down' : hasDegraded ? 'degraded' : 'healthy';
+    const overallStatus: HealthReport['status'] = kritikDown ? 'down' : (opsiyonelDown || hasDegraded) ? 'degraded' : 'healthy';
 
     const report: HealthReport = {
       status: overallStatus,

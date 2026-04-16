@@ -243,10 +243,10 @@ export default function Dashboard() {
               </span>
             </div>
             <div className="glass-card px-4 py-2 flex items-center gap-2.5 border border-slate-500/20 ml-auto">
-              <span className="text-[10px] font-mono text-slate-400 tracking-wider">
+              <span className="text-[10px] font-mono text-slate-400 tracking-wider" suppressHydrationWarning>
                 {systemTime.toLocaleDateString('tr-TR', { year: 'numeric', month: '2-digit', day: '2-digit' })}
               </span>
-              <span className="text-[10px] font-mono neon-text-cyan font-bold">
+              <span className="text-[10px] font-mono neon-text-cyan font-bold" suppressHydrationWarning>
                 {systemTime.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
               </span>
             </div>
