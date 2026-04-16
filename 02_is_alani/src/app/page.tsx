@@ -23,6 +23,8 @@ import { exportSystemData } from '@/services/exportService';
 import { toast } from 'sonner';
 import AgentPanel from '@/components/AgentPanel';
 import KnowledgeBasePanel from '@/components/KnowledgeBasePanel';
+import ActivityFeed from '@/components/ActivityFeed';
+import LiveMetrics from '@/components/LiveMetrics';
 
 // ============================================================
 // KARARGAH PANELİ — 9 EKRANLI FÜTÜRİSTİK KOMUTA MERKEZİ
@@ -51,6 +53,8 @@ const HQ_SCREENS = [
   { id: 'SCR-09', label: 'DENETİM GÜNLÜĞÜ', icon: '▤', color: 'cyan',   status: 'AKTİF' },
   { id: 'SCR-10', label: 'AJAN KADROSU',    icon: '◉', color: 'amber',  status: 'AKTİF' },
   { id: 'SCR-11', label: 'BİLGİ TABANI',    icon: '▦', color: 'purple', status: 'AKTİF' },
+  { id: 'SCR-12', label: 'AKTİVİTE AKIŞI',  icon: '◈', color: 'cyan',   status: 'AKTİF' },
+  { id: 'SCR-13', label: 'CANLI METRİKLER', icon: '◇', color: 'blue',   status: 'AKTİF' },
 ] as const;
 
 // ── ZAMAN FORMATLAYICI ───────────────────────────────────────
@@ -532,6 +536,26 @@ export default function Dashboard() {
               isExpanded={expandedScreen === 'SCR-11'}
             >
               <KnowledgeBasePanel />
+            </HQScreen>
+
+            {/* ── EKRAN 12: AKTİVİTE AKIŞI ─────────────────────── */}
+            <HQScreen
+              screen={HQ_SCREENS[11]!}
+              isActive={activeScreen === 'SCR-12'}
+              onClick={() => handleScreenClick('SCR-12')}
+              isExpanded={expandedScreen === 'SCR-12'}
+            >
+              <ActivityFeed />
+            </HQScreen>
+
+            {/* ── EKRAN 13: CANLI METRİKLER ────────────────────── */}
+            <HQScreen
+              screen={HQ_SCREENS[12]!}
+              isActive={activeScreen === 'SCR-13'}
+              onClick={() => handleScreenClick('SCR-13')}
+              isExpanded={expandedScreen === 'SCR-13'}
+            >
+              <LiveMetrics />
             </HQScreen>
 
           </section>
