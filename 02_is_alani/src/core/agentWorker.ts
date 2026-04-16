@@ -13,12 +13,55 @@
 import { aiComplete }          from '@/lib/aiProvider';
 import { agentRegistry }       from '@/services/agentRegistry';
 import { logAudit }            from '@/services/auditService';
+import { auditLog }            from '@/core/localAudit';
 import { pushJobHistory, generateJobId } from '@/core/taskQueue';
 import { ragContext }           from '@/services/ragService';
 import { toolCalistir, type ToolAdi } from '@/core/toolRunner';
 import type { QueueJob }       from '@/core/taskQueue';
 
-const MAX_ITERASYON = 5;
+const MAX_ITERASYON  = 5;
+const TIMEOUT_MS     = Number(process.env.AI_TIMEOUT_MS) || 30_000;
+const MAX_RETRY      = 2; // AI call max retry
+const RETRY_BASE_MS  = 1_000;
+
+// ── IDEMPOTENCY CACHE ───────────────────────────────────────────────
+// Aynı ajan+görev kombinasyonu 30sn içinde tekrar çalışmaz
+const recentJobs = new Map<string, { ts: number; result: string }>();
+const IDEMPOTENCY_TTL = 30_000;
+
+function idempotencyKey(agent_id: string, task: string): string {
+  return `${agent_id}::${task.slice(0, 100).toLowerCase().trim()}`;
+}
+
+function checkIdempotency(key: string): string | null {
+  const cached = recentJobs.get(key);
+  if (!cached) return null;
+  if (Date.now() - cached.ts > IDEMPOTENCY_TTL) { recentJobs.delete(key); return null; }
+  return cached.result;
+}
+
+function setIdempotency(key: string, result: string): void {
+  recentJobs.set(key, { ts: Date.now(), result });
+  // 30sn sonra temizle
+  setTimeout(() => recentJobs.delete(key), IDEMPOTENCY_TTL + 500);
+}
+
+// ── EXPO BACKOFF AI RETRY ──────────────────────────────────────────
+async function aiCompleteWithRetry(params: Parameters<typeof aiComplete>[0]): Promise<Awaited<ReturnType<typeof aiComplete>>> {
+  let son_hata: unknown;
+  for (let attempt = 0; attempt <= MAX_RETRY; attempt++) {
+    try {
+      return await aiComplete(params);
+    } catch (err) {
+      son_hata = err;
+      if (attempt < MAX_RETRY) {
+        const bekleme = RETRY_BASE_MS * Math.pow(3, attempt); // 1s, 3s
+        await new Promise(r => setTimeout(r, bekleme));
+      }
+    }
+  }
+  throw son_hata;
+}
 
 // ── UZMAN SİSTEM PROMPTLARI (Katman + Rol bazlı) ─────────────
 function buildSystemPrompt(agent: {
@@ -197,6 +240,20 @@ export async function runAgentWorker(input: WorkerInput): Promise<WorkerResult> 
 
   agentRegistry.updateDurum(agent.id, 'aktif');
 
+  // ── IDEMPOTENCY ─────────────────────────────────────────────────
+  const iKey = idempotencyKey(agent.id, input.task);
+  const cachedResult = checkIdempotency(iKey);
+  if (cachedResult) {
+    auditLog(agent.id, 'IDEMPOTENCY_HIT', { task: input.task.slice(0, 100) });
+    return {
+      job_id, agent_id: agent.id, kod_adi: agent.kod_adi,
+      katman: agent.katman, task: input.task, result: cachedResult,
+      status: 'tamamlandi', ai_kullandi: false,
+      rag_kullandi: false, web_kullandi: false, arac_kullandi: [],
+      iterasyon: 0, duration_ms: 0, timestamp: new Date().toISOString(),
+    };
+  }
+
   // ── 3. RAG bağlamı ───────────────────────────────────────
   let ragKullandi = false;
   let extraContext = '';
@@ -227,21 +284,34 @@ export async function runAgentWorker(input: WorkerInput): Promise<WorkerResult> 
   for (let i = 0; i < MAX_ITERASYON; i++) {
     iterasyon = i + 1;
 
-    // AI çağrısı
+    // AI çağrısı (retry + timeout)
     let aiYanit = '';
     try {
-      const response = await aiComplete({
-        systemPrompt,
-        userMessage : mesajlar.map(m => `${m.role === 'user' ? 'KULLANICI' : 'AJAN'}: ${m.content}`).join('\n\n'),
-        temperature : 0.2,
-        maxTokens   : 1200,
-        jsonMode    : false,
-      });
+      const timeoutPromise = new Promise<null>((_, reject) =>
+        setTimeout(() => reject(new Error(`AI timeout ${TIMEOUT_MS}ms aşıldı`)), TIMEOUT_MS)
+      );
+      const response = await Promise.race([
+        aiCompleteWithRetry({
+          systemPrompt,
+          userMessage : mesajlar.map(m => `${m.role === 'user' ? 'KULLANICI' : 'AJAN'}: ${m.content}`).join('\n\n'),
+          temperature : 0.2,
+          maxTokens   : 1200,
+          jsonMode    : false,
+        }),
+        timeoutPromise,
+      ]);
       if (response?.content) {
         aiYanit    = response.content;
         aiKullandi = true;
-      } else break;
-    } catch {
+      } else {
+        auditLog(agent.id, 'AI_EMPTY_RESPONSE', { iterasyon });
+        break;
+      }
+    } catch (err) {
+      auditLog(agent.id, 'AI_CALL_FAILED', {
+        iterasyon,
+        hata: err instanceof Error ? err.message : String(err),
+      });
       break;
     }
 
@@ -303,6 +373,11 @@ export async function runAgentWorker(input: WorkerInput): Promise<WorkerResult> 
     duration_ms,
   };
   pushJobHistory(job);
+
+  // Son sonucu idempotency cache'e yaz
+  if (sonSonuc && sonSonuc !== buildLocalResponse(agent, input.task)) {
+    setIdempotency(iKey, sonSonuc);
+  }
 
   return {
     job_id, agent_id: agent.id, kod_adi: agent.kod_adi,

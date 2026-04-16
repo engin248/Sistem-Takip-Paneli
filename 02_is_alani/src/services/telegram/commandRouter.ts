@@ -13,6 +13,7 @@ import { type Bot, type Context } from 'grammy';
 import { webSearch } from '@/services/webSearch';
 import { supabase, validateSupabaseConnection } from '@/lib/supabase';
 import { ERR, processError } from '@/lib/errorCore';
+import { checkRateLimit } from '@/lib/rateLimiter';
 import { logAudit } from '@/services/auditService';
 import { analyzeTaskPriority, getPriorityLabel, getPriorityEmoji } from '@/services/aiManager';
 import { L0_GATEKEEPER, type L0Result } from '@/core/control_engine';
@@ -125,6 +126,13 @@ export async function handleTaskMessage(ctx: Context, text: string, source: 'tex
   const messageId = ctx.message?.message_id
     ?? (ctx as { callbackQuery?: { message?: { message_id?: number } } }).callbackQuery?.message?.message_id
     ?? Date.now();
+
+  // ── RATE LIMIT ─────────────────────────────────────────────
+  const rl = checkRateLimit(chatId);
+  if (!rl.allowed) {
+    await sendReply(ctx, `⏳ Çok hızlı! ${rl.resetIn}sn sonra tekrar dene.`);
+    return;
+  }
 
   // ── FAZ 0+1: L0 GATEKEEPER ────────────────────────────────
   // Null, yetki, replay, sanitization, DB arşivi tek adımda.
