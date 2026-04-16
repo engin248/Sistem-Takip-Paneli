@@ -152,7 +152,7 @@ export default function Dashboard() {
   const { lang, dir } = useLanguageStore();
   const tr = t(lang);
   const systemTime = useSystemClock();
-  const [isLocked, setIsLocked] = useState(true);
+  const [isLocked, setIsLocked] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [activeScreen, setActiveScreen] = useState<string | null>(null);
   const [expandedScreen, setExpandedScreen] = useState<string | null>(null);
