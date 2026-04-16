@@ -83,12 +83,13 @@ describe('AI Provider', () => {
       expect(status.costPerRequest).toContain('Lokal');
     });
 
-    it('Ollama kapalı + OpenAI aktif + key varsa provider=openai döner', async () => {
+    it('Ollama kapalı + OpenAI key varsa bile provider=local döner (OpenAI devre dışı)', async () => {
       vi.stubEnv('FORCE_DISABLE_OLLAMA', 'true');
       vi.stubEnv('OPENAI_API_KEY', 'sk-test-key-123');
       const status = await getProviderStatus();
-      expect(status.activeProvider).toBe('openai');
-      expect(status.costPerRequest).toContain('OpenAI');
+      // OpenAI tüm sistemde devre dışı — her zaman local'a düşer
+      expect(status.activeProvider).toBe('local');
+      expect(status.costPerRequest).toContain('Lokal');
     });
   });
 });

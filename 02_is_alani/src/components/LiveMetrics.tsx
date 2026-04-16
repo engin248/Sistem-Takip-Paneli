@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from 'react';
+import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
 
 // ============================================================
 // LIVE METRICS — CANLI SİSTEM GÖSTERGELERİ
@@ -79,8 +80,8 @@ export default function LiveMetrics() {
   const fetchMetrics = useCallback(async () => {
     try {
       const [agentRes, queueRes] = await Promise.all([
-        fetch('/api/agents'),
-        fetch('/api/queue'),
+        fetchWithTimeout('/api/agents', undefined, 10_000),
+        fetchWithTimeout('/api/queue', undefined, 10_000),
       ]);
       const agentData = await agentRes.json() as {
         stats?: { aktif?: number; toplamGorev?: number; toplamHata?: number };
@@ -123,7 +124,7 @@ export default function LiveMetrics() {
             display:'flex', alignItems:'center', justifyContent:'center', fontSize:18,
           }}>📊</div>
           <div>
-            <div style={{ color:'#06b6d4', fontSize:10, letterSpacing:'0.2em', fontWeight:700 }}>CANLI GÖSTERGELEr</div>
+            <div style={{ color:'#06b6d4', fontSize:10, letterSpacing:'0.2em', fontWeight:700 }}>CANLI GÖSTERGELER</div>
             <div style={{ color:'#475569', fontSize:9, fontFamily:'monospace' }}>5sn yenileme</div>
           </div>
         </div>

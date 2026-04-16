@@ -5,6 +5,7 @@
 // ============================================================
 
 import { useEffect, useState, useCallback } from 'react';
+import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
 
 type AgentStatus = 'aktif' | 'pasif' | 'bakimda' | 'egitimde' | 'devre_disi';
 type AgentTier   = 'KOMUTA' | 'L1' | 'L2' | 'L3' | 'DESTEK';
@@ -47,7 +48,7 @@ const TIER_CONFIG: Record<AgentTier, {
 
 const STATUS_CONFIG: Record<AgentStatus, { dot: string; text: string; label: string; pulse: boolean }> = {
   aktif:       { dot: 'bg-green-400',  text: 'text-green-400',  label: 'AKTİF',    pulse: true  },
-  pasif:       { dot: 'bg-slate-600',  text: 'text-slate-500',  label: 'PASSİF',   pulse: false },
+  pasif:       { dot: 'bg-slate-600',  text: 'text-slate-500',  label: 'PASİF',    pulse: false },
   bakimda:     { dot: 'bg-yellow-400', text: 'text-yellow-400', label: 'BAKIM',    pulse: true  },
   egitimde:    { dot: 'bg-blue-400',   text: 'text-blue-400',   label: 'EĞİTİM',  pulse: true  },
   devre_disi:  { dot: 'bg-red-500',    text: 'text-red-400',    label: 'DIŞI',     pulse: false },
@@ -80,7 +81,7 @@ export default function AgentPanel() {
   // ── VERİ ÇEK ───────────────────────────────────────────────
   const fetchAgents = useCallback(async () => {
     try {
-      const res  = await fetch('/api/agents');
+      const res  = await fetchWithTimeout('/api/agents', undefined, 10_000);
       const data = await res.json() as { success: boolean; agents: AgentCard[]; stats: AgentStats };
       if (data.success) {
         setAgents(data.agents);
@@ -89,8 +90,10 @@ export default function AgentPanel() {
       } else {
         setError('Ajan verisi alınamadı');
       }
-    } catch {
-      setError('Sunucu bağlantısı yok');
+    } catch (err) {
+      setError(err instanceof DOMException && err.name === 'AbortError'
+        ? 'Bağlantı zaman aşımı (10s)'
+        : 'Sunucu bağlantısı yok');
     } finally {
       setLoading(false);
     }
@@ -268,7 +271,7 @@ export default function AgentPanel() {
             disabled={autoAssigning || !autoGorev.trim()}
             className="px-5 py-2 bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 rounded-lg text-[9px] font-black tracking-[0.15em] uppercase hover:bg-cyan-500/20 transition-all disabled:opacity-40 whitespace-nowrap"
           >
-            {autoAssigning ? '⟳' : '▶ ÇALIŞTI R'}
+            {autoAssigning ? '⟳' : '▶ ÇALIŞTIR'}
           </button>
         </div>
       </div>

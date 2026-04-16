@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLanguageStore } from "@/store/useLanguageStore";
 import { t } from "@/lib/i18n";
+import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
 
 // ============================================================
 // HEALTH DASHBOARD — Sistem Sağlık Kontrolü
@@ -47,7 +48,7 @@ export default function HealthDashboard() {
   const checkHealth = useCallback(async () => {
     setIsChecking(true);
     try {
-      const res = await fetch("/api/health-check");
+      const res = await fetchWithTimeout("/api/health-check", undefined, 15_000);
       const data: HealthReport = await res.json();
       setReport(data);
       setLastCheckTime(new Date().toLocaleTimeString(lang === "ar" ? "ar-SA" : "tr-TR"));

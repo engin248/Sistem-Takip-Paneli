@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 // AGENT REGISTRY â€” 50 KÄ°ÅÄ°LÄ°K HÄ°BRÄ°T KADRO
 // ============================================================
 // 4 Komuta + 10 L1 Ä°craatÃ§Ä± + 6 L2 DenetÃ§i + 2 L3 Hakem
@@ -124,7 +124,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['veritabani_islemleri', 'guvenlik_denetimi'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['dosya_sistemi'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -135,7 +135,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['frontend_tasarim', 'guvenlik_denetimi'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['dosya_sistemi', 'supabase'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -146,7 +146,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['frontend_tasarim', 'ui_ux'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['supabase'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -157,7 +157,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['frontend_tasarim', 'veritabani_islemleri'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['telegramService', 'telegramNotifier'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -168,7 +168,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['karar_verme', 'dosya_silme', 'deployment'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['dosya_sistemi'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -179,7 +179,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['ui_ux', 'is_plani'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['authService', 'auditService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -190,7 +190,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['veritabani_degistirme', 'deployment', 'guvenlik_denetimi'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['aiManager', 'selfLearningEngine'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -201,7 +201,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['frontend_tasarim', 'karar_verme'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['supabase', 'bridgeService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -212,7 +212,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['frontend_tasarim', 'ui_ux'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['dosya_sistemi', 'auditService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -223,7 +223,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['frontend_tasarim', 'guvenlik_denetimi'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['auditService', 'alarmService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
 
@@ -239,7 +239,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['kod_yazma', 'dosya_olusturma', 'karar_verme'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['auditService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -250,7 +250,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['kod_yazma', 'dosya_olusturma'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['auditService', 'consensusEngine'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -261,7 +261,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['kod_yazma', 'deployment', 'karar_verme'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['auditService', 'alarmService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -272,7 +272,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['kod_yazma', 'ui_tasarim', 'is_plani'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['auditService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -283,7 +283,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['kod_yazma', 'frontend_tasarim', 'karar_verme'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['supabase', 'auditService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -294,7 +294,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['kod_yazma', 'veritabani_islemleri', 'karar_verme'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['auditService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
 
@@ -310,7 +310,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['kod_yazma', 'dosya_olusturma', 'is_plani'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['consensusEngine', 'auditService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -321,7 +321,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['kod_yazma', 'dosya_olusturma'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['consensusEngine', 'auditService', 'boardService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
 
@@ -337,7 +337,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['kod_yazma', 'is_plani', 'karar_verme'],
     ogrenme_kapasitesi: false,
     bagimliliklari: ['auditService', 'boardService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -348,7 +348,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['frontend_tasarim', 'guvenlik_denetimi'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['dosya_sistemi', 'git'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -359,7 +359,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['kod_yazma', 'veritabani_degistirme', 'terminal_komutu'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['bridgeService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -370,7 +370,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['kod_yazma', 'frontend_tasarim', 'karar_verme'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['bridgeService', 'auditService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -381,7 +381,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['kod_yazma', 'is_plani', 'frontend_tasarim'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['alarmService', 'telegramNotifier', 'auditService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -392,7 +392,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['kod_yazma', 'veritabani_islemleri', 'karar_verme'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['dosya_sistemi'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -403,7 +403,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['kod_yazma', 'frontend_tasarim', 'deployment'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['supabase', 'selfLearningEngine'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -414,7 +414,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['kod_yazma', 'veritabani_islemleri', 'karar_verme'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['telegramNotifier', 'auditService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -425,7 +425,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['kod_yazma', 'frontend_tasarim'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['supabase', 'bridgeService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -436,7 +436,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['kod_yazma', 'veritabani_islemleri'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['supabase', 'auditService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -447,7 +447,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['kod_yazma', 'veritabani_islemleri', 'karar_verme'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['dosya_sistemi'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -458,7 +458,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['frontend_tasarim', 'ui_ux', 'karar_verme'],
     ogrenme_kapasitesi: false,
     bagimliliklari: ['supabase', 'dosya_sistemi'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -469,7 +469,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['frontend_tasarim', 'is_plani', 'karar_verme'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['supabase'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -480,7 +480,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['is_plani', 'karar_verme', 'guvenlik_denetimi'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['auditService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -491,7 +491,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['frontend_tasarim', 'deployment', 'is_plani'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['auditService', 'selfLearningEngine'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -502,7 +502,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['kod_yazma', 'frontend_tasarim'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['auditService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -513,7 +513,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['karar_verme', 'veritabani_degistirme', 'guvenlik_denetimi'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['telegramNotifier', 'auditService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -524,7 +524,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['frontend_tasarim', 'veritabani_islemleri'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['auditService', 'consensusEngine'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -535,7 +535,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['kod_yazma', 'karar_verme', 'deployment'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['supabase', 'auditService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -546,7 +546,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['karar_verme', 'deployment', 'guvenlik_denetimi'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['dosya_sistemi'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -557,7 +557,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['frontend_tasarim', 'karar_verme', 'is_plani'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['auditService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -568,7 +568,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['kod_yazma', 'deployment', 'veritabani_islemleri'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['auditService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -579,7 +579,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['frontend_tasarim', 'is_plani'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['dosya_sistemi', 'auditService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -590,7 +590,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['karar_verme', 'deployment', 'guvenlik_denetimi'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['dosya_sistemi', 'bridgeService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -601,7 +601,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['frontend_tasarim', 'karar_verme'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['supabase'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -612,7 +612,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['kod_yazma', 'deployment', 'is_plani'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['auditService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -623,7 +623,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['kod_yazma', 'frontend_tasarim', 'karar_verme'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['auditService', 'alarmService'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
   {
@@ -634,7 +634,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
     kapsam_siniri: ['kod_yazma', 'deployment', 'veritabani_islemleri'],
     ogrenme_kapasitesi: true,
     bagimliliklari: ['dosya_sistemi'],
-    durum: 'pasif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
 ];

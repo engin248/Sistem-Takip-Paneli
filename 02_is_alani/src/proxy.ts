@@ -51,7 +51,7 @@ interface RateLimitEntry {
 const rateLimitMap = new Map<string, RateLimitEntry>();
 
 const RATE_LIMIT_WINDOW_MS    = 60_000; // 1 dakika
-const RATE_LIMIT_MAX_REQUESTS = 60;     // Dakikada 60 istek
+const RATE_LIMIT_MAX_REQUESTS = 300;    // Dakikada 300 istek (dashboard ~5 panel polling)
 const CLEANUP_THRESHOLD       = 500;    // 500+ kayıtta otomatik temizlik
 
 function isRateLimited(ip: string): boolean {
@@ -80,6 +80,7 @@ const ALLOWED_ORIGINS = [
   'http://localhost:3001',
   'http://127.0.0.1:3000',
   'http://127.0.0.1:3001',
+  'http://127.0.0.1',
   process.env.NEXT_PUBLIC_APP_URL,
 ].filter(Boolean) as string[];
 
@@ -148,12 +149,26 @@ export function proxy(request: NextRequest) {
   }
 
   // ── 4. ORİGİN KONTROLÜ (CSRF benzeri) ─────────────────────
+  // Mutasyon isteklerinde (POST/PUT/DELETE) origin ZORUNLU kontrol edilir.
+  // Origin veya referer yoksa → localhost guard zaten ALLOWED_HOSTS ile
+  // host bazlı koruma sağlıyor, ancak origin header'ı olmayan non-GET
+  // istekler yalnızca dev modda geçer.
   if (request.method !== 'GET') {
     const origin  = request.headers.get('origin');
     const referer = request.headers.get('referer');
     const source  = origin || referer;
 
-    if (source) {
+    if (!source) {
+      // Origin/Referer yok — yalnızca server-side (SSR) veya localhost
+      // fetch'lerinde olur. Host kontrolü zaten yapıldı (step 1).
+      // Production'da bunu sıkılaştırmak gerekebilir.
+      if (process.env.NODE_ENV === 'production') {
+        return NextResponse.json(
+          { success: false, error: 'CSRF: Origin header eksik.' },
+          { status: 403 }
+        );
+      }
+    } else {
       const isAllowed = ALLOWED_ORIGINS.some(allowed => source.startsWith(allowed));
       if (!isAllowed) {
         return NextResponse.json(

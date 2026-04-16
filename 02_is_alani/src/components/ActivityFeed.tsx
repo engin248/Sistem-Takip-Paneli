@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from 'react';
+import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
 
 // ============================================================
 // ACTIVITY FEED — AJAN AKTİVİTE AKIŞI
@@ -48,13 +49,20 @@ export default function ActivityFeed() {
   const [loading,  setLoading]  = useState(true);
   const [expanded, setExpanded] = useState<string | null>(null);
 
+  const [error,    setError]    = useState<string | null>(null);
+
   const fetch_ = useCallback(async () => {
     try {
-      const res  = await fetch('/api/queue');
+      const res  = await fetchWithTimeout('/api/queue', undefined, 10_000);
       const data = await res.json() as { jobs: QueueJob[]; stats: QueueStats };
       if (data.jobs)  setJobs(data.jobs);
       if (data.stats) setStats(data.stats);
-    } catch { /* sessiz hata */ }
+      setError(null);
+    } catch (err) {
+      setError(err instanceof DOMException && err.name === 'AbortError'
+        ? 'Bağlantı zaman aşımı (10s)'
+        : 'Sunucu bağlantısı yok');
+    }
     finally  { setLoading(false); }
   }, []);
 
@@ -75,6 +83,14 @@ export default function ActivityFeed() {
     <div style={{ display:'flex', alignItems:'center', gap:8, padding:'20px 0', justifyContent:'center' }}>
       <div style={{ width:6, height:6, borderRadius:'50%', background:'#06b6d4', animation:'pulse 1.5s infinite' }} />
       <span style={{ color:'#06b6d4', fontSize:10, fontFamily:'monospace', letterSpacing:'0.3em' }}>AKTİVİTE AKIŞI YÜKLENİYOR...</span>
+    </div>
+  );
+
+  if (error) return (
+    <div style={{ display:'flex', alignItems:'center', gap:8, padding:'20px 0', justifyContent:'center' }}>
+      <div style={{ width:6, height:6, borderRadius:'50%', background:'#f87171' }} />
+      <span style={{ color:'#f87171', fontSize:10, fontFamily:'monospace' }}>{error}</span>
+      <button onClick={() => void fetch_()} style={{ color:'#06b6d4', fontSize:9, fontFamily:'monospace', background:'none', border:'none', cursor:'pointer', textDecoration:'underline' }}>TEKRAR DENE</button>
     </div>
   );
 

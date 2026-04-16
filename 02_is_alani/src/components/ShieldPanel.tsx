@@ -42,19 +42,33 @@ export default function ShieldPanel() {
   const [resetting, setResetting] = useState(false);
 
   const fetchAll = useCallback(async () => {
-    const [cbRes, auditRes, verRes] = await Promise.all([
-      fetch('/api/circuit-breaker'),
-      fetch('/api/audit-chain?n=15'),
-      fetch('/api/audit-chain?action=verify'),
-    ]);
-    const [cbData, auditData, verData] = await Promise.all([
-      cbRes.json() as Promise<CBDurum & { success: boolean }>,
-      auditRes.json() as Promise<{ kayitlar: AuditEntry[] }>,
-      verRes.json() as Promise<VerifyResult>,
-    ]);
-    if (cbData) setCb(cbData);
-    if (auditData?.kayitlar) setEntries(auditData.kayitlar);
-    if (verData?.durum) setVerify(verData);
+    try {
+      const [cbRes, auditRes, verRes] = await Promise.all([
+        fetch('/api/circuit-breaker'),
+        fetch('/api/audit-chain?n=15'),
+        fetch('/api/audit-chain?action=verify'),
+      ]);
+
+      // Defensive: Her response ayrı ayrı kontrol edilir
+      if (cbRes.ok) {
+        const cbData = await cbRes.json().catch(() => null);
+        if (cbData && typeof cbData === 'object') setCb(cbData);
+      }
+
+      if (auditRes.ok) {
+        const auditData = await auditRes.json().catch(() => null);
+        if (auditData?.kayitlar && Array.isArray(auditData.kayitlar)) {
+          setEntries(auditData.kayitlar);
+        }
+      }
+
+      if (verRes.ok) {
+        const verData = await verRes.json().catch(() => null);
+        if (verData?.durum) setVerify(verData);
+      }
+    } catch {
+      // Ağ hatası — mevcut state korunur, sessiz fail
+    }
   }, []);
 
   useEffect(() => {

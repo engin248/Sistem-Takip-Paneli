@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { agentRegistry, type AgentCard } from './agentRegistry';
 
 // ============================================================
@@ -49,14 +49,14 @@ describe('AgentRegistry', () => {
       expect(agentRegistry.getByKatman('DESTEK').length).toBe(28);
     });
 
-    it('duruma gÃ¶re filtreler â€” 4 aktif (KOMUTA)', () => {
+    it('duruma göre filtreler — 50 aktif (tam kadro)', () => {
       const aktif = agentRegistry.getByDurum('aktif');
-      expect(aktif.length).toBe(4);
+      expect(aktif.length).toBe(50);
     });
 
-    it('duruma gÃ¶re filtreler â€” 46 pasif (standby)', () => {
+    it('duruma göre filtreler — 0 pasif (tam kadro aktif)', () => {
       const pasif = agentRegistry.getByDurum('pasif');
-      expect(pasif.length).toBe(46);
+      expect(pasif.length).toBe(0);
     });
 
     it('beceriye gÃ¶re arar â€” react bulunur (durum filtresi yok)', () => {

@@ -5,6 +5,7 @@
 // /api/jobs endpointinden canlı veri çeker
 
 import { useState, useEffect, useCallback } from 'react';
+import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
 
 interface QueueJob {
   job_id       : string;
@@ -62,12 +63,18 @@ export default function JobMonitorPanel() {
   const [loading, setLoading] = useState(true);
   const [tick,    setTick]    = useState(0);
 
+  const [error,   setError]   = useState<string | null>(null);
+
   const fetchJobs = useCallback(async () => {
     try {
-      const res  = await fetch('/api/jobs');
+      const res  = await fetchWithTimeout('/api/jobs', undefined, 10_000);
       const data = await res.json() as { success: boolean; jobs: QueueJob[]; stats: QueueStats };
-      if (data.success) { setJobs(data.jobs); setStats(data.stats); }
-    } catch { /* sessiz */ } finally { setLoading(false); }
+      if (data.success) { setJobs(data.jobs); setStats(data.stats); setError(null); }
+    } catch (err) {
+      setError(err instanceof DOMException && err.name === 'AbortError'
+        ? 'Bağlantı zaman aşımı (10s)'
+        : 'Sunucu bağlantısı yok');
+    } finally { setLoading(false); }
   }, []);
 
   useEffect(() => {
@@ -84,6 +91,14 @@ export default function JobMonitorPanel() {
     <div className="flex items-center gap-2 justify-center py-10">
       <div className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
       <span className="text-[9px] font-mono text-indigo-400 tracking-[0.2em]">JOB MONITOR YÜKLENİYOR...</span>
+    </div>
+  );
+
+  if (error) return (
+    <div className="flex items-center gap-2 py-6 justify-center">
+      <div className="w-2 h-2 rounded-full bg-red-400" />
+      <span className="text-[10px] font-mono text-red-400">{error}</span>
+      <button onClick={() => void fetchJobs()} className="text-[9px] font-bold text-cyan-400 underline ml-2 hover:text-cyan-300">TEKRAR DENE</button>
     </div>
   );
 

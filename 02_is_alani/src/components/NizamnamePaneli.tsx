@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
 
 // SCR-15 NİZAMNAME PANELİ — gerçek agentRules şemasına uygun
 // Alan: no | kategori | ihlal | kaynak | kural | aciklama
@@ -42,12 +43,21 @@ export default function NizamnamePaneli() {
   const [aramaMetni,  setAramaMetni]  = useState('');
   const [loading,     setLoading]     = useState(true);
 
-  useEffect(() => {
-    fetch('/api/rules')
+  const [error,      setError]      = useState<string | null>(null);
+
+  const fetchRules = () => {
+    fetchWithTimeout('/api/rules', undefined, 10_000)
       .then(r => r.json() as Promise<RulesData>)
-      .then(d => { setData(d); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, []);
+      .then(d => { setData(d); setLoading(false); setError(null); })
+      .catch((err) => {
+        setError(err instanceof DOMException && err.name === 'AbortError'
+          ? 'Bağlantı zaman aşımı (10s)'
+          : 'Kurallar yüklenemedi');
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => { fetchRules(); }, []);
 
   if (loading) return (
     <div className="flex items-center gap-2 py-8 justify-center">
@@ -55,12 +65,24 @@ export default function NizamnamePaneli() {
       <span className="text-[9px] font-mono text-purple-400 tracking-[0.2em]">NİZAMNAME YÜKLENİYOR...</span>
     </div>
   );
+  if (error) return (
+    <div className="flex items-center gap-2 py-6 justify-center">
+      <div className="w-2 h-2 rounded-full bg-red-400" />
+      <span className="text-[10px] font-mono text-red-400">{error}</span>
+      <button onClick={fetchRules} className="text-[9px] font-bold text-cyan-400 underline ml-2 hover:text-cyan-300">TEKRAR DENE</button>
+    </div>
+  );
   if (!data) return <div className="text-red-400 text-xs font-mono py-4">❌ Kurallar yüklenemedi</div>;
 
+  // Defensive: API'den gelen alt objeler null/undefined olabilir
+  const evrensel      = data.evrensel      ?? { adet: 0, kurallar: [] };
+  const katman_kurali = data.katman_kurali  ?? { adet: 0, kurallar: [] };
+  const calisma       = data.calisma        ?? { adet: 0, kurallar: [] };
+
   const tumKurallar: Kural[] = [
-    ...(data.evrensel?.kurallar ?? []),
-    ...(data.katman_kurali?.kurallar ?? []),
-    ...(data.calisma?.kurallar ?? []),
+    ...(evrensel.kurallar      ?? []),
+    ...(katman_kurali.kurallar ?? []),
+    ...(calisma.kurallar       ?? []),
   ];
 
   // Benzersiz kategoriler
@@ -92,10 +114,10 @@ export default function NizamnamePaneli() {
         </div>
         <div className="ml-auto flex gap-2 flex-wrap">
           {[
-            { l: 'TOPLAM',   v: data.toplam_kural,      c: 'text-cyan-400'   },
-            { l: 'EVRENSEL', v: data.evrensel.adet,      c: 'text-red-400'    },
-            { l: 'KATMAN',   v: data.katman_kurali.adet, c: 'text-amber-400'  },
-            { l: 'ÇALIŞMA',  v: data.calisma.adet,       c: 'text-blue-400'   },
+            { l: 'TOPLAM',   v: data.toplam_kural ?? 0,  c: 'text-cyan-400'   },
+            { l: 'EVRENSEL', v: evrensel.adet,           c: 'text-red-400'    },
+            { l: 'KATMAN',   v: katman_kurali.adet,      c: 'text-amber-400'  },
+            { l: 'ÇALIŞMA',  v: calisma.adet,            c: 'text-blue-400'   },
           ].map(s => (
             <div key={s.l} className="rounded-lg border border-slate-700/30 bg-slate-900/50 px-3 py-1.5 text-center min-w-[52px]">
               <div className={`text-base font-black font-mono ${s.c}`}>{s.v}</div>

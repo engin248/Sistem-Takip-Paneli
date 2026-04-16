@@ -64,7 +64,7 @@ function getDefaultConfig(): AIProviderConfig {
     openaiApiKey: process.env.OPENAI_API_KEY || '',
     openaiModel: process.env.OPENAI_MODEL || 'gpt-4o-mini',
     forceDisableOllama: process.env.FORCE_DISABLE_OLLAMA === 'true',
-    forceDisableOpenAI: process.env.FORCE_DISABLE_OPENAI === 'true',
+    forceDisableOpenAI: process.env.FORCE_DISABLE_OPENAI !== 'false', // Varsayılan: KAPALI (maliyet sıfır)
     timeoutMs: parseInt(process.env.AI_TIMEOUT_MS || '15000', 10),
   };
 }

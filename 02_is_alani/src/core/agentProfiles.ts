@@ -12,6 +12,14 @@
 
 export type AracSet = 'dosyaOku' | 'dosyaYaz' | 'dizinListele' | 'webAra' | 'ragSorgula' | 'apiCagir';
 
+// ─── ÇALIŞMA MODLARI ────────────────────────────────────────
+// ai            → Ollama/OpenAI üzerinden akıl yürütme (strateji, analiz, kod)
+// kural_tabanli → Deterministik mantık, sıfır AI maliyeti (güvenlik, hash, monitoring)
+// hibrit        → Önce AI dener, başarısız olursa kurala düşer
+export type CalismaModu = 'ai' | 'kural_tabanli' | 'hibrit';
+
+export type AjanAIProvider = 'ollama' | 'openai' | 'local' | 'auto';
+
 export interface AjanProfil {
   id               : string;
   sistem_prompt    : string;         // Kısa, hedefe odaklı
@@ -19,6 +27,8 @@ export interface AjanProfil {
   cikti_format     : string;         // Beklenen çıktı formatı
   max_iterasyon    : number;         // Bu ajana özel max iterasyon
   oncelikli_kelimeler: string[];     // Görev eşleştirme için
+  calisma_modu     : CalismaModu;    // AI, kural tabanlı veya hibrit
+  ai_provider     ?: AjanAIProvider; // Hangi AI sağlayıcı (varsayılan: ollama)
 }
 
 // ════════════════════════════════════════════════════════════
@@ -39,6 +49,8 @@ YASAK: kod yaz, dosya değiştir, veritabanı işlemi.
     cikti_format    : 'DURUM → HEDEF_AJAN → GEREKÇE → ÖNCELİK',
     max_iterasyon   : 2,
     oncelikli_kelimeler: ['strateji', 'plan', 'onay', 'red', 'kriz', 'yönlendir', 'görev ver'],
+    calisma_modu    : 'ai',
+    ai_provider     : 'ollama',
   },
   {
     id: 'K-2',
@@ -54,6 +66,8 @@ YASAK: kod yaz, bağımsız icra.
     cikti_format    : 'PLAN_ID → ADIMLAR → BAĞIMLILIK → RİSK',
     max_iterasyon   : 3,
     oncelikli_kelimeler: ['plan', 'adım', 'organize', 'koordine', 'strateji'],
+    calisma_modu    : 'ai',
+    ai_provider     : 'ollama',
   },
   {
     id: 'K-3',
@@ -69,6 +83,8 @@ YASAK: aksiyon al, kod değiştir.
     cikti_format    : 'SİSTEM_DURUMU → BULGULAR → TEHDİTLER → ÖNERİ',
     max_iterasyon   : 3,
     oncelikli_kelimeler: ['analiz', 'durum', 'izle', 'rapor', 'tespit', 'istihbarat'],
+    calisma_modu    : 'hibrit',
+    ai_provider     : 'auto',
   },
   {
     id: 'K-4',
@@ -84,6 +100,8 @@ YASAK: aksiyon al, veri değiştir.
     cikti_format    : 'GÜVENLİK_SEVİYESİ → İHLALLER → DOĞRULAMALAR → EYLEM',
     max_iterasyon   : 3,
     oncelikli_kelimeler: ['güvenlik', 'yetkisiz', 'erişim', 'ihlal', 'RLS', 'şifre', 'güvenli'],
+    calisma_modu    : 'kural_tabanli',
+    ai_provider     : 'local',
   },
 ];
 
@@ -106,6 +124,8 @@ KOD STANDARDI: 'use client' varsa ekle, tip tanımla, export default kullan.
     cikti_format    : 'DOSYA → DEĞİŞİKLİK → KOD → TEST',
     max_iterasyon   : 5,
     oncelikli_kelimeler: ['component', 'bileşen', 'frontend', 'react', 'ui', 'sayfa', 'ekran', 'tasarım'],
+    calisma_modu    : 'ai',
+    ai_provider     : 'ollama',
   },
   {
     id: 'A-02',
@@ -122,6 +142,8 @@ KOD STANDARDI: export const dynamic = 'force-dynamic', tip güvenli, hata yakala
     cikti_format    : 'ENDPOINT → MANTIK → KOD → TEST',
     max_iterasyon   : 5,
     oncelikli_kelimeler: ['api', 'route', 'endpoint', 'backend', 'servis', 'middleware', 'post', 'get'],
+    calisma_modu    : 'ai',
+    ai_provider     : 'ollama',
   },
   {
     id: 'A-03',
@@ -138,6 +160,8 @@ KURAL: Veri silme sorgusu önce WHERE koşulunu doğrula. RLS her tabloda zorunl
     cikti_format    : 'TABLO → İŞLEM → SQL → RLS_KONTROLÜ',
     max_iterasyon   : 4,
     oncelikli_kelimeler: ['veritabanı', 'sql', 'tablo', 'supabase', 'migration', 'rls', 'sorgu', 'postgresql'],
+    calisma_modu    : 'hibrit',
+    ai_provider     : 'auto',
   },
   {
     id: 'A-04',
@@ -153,6 +177,8 @@ ARAÇ: dosyaOku (mevcut bot kodu) → dosyaYaz (komut ekle/güncelle) → apiCag
     cikti_format    : 'KOMUT → HANDLER → KOD → TEST',
     max_iterasyon   : 4,
     oncelikli_kelimeler: ['telegram', 'bot', 'komut', 'bildirim', 'mesaj', 'webhook', 'chat'],
+    calisma_modu    : 'hibrit',
+    ai_provider     : 'auto',
   },
   {
     id: 'A-05',
@@ -169,6 +195,8 @@ FORMAT: describe/it/expect yapısı, her test bağımsız, mock temiz.
     cikti_format    : 'TEST_DOSYASI → KAPSAM → KOD → SONUÇ',
     max_iterasyon   : 4,
     oncelikli_kelimeler: ['test', 'vitest', 'jest', 'birim', 'doğrula', 'coverage', 'mock'],
+    calisma_modu    : 'kural_tabanli',
+    ai_provider     : 'local',
   },
   {
     id: 'A-06',
@@ -185,6 +213,8 @@ KURAL: Kritik dosyaları düzenlemeden önce yedeğini dosyaOku ile kaydet.
     cikti_format    : 'AÇIK → RİSK → YAMA → DOĞRULAMA',
     max_iterasyon   : 4,
     oncelikli_kelimeler: ['güvenlik', 'açık', 'rls', 'auth', 'jwt', 'sanitize', 'rate limit', 'ihlal'],
+    calisma_modu    : 'kural_tabanli',
+    ai_provider     : 'local',
   },
   {
     id: 'A-07',
@@ -200,6 +230,8 @@ ARAÇ: apiCagir (Ollama API) → dosyaOku (AI entegrasyon kodu) → dosyaYaz (pr
     cikti_format    : 'MODEL → PROMPT → KOD → PERFORMANS',
     max_iterasyon   : 4,
     oncelikli_kelimeler: ['ai', 'ollama', 'model', 'prompt', 'llm', 'yapay zeka', 'token'],
+    calisma_modu    : 'ai',
+    ai_provider     : 'ollama',
   },
   {
     id: 'A-08',
@@ -215,6 +247,8 @@ ARAÇ: dosyaOku (veriyi oku) → apiCagir (veri çek) → dosyaYaz (işlenmiş v
     cikti_format    : 'VERİ_KAYNAĞI → DÖNÜŞÜM → ÇIKTI → FORMAT',
     max_iterasyon   : 4,
     oncelikli_kelimeler: ['veri', 'data', 'rapor', 'analiz', 'dönüşüm', 'format', 'csv', 'json'],
+    calisma_modu    : 'hibrit',
+    ai_provider     : 'auto',
   },
   {
     id: 'A-09',
@@ -231,6 +265,8 @@ KURAL: .env.local'e asla hassas veri yazma — sadece referans key.
     cikti_format    : 'DOSYA → DEĞİŞİKLİK → GEREKÇE → TEST',
     max_iterasyon   : 3,
     oncelikli_kelimeler: ['config', 'env', 'deployment', 'vercel', 'build', 'altyapı', 'cache', 'performans'],
+    calisma_modu    : 'kural_tabanli',
+    ai_provider     : 'local',
   },
   {
     id: 'A-10',
@@ -246,6 +282,8 @@ ARAÇ: dosyaOku (mevcut akışı gör) → dosyaYaz (akış kodu) → apiCagir (
     cikti_format    : 'AKIŞ → TETİKLEYİCİ → KOD → İZLEME',
     max_iterasyon   : 4,
     oncelikli_kelimeler: ['akış', 'cron', 'scheduler', 'pipeline', 'otomasyon', 'event', 'tetikle'],
+    calisma_modu    : 'kural_tabanli',
+    ai_provider     : 'local',
   },
 ];
 
@@ -273,6 +311,8 @@ YASAK: Kod değiştir, bağımsız aksiyon al.
     cikti_format    : 'GENEL → 5_EKSEN → ÖNERİ',
     max_iterasyon   : 3,
     oncelikli_kelimeler: ['denetle', 'incele', 'kontrol', 'kod inceleme', 'review'],
+    calisma_modu    : 'ai',
+    ai_provider     : 'ollama',
   },
   {
     id: 'B-02',
@@ -288,6 +328,8 @@ YASAK: Kod değiştir.
     cikti_format    : 'DOĞRULAMA → TEST_SONUÇLARI → KANIT → BLOK',
     max_iterasyon   : 3,
     oncelikli_kelimeler: ['doğrula', 'test et', 'çalışıyor mu', 'kontrol et', 'verify'],
+    calisma_modu    : 'hibrit',
+    ai_provider     : 'auto',
   },
   {
     id: 'B-03',
@@ -303,6 +345,8 @@ YASAK: Kod değiştir, güvenlik açığını kapat.
     cikti_format    : 'GÜVENLİK_SKORU → AÇIKLAR → KRİTİK → ÖNERİ',
     max_iterasyon   : 3,
     oncelikli_kelimeler: ['güvenlik denetim', 'owasp', 'xss', 'injection', 'kvkk', 'rls denetle'],
+    calisma_modu    : 'kural_tabanli',
+    ai_provider     : 'local',
   },
   {
     id: 'B-04',
@@ -318,6 +362,8 @@ YASAK: Kod değiştir.
     cikti_format    : 'PERFORMANS_SKORU → METRİKLER → DARBOĞAZLAR → İYİLEŞTİRME',
     max_iterasyon   : 3,
     oncelikli_kelimeler: ['performans', 'hız', 'yavaş', 'optimize', 'benchmark', 'bundle'],
+    calisma_modu    : 'kural_tabanli',
+    ai_provider     : 'local',
   },
   {
     id: 'B-05',
@@ -333,6 +379,8 @@ YASAK: Veri değiştir.
     cikti_format    : 'VERİ_KALİTESİ → SORUNLAR → ETKİLENEN_KAYIT → ÇÖZÜM',
     max_iterasyon   : 3,
     oncelikli_kelimeler: ['veri kalite', 'bütünlük', 'duplicate', 'null', 'tip kontrolü'],
+    calisma_modu    : 'kural_tabanli',
+    ai_provider     : 'local',
   },
   {
     id: 'B-06',
@@ -348,6 +396,8 @@ YASAK: Kod değiştir.
     cikti_format    : 'UX_SKORU → ERİŞİLEBİLİRLİK → MOBİL → İYİLEŞTİRME',
     max_iterasyon   : 2,
     oncelikli_kelimeler: ['ux', 'ui', 'erişilebilirlik', 'mobil', 'kullanıcı deneyimi'],
+    calisma_modu    : 'hibrit',
+    ai_provider     : 'auto',
   },
 ];
 
@@ -369,6 +419,8 @@ KARAR FORMAT:
     cikti_format    : 'ÇELİŞKİ → KANIT → NİHAİ_KARAR → GEREKÇE',
     max_iterasyon   : 2,
     oncelikli_kelimeler: ['hakem', 'çelişki', 'karar', 'itiraz', 'konsensüs'],
+    calisma_modu    : 'ai',
+    ai_provider     : 'ollama',
   },
   {
     id: 'C-02',
@@ -384,6 +436,8 @@ KARAR FORMAT:
     cikti_format    : 'MİMARİ_ETKİ → TEKNİK_BORÇ → NİHAİ_KARAR → GEREKÇE',
     max_iterasyon   : 2,
     oncelikli_kelimeler: ['mimari', 'teknik borç', 'tasarım kararı', 'yapısal'],
+    calisma_modu    : 'ai',
+    ai_provider     : 'ollama',
   },
 ];
 
@@ -400,6 +454,8 @@ YETKİN: SHA256_imzalama, audit_zincir, bütünlük_doğrulama, mühürleme.
     cikti_format    : 'HASH → ZİNCİR_DURUM → BÜTÜNLÜK → MÜHÜR',
     max_iterasyon   : 2,
     oncelikli_kelimeler: ['sha256', 'mühür', 'hash', 'audit', 'imzala', 'doğrula'],
+    ai_provider     : 'local',
+    calisma_modu    : 'kural_tabanli',
   },
   {
     id: 'D-02',
@@ -410,6 +466,8 @@ YETKİN: cron, webhook, event_trigger, batch_işlem.
     cikti_format    : 'GÖREV → TETİKLEYİCİ → KOD → ZAMANLAMA',
     max_iterasyon   : 3,
     oncelikli_kelimeler: ['otomasyon', 'otomatik', 'cron', 'zamanlama', 'periyodik'],
+    calisma_modu    : 'kural_tabanli',
+    ai_provider     : 'local',
   },
   {
     id: 'D-09',
@@ -420,6 +478,8 @@ YETKİN: veri_analiz, trend_tespiti, KPI_hesaplama, tahminleme, karar_desteği.
     cikti_format    : 'VERİ_ÖZET → TREND → KPI → ÖNERİ',
     max_iterasyon   : 3,
     oncelikli_kelimeler: ['analiz', 'trend', 'istatistik', 'kpi', 'veri analizi', 'tahmin'],
+    calisma_modu    : 'ai',
+    ai_provider     : 'ollama',
   },
   {
     id: 'D-10',
@@ -430,6 +490,8 @@ YETKİN: proje_planlama, timeline, önceliklendirme, kaynak_tahsis.
     cikti_format    : 'HEDEF → ADIMLAR → TAKVİM → KAYNAK',
     max_iterasyon   : 2,
     oncelikli_kelimeler: ['plan', 'timeline', 'proje', 'takvim', 'milestone', 'öncelik'],
+    calisma_modu    : 'hibrit',
+    ai_provider     : 'auto',
   },
 ];
 
@@ -464,6 +526,16 @@ export function getAjanSistemPrompt(id: string): string | null {
 /** Ajan için max iterasyon sayısı */
 export function getMaxIterasyon(id: string): number {
   return getAjanProfil(id)?.max_iterasyon ?? 5;
+}
+
+/** Ajan çalışma modunu döndür */
+export function getCalismaModu(id: string): CalismaModu {
+  return getAjanProfil(id)?.calisma_modu ?? 'hibrit';
+}
+
+/** Ajan AI sağlayıcısını döndür */
+export function getAjanAIProvider(id: string): AjanAIProvider {
+  return getAjanProfil(id)?.ai_provider ?? 'auto';
 }
 
 /** Toplam profilli ajan sayısı */
