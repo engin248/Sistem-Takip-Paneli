@@ -1,183 +1,141 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from 'react';
+// ============================================================
+// NizamnamePaneli — SCR-15
+// SISTEM_KURALLARI.md kaynaklı 54 kural, canlı gösterim
+// ============================================================
 
-// SCR-15 NİZAMNAME PANELİ — Ajan Kural Sistemi Görüntüleyici
-// /api/rules endpointinden canlı kuralları çeker
+import { useEffect, useState } from 'react';
 
 interface Kural {
-  id         : string;
-  bolum      : string;
-  madde      : number;
-  baslik     : string;
-  aciklama   : string;
-  seviye     : 'MUTLAK' | 'ZORUNLU' | 'ONERILIR';
-  ihlal_sonucu?: string;
+  no        : string;
+  kategori  : string;
+  kural     : string;
+  aciklama  : string;
+  ihlal     : 'IPTAL' | 'UYARI' | 'DUR';
+  kaynak   ?: string;
 }
 
-interface RulesData {
+interface RulesApiResponse {
   success      : boolean;
   toplam_kural : number;
   evrensel     : { adet: number; kurallar: Kural[] };
   katman_kurali: { adet: number; kurallar: Kural[] };
   calisma      : { adet: number; kurallar: Kural[] };
-  katmanlar    : string[];
 }
 
-const SEVIYE_CFG = {
-  MUTLAK   : { color: 'text-red-400',    border: 'border-red-500/30',    bg: 'bg-red-500/10',    dot: 'bg-red-400'    },
-  ZORUNLU  : { color: 'text-amber-400',  border: 'border-amber-500/30',  bg: 'bg-amber-500/10',  dot: 'bg-amber-400'  },
-  ONERILIR : { color: 'text-blue-400',   border: 'border-blue-500/30',   bg: 'bg-blue-500/10',   dot: 'bg-blue-400'   },
+const IHLAL_RENK: Record<string, string> = {
+  IPTAL: 'text-red-400 bg-red-500/10 border-red-500/30',
+  DUR  : 'text-amber-400 bg-amber-500/10 border-amber-500/30',
+  UYARI: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30',
+};
+const IHLAL_ICON: Record<string, string> = {
+  IPTAL: '🚫',
+  DUR  : '⏸',
+  UYARI: '⚠',
 };
 
 export default function NizamnamePaneli() {
-  const [data,        setData]        = useState<RulesData | null>(null);
-  const [aktifKatman, setAktifKatman] = useState<string>('TUMU');
-  const [aramaMetni,  setAramaMetni]  = useState('');
-  const [loading,     setLoading]     = useState(true);
+  const [data, setData]     = useState<RulesApiResponse | null>(null);
+  const [aktifKat, setAktif] = useState<string>('evrensel');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch('/api/rules')
-      .then(r => r.json() as Promise<RulesData>)
-      .then(d => { setData(d); setLoading(false); })
+      .then(r => r.json())
+      .then((d: RulesApiResponse) => { setData(d); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
 
   if (loading) return (
-    <div className="flex items-center gap-2 py-8 justify-center">
-      <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-      <span className="text-[9px] font-mono text-cyan-400 tracking-[0.2em]">NİZAMNAME YÜKLENİYOR...</span>
+    <div className="flex items-center gap-2 text-purple-400 text-[9px] font-mono">
+      <span className="animate-pulse">◈</span> YÜKLÜYOR...
     </div>
   );
 
   if (!data) return (
-    <div className="text-red-400 text-xs font-mono py-4">❌ Kurallar yüklenemedi</div>
+    <div className="text-red-400 text-[9px] font-mono">⚠ Kural verisi alınamadı</div>
   );
 
-  // Tüm kuralları birleştir
-  const tumKurallar: Kural[] = [
-    ...data.evrensel.kurallar,
-    ...data.katman_kurali.kurallar,
-    ...data.calisma.kurallar,
-  ];
+  const katmanlar: Record<string, { label: string; kurallar: Kural[] }> = {
+    evrensel: { label: 'TEMEL',   kurallar: data.evrensel?.kurallar ?? [] },
+    katman  : { label: 'KATMAN',  kurallar: data.katman_kurali?.kurallar ?? [] },
+    calisma : { label: 'ÇALIŞMA', kurallar: data.calisma?.kurallar ?? [] },
+  };
 
-  // Filtrele
-  const filtreliKurallar = tumKurallar.filter(k => {
-    const katmanEsles = aktifKatman === 'TUMU' || k.bolum.includes(aktifKatman);
-    const aramaEsles  = !aramaMetni ||
-      k.baslik.toLowerCase().includes(aramaMetni.toLowerCase()) ||
-      k.aciklama.toLowerCase().includes(aramaMetni.toLowerCase());
-    return katmanEsles && aramaEsles;
-  });
-
-  // Bölümlere grupla
-  const bolumler = [...new Set(filtreliKurallar.map(k => k.bolum))];
+  const aktifKurallar = katmanlar[aktifKat]?.kurallar ?? [];
 
   return (
-    <div className="space-y-4">
-
-      {/* ── Başlık + İstatistik ───────────────────────────────── */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-xl">📜</span>
-          <div>
-            <div className="text-[10px] font-black tracking-[0.2em] uppercase text-purple-400">NİZAMNAME</div>
-            <div className="text-[8px] font-mono text-slate-500">Ajan Disiplin Kural Sistemi</div>
+    <div className="space-y-3">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="text-[8px] font-mono text-purple-400 tracking-widest">KAYNAK: SISTEM_KURALLARI.md</div>
+          <div className="text-[10px] font-black text-slate-300 tracking-wider">
+            {data.toplam_kural} KURAL AKTİF
           </div>
         </div>
-        <div className="ml-auto flex gap-2 flex-wrap">
+        <div className="flex gap-1">
           {[
-            { l: 'TOPLAM',  v: data.toplam_kural,          c: 'text-cyan-400'   },
-            { l: 'EVRENSEL',v: data.evrensel.adet,          c: 'text-red-400'    },
-            { l: 'KATMAN',  v: data.katman_kurali.adet,     c: 'text-amber-400'  },
-            { l: 'ÇALIŞMA', v: data.calisma.adet,           c: 'text-blue-400'   },
-          ].map(s => (
-            <div key={s.l} className="rounded-lg border border-slate-700/30 bg-slate-900/50 px-3 py-1.5 text-center">
-              <div className={`text-lg font-black font-mono ${s.c}`}>{s.v}</div>
-              <div className="text-[8px] text-slate-500 tracking-wider">{s.l}</div>
-            </div>
+            { key: 'IPTAL', label: '🚫' },
+            { key: 'DUR',   label: '⏸' },
+            { key: 'UYARI', label: '⚠' },
+          ].map(b => (
+            <span key={b.key} className={`text-[8px] px-2 py-0.5 rounded border ${IHLAL_RENK[b.key]} font-mono`}>
+              {b.label} {b.key}
+            </span>
           ))}
         </div>
       </div>
 
-      {/* ── Arama + Katman Filtresi ───────────────────────────── */}
-      <div className="flex flex-wrap gap-2">
-        <input
-          type="text"
-          placeholder="Kural ara..."
-          value={aramaMetni}
-          onChange={e => setAramaMetni(e.target.value)}
-          className="bg-slate-900/50 border border-slate-700/30 rounded-lg px-3 py-1.5 text-[10px] font-mono text-slate-300 placeholder-slate-600 outline-none focus:border-purple-500/50 flex-1 min-w-[140px]"
-        />
-        {['TUMU', 'TEMEL', 'ANALİZ', 'GÜVENLİK', 'TUTANAK', 'HATA', 'GIT', 'KATMAN', 'ÇALIŞMA'].map(k => (
+      {/* Kategori tabs */}
+      <div className="flex gap-1 flex-wrap">
+        {Object.entries(katmanlar).map(([key, val]) => (
           <button
-            key={k}
-            onClick={() => setAktifKatman(k)}
-            className={`text-[9px] font-black tracking-[0.1em] px-3 py-1.5 rounded-lg border transition-all ${
-              aktifKatman === k
-                ? 'bg-purple-500/20 border-purple-500/40 text-purple-400'
-                : 'bg-slate-900/30 border-slate-700/20 text-slate-500 hover:border-slate-600/40'
+            key={key}
+            onClick={() => setAktif(key)}
+            className={`text-[8px] font-black px-3 py-1.5 rounded-lg border tracking-widest transition-all ${
+              aktifKat === key
+                ? 'bg-purple-500/20 text-purple-300 border-purple-500/50'
+                : 'bg-slate-800/50 text-slate-500 border-slate-700/30 hover:text-slate-300'
             }`}
           >
-            {k}
+            {val.label} ({val.kurallar.length})
           </button>
         ))}
       </div>
 
-      {/* ── Kural Listesi ────────────────────────────────────── */}
-      <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
-        {filtreliKurallar.length === 0 && (
-          <div className="text-slate-600 text-xs font-mono italic text-center py-8">Eşleşen kural bulunamadı.</div>
-        )}
-
-        {bolumler.map(bolum => {
-          const bolumKurallari = filtreliKurallar.filter(k => k.bolum === bolum);
-          return (
-            <div key={bolum}>
-              <div className="text-[8px] font-black tracking-[0.25em] uppercase text-slate-500 mb-2 flex items-center gap-2">
-                <div className="flex-1 h-px bg-slate-800" />
-                {bolum}
-                <div className="flex-1 h-px bg-slate-800" />
+      {/* Kural listesi */}
+      <div className="space-y-1.5 max-h-52 overflow-y-auto pr-1">
+        {aktifKurallar.map(k => (
+          <div
+            key={k.no}
+            className="bg-slate-900/60 border border-slate-700/30 rounded-lg p-2.5 hover:border-purple-500/30 transition-all"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-[7px] font-mono text-slate-600 shrink-0">{k.no}</span>
+                <span className="text-[9px] font-black text-slate-200 tracking-wider">{k.kural}</span>
               </div>
-              <div className="space-y-1.5">
-                {bolumKurallari.map(k => {
-                  const cfg = SEVIYE_CFG[k.seviye] ?? SEVIYE_CFG.ONERILIR;
-                  return (
-                    <div
-                      key={k.id}
-                      className={`rounded-lg border ${cfg.border} ${cfg.bg} px-3 py-2.5 flex items-start gap-3`}
-                    >
-                      {/* Madde No */}
-                      <div className={`text-[9px] font-black font-mono ${cfg.color} flex-shrink-0 mt-0.5 min-w-[28px]`}>
-                        §{k.madde}
-                      </div>
-                      {/* İçerik */}
-                      <div className="flex-1 min-w-0">
-                        <div className={`text-[10px] font-bold ${cfg.color} leading-tight`}>
-                          {k.baslik}
-                        </div>
-                        <div className="text-[9px] text-slate-500 mt-0.5 leading-relaxed">
-                          {k.aciklama}
-                        </div>
-                        {k.ihlal_sonucu && (
-                          <div className="text-[8px] text-red-500/70 mt-1">
-                            ⚠ İhlal: {k.ihlal_sonucu}
-                          </div>
-                        )}
-                      </div>
-                      {/* Seviye */}
-                      <div className={`flex-shrink-0 text-[7px] font-black tracking-[0.15em] px-2 py-0.5 rounded ${cfg.bg} ${cfg.color} border ${cfg.border}`}>
-                        {k.seviye}
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className="flex items-center gap-1 shrink-0">
+                {k.kaynak && (
+                  <span className="text-[7px] font-mono text-slate-600">{k.kaynak}</span>
+                )}
+                <span className={`text-[7px] px-1.5 py-0.5 rounded border font-black ${IHLAL_RENK[k.ihlal]}`}>
+                  {IHLAL_ICON[k.ihlal]} {k.ihlal}
+                </span>
               </div>
             </div>
-          );
-        })}
+            <p className="text-[8px] text-slate-500 mt-1 leading-relaxed pl-8">{k.aciklama}</p>
+          </div>
+        ))}
       </div>
 
+      {/* Footer */}
+      <div className="border-t border-slate-700/30 pt-2 flex justify-between text-[7px] font-mono text-slate-600">
+        <span>110 Madde Anayasası — Kurucu: Engin</span>
+        <span>v3.0 | {new Date().toLocaleDateString('tr-TR')}</span>
+      </div>
     </div>
   );
 }
