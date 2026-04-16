@@ -23,22 +23,27 @@ import { exportSystemData } from '@/services/exportService';
 import { toast } from 'sonner';
 import AgentPanel from '@/components/AgentPanel';
 import KnowledgeBasePanel from '@/components/KnowledgeBasePanel';
+import ShieldPanel from '@/components/ShieldPanel';
 import ActivityFeed from '@/components/ActivityFeed';
 import LiveMetrics from '@/components/LiveMetrics';
-import ShieldPanel from '@/components/ShieldPanel';
 
 // ============================================================
-// KARARGAH PANELİ — 9 EKRANLI FÜTÜRİSTİK KOMUTA MERKEZİ
+// KARARGAH PANİLİ — 14 EKRANLI FÜTÜRİSTİK KOMUTA MERKEZİ
 // ============================================================
-// Ekran 01: SİSTEM SAĞLIK — HealthDashboard
-// Ekran 02: OPERASYON İSTATİSTİK — Stats
-// Ekran 03: GÖREV PANOSU — TaskBoard (Kanban)
-// Ekran 04: YÖNETİM KURULU — BoardPanel (Konsensüs)
-// Ekran 05: L2 DENETİM — L2Panel (Otonom Doğrulama)
-// Ekran 06: G-8 ÖĞRENME — SelfLearningPanel (Pattern)
-// Ekran 07: ALARM MERKEZİ — AlarmPanel
-// Ekran 08: TELEGRAM KÖPRÜSÜ — TelegramSender
-// Ekran 09: DENETİM GÜNLÜĞÜ — AuditLog
+// Ekran 01: SİSTEM SAĞLİK       — HealthDashboard
+// Ekran 02: OPS İSTATİSTİK      — Stats
+// Ekran 03: GÖREV PANOSU       — TaskBoard (Kanban)
+// Ekran 04: YÖNETİM KURULU     — BoardPanel (Konsensüs)
+// Ekran 05: L2 DENETİM         — L2Panel (Özerk Doğrulama)
+// Ekran 06: G-8 ÖĞRENME        — SelfLearningPanel (Pattern)
+// Ekran 07: ALARM MERKEZİ      — AlarmPanel
+// Ekran 08: TELEGRAM KÖPRÜSÜ   — TelegramSender
+// Ekran 09: DENETİM GÜNLÜĞÜ    — AuditLog
+// Ekran 10: AJAN KADROSU       — AgentPanel
+// Ekran 11: BİLGİ TABANI       — KnowledgeBasePanel (RAG)
+// Ekran 12: AKTİVİTE AKIŞI     — ActivityFeed (Ajan Canlı Akış)
+// Ekran 13: CANLI METRİKLER    — LiveMetrics (Radial Gauge)
+// Ekran 14: SİSTEM KALKAN      — ShieldPanel (Circuit Breaker + Audit Zinciri)
 // ============================================================
 
 // ── EKRAN META VERİSİ ────────────────────────────────────────
@@ -56,7 +61,7 @@ const HQ_SCREENS = [
   { id: 'SCR-11', label: 'BİLGİ TABANI',    icon: '▦', color: 'purple', status: 'AKTİF' },
   { id: 'SCR-12', label: 'AKTİVİTE AKIŞI',  icon: '◈', color: 'cyan',   status: 'AKTİF' },
   { id: 'SCR-13', label: 'CANLI METRİKLER', icon: '◇', color: 'blue',   status: 'AKTİF' },
-  { id: 'SCR-14', label: 'SİSTEM KALKAN',   icon: '○', color: 'red',    status: 'AKTİF' },
+  { id: 'SCR-14', label: 'SİSTEM KALKAN',   icon: '🛡️', color: 'red',    status: 'AKTİF' },
 ] as const;
 
 // ── ZAMAN FORMATLAYICI ───────────────────────────────────────
