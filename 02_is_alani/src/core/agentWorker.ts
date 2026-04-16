@@ -18,6 +18,7 @@ import { pushJobHistory, generateJobId } from '@/core/taskQueue';
 import { ragContext }           from '@/services/ragService';
 import { toolCalistir, type ToolAdi } from '@/core/toolRunner';
 import { queryMemory, ogrenimKaydet, hataKaydet as hatayiKaydet } from '@/core/agentMemory';
+import { buildKuralPrompt, ihlalTespiti } from '@/core/agentRules';
 import type { QueueJob }       from '@/core/taskQueue';
 
 const MAX_ITERASYON  = 5;
@@ -93,6 +94,9 @@ YETKIN: ${agent.beceri_listesi.join(', ')}
 YASAK: alan dışı görev, yetkisiz aksiyon`,
   };
 
+  // ─ Nizamname: 28 kural katmana göre dinamik seçilir ─
+  const kuralBlok = buildKuralPrompt(agent.katman);
+
   return `════════════════════════════════════════════════════════
 SİSTEM TAKİP PANELİ — AJAN KİMLİK PAKETİ
 ════════════════════════════════════════════════════════
@@ -105,7 +109,7 @@ ${agent.rol}
 
 KATMAN KURALI:
 ${katmanKural[agent.katman] ?? `Görevini eksiksiz yap. BECERİLER: ${agent.beceri_listesi.join(', ')}`}
-
+${kuralBlok}
 ════════════════════════════════════════════════════════
 ARAÇ KULLANIM PROTOKOLÜ (ReAct Döngüsü)
 ════════════════════════════════════════════════════════
@@ -124,16 +128,6 @@ Geçerli araçlar:
 
 Araç sonucu gelince devam et. İşin bitince:
 GÖREV TAMAM: <özet>
-
-════════════════════════════════════════════════════════
-MUTLAK KURALLAR (İhlal = Görev İptal)
-════════════════════════════════════════════════════════
-1. VARSAYIM YASAK — yalnızca elde ettiğin verilerle çalış
-2. SIFIR İNİSİYATİF — komut dışına çıkma
-3. KANIT ZORUNLU — "sanırım/belki" yok, kanıtla
-4. HATA VARSA DUR — raporla, düzeltmeden devam etme
-5. ÇIKTI FORMATI: ÖZET → BULGU → SONUÇ
-6. PARÇA İŞ YASAK — görevi eksiksiz tamamla
 ════════════════════════════════════════════════════════
 Göreve başla. Askeri disiplin. Tam icra.`;
 }
@@ -327,6 +321,31 @@ export async function runAgentWorker(input: WorkerInput): Promise<WorkerResult> 
 
     mesajlar.push({ role: 'assistant', content: aiYanit });
     sonSonuc = aiYanit;
+
+    // ── Kural İhlal Kontrolü ──────────────────────────────
+    const ihlalSonuc = ihlalTespiti(aiYanit, agent.katman);
+    if (ihlalSonuc.ihlal_var) {
+      for (const ihlal of ihlalSonuc.ihlaller) {
+        auditLog(agent.id, 'KURAL_IHLALI', {
+          kural_no: ihlal.kural_no, aciklama: ihlal.aciklama,
+          sonuc: ihlal.sonuc, iterasyon,
+        });
+        if (ihlal.sonuc === 'IPTAL') {
+          // IPTAL → görev iptal edilir
+          agentRegistry.updateDurum(agent.id, 'pasif');
+          return {
+            job_id, agent_id: agent.id, kod_adi: agent.kod_adi,
+            katman: agent.katman, task: input.task,
+            result: `KURAL İHLALİ [${ihlal.kural_no}]: ${ihlal.aciklama} — Görev iptal.`,
+            status: 'reddedildi', ai_kullandi: aiKullandi,
+            rag_kullandi: ragKullandi, web_kullandi: webKullandi,
+            arac_kullandi: kullanilanAraclar,
+            iterasyon, duration_ms: Date.now() - startAt,
+            timestamp: new Date().toISOString(),
+          };
+        }
+      }
+    }
 
     // Görev tamam mı?
     if (gorevTamamMi(aiYanit)) break;
