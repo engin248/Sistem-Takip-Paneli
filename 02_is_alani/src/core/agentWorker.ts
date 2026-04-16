@@ -17,6 +17,7 @@ import { auditLog }            from '@/core/localAudit';
 import { pushJobHistory, generateJobId } from '@/core/taskQueue';
 import { ragContext }           from '@/services/ragService';
 import { toolCalistir, type ToolAdi } from '@/core/toolRunner';
+import { queryMemory, ogrenimKaydet, hataKaydet as hatayiKaydet } from '@/core/agentMemory';
 import type { QueueJob }       from '@/core/taskQueue';
 
 const MAX_ITERASYON  = 5;
@@ -254,7 +255,7 @@ export async function runAgentWorker(input: WorkerInput): Promise<WorkerResult> 
     };
   }
 
-  // ── 3. RAG bağlamı ───────────────────────────────────────
+  // ── 3. RAG + HAFIZA bağlamı ───────────────────────────────────
   let ragKullandi = false;
   let extraContext = '';
   if (input.use_rag !== false) {
@@ -263,6 +264,15 @@ export async function runAgentWorker(input: WorkerInput): Promise<WorkerResult> 
       if (rc) { extraContext += rc; ragKullandi = true; }
     } catch { /* devam */ }
   }
+
+  // LTM hafıza sorgusu — geçmiş deneyim enjekte et
+  try {
+    const mem = queryMemory(agent.id, input.task, 3);
+    if (mem.baglam) {
+      extraContext += mem.baglam;
+      auditLog(agent.id, 'MEMORY_HIT', { bulunan: mem.bulunan.length, gorev: input.task.slice(0, 80) });
+    }
+  } catch { /* hafıza okuma hatası → devam */ }
 
   const systemPrompt = buildSystemPrompt({
     id: agent.id, kod_adi: agent.kod_adi,
@@ -345,6 +355,19 @@ export async function runAgentWorker(input: WorkerInput): Promise<WorkerResult> 
 
   agentRegistry.recordGorevTamamlama(agent.id, true);
   agentRegistry.updateDurum(agent.id, 'pasif');
+
+  // ── LTM — Başarılı görev kalıbını kaydet ──────────────────────
+  if (aiKullandi && sonSonuc.length > 50) {
+    try {
+      ogrenimKaydet(
+        agent.id,
+        input.task,
+        sonSonuc.slice(0, 500),
+        'KALIP',
+        Math.min(95, 70 + iterasyon * 5), // daha az iterasyon = daha güvenilir
+      );
+    } catch { /* hafıza yazma hatası sessizce geçilir */ }
+  }
 
   // ── 5. Audit ─────────────────────────────────────────────
   await logAudit({
