@@ -63,8 +63,18 @@ export default function AgentPanel() {
   const [selectedAgent, setSelectedAgent] = useState<AgentCard | null>(null);
   const [taskText,      setTaskText]      = useState('');
   const [assigning,     setAssigning]     = useState(false);
-  const [assignResult,  setAssignResult]  = useState<{ success: boolean; message: string } | null>(null);
   const [activeFilter,  setActiveFilter]  = useState<AgentTier | 'TUMU'>('TUMU');
+  const [autoGorev,     setAutoGorev]     = useState('');
+  const [autoAssigning, setAutoAssigning] = useState(false);
+  const [assignResult,  setAssignResult]  = useState<{
+    success      : boolean;
+    message      : string;
+    ajan        ?: string;
+    gerekce     ?: string;
+    iterasyon   ?: number;
+    araclar     ?: string[];
+    result      ?: string;
+  } | null>(null);
 
   // ── VERİ ÇEK ───────────────────────────────────────────────
   const fetchAgents = useCallback(async () => {
@@ -91,19 +101,31 @@ export default function AgentPanel() {
     return () => clearInterval(interval);
   }, [fetchAgents]);
 
-  // ── GÖREV ATAR ─────────────────────────────────────────────
+  // ── GÖREV ATAR (Orchestrator üzerinden) ─────────────────────
   const handleAssignTask = useCallback(async () => {
     if (!selectedAgent || !taskText.trim()) return;
     setAssigning(true);
     setAssignResult(null);
     try {
-      const res  = await fetch(`/api/agents/${selectedAgent.id}/task`, {
+      const res  = await fetch('/api/orchestrate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ task: taskText.trim() }),
+        body: JSON.stringify({ gorev: taskText.trim(), ajan_id: selectedAgent.id }),
       });
-      const data = await res.json() as { success: boolean; message?: string };
-      setAssignResult({ success: data.success, message: data.message ?? (data.success ? 'Görev atandı.' : 'Atama başarısız.') });
+      const data = await res.json() as {
+        success: boolean; message?: string;
+        atanan_ajan?: string; atama_gerekce?: string;
+        worker?: { iterasyon?: number; arac_kullandi?: string[]; result?: string };
+      };
+      setAssignResult({
+        success  : data.success,
+        message  : data.message ?? (data.success ? 'Görev tamamlandı.' : 'Atama başarısız.'),
+        ajan     : data.atanan_ajan,
+        gerekce  : data.atama_gerekce,
+        iterasyon: data.worker?.iterasyon,
+        araclar  : data.worker?.arac_kullandi,
+        result   : data.worker?.result?.slice(0, 600),
+      });
       if (data.success) { setTaskText(''); void fetchAgents(); }
     } catch {
       setAssignResult({ success: false, message: 'Bağlantı hatası' });
@@ -111,6 +133,39 @@ export default function AgentPanel() {
       setAssigning(false);
     }
   }, [selectedAgent, taskText, fetchAgents]);
+
+  // ── OTO GÖREV (Ajan seçmeden — sistem yönlendirir) ───────────
+  const handleAutoGorev = useCallback(async () => {
+    if (!autoGorev.trim()) return;
+    setAutoAssigning(true);
+    setAssignResult(null);
+    try {
+      const res  = await fetch('/api/orchestrate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gorev: autoGorev.trim() }),
+      });
+      const data = await res.json() as {
+        success: boolean; message?: string;
+        atanan_ajan?: string; atama_gerekce?: string;
+        worker?: { iterasyon?: number; arac_kullandi?: string[]; result?: string };
+      };
+      setAssignResult({
+        success  : data.success,
+        message  : data.message ?? (data.success ? 'Görev tamamlandı.' : 'Hata.'),
+        ajan     : data.atanan_ajan,
+        gerekce  : data.atama_gerekce,
+        iterasyon: data.worker?.iterasyon,
+        araclar  : data.worker?.arac_kullandi,
+        result   : data.worker?.result?.slice(0, 600),
+      });
+      if (data.success) { setAutoGorev(''); void fetchAgents(); }
+    } catch {
+      setAssignResult({ success: false, message: 'Bağlantı hatası' });
+    } finally {
+      setAutoAssigning(false);
+    }
+  }, [autoGorev, fetchAgents]);
 
   // ── YARDIMCILAR ────────────────────────────────────────────
   const visibleAgents = activeFilter === 'TUMU' ? agents : agents.filter(a => a.katman === activeFilter);
@@ -183,6 +238,32 @@ export default function AgentPanel() {
         })}
       </div>
 
+      {/* ── OTO GÖREV — Orchestrator Direkt ───────────────────── */}
+      <div className="glass-card border border-cyan-500/20 p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-cyan-400 text-sm">⚡</span>
+          <span className="text-[9px] font-black tracking-[0.2em] text-cyan-400 uppercase">OTO GÖREV — Sistem Doğru Ajana Yönlendirir</span>
+        </div>
+        <div className="flex gap-2">
+          <input
+            id="auto-gorev-input"
+            value={autoGorev}
+            onChange={e => setAutoGorev(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter' && !autoAssigning) void handleAutoGorev(); }}
+            placeholder="Görevi yaz — sistem doğru ajana atar (ör: veritabanını kontrol et, frontend tasarla...)"
+            className="flex-1 bg-slate-950/80 border border-cyan-500/20 rounded-lg px-3 py-2 text-[10px] font-mono text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500/40 transition-colors"
+          />
+          <button
+            id="auto-gorev-submit"
+            onClick={() => void handleAutoGorev()}
+            disabled={autoAssigning || !autoGorev.trim()}
+            className="px-5 py-2 bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 rounded-lg text-[9px] font-black tracking-[0.15em] uppercase hover:bg-cyan-500/20 transition-all disabled:opacity-40 whitespace-nowrap"
+          >
+            {autoAssigning ? '⟳' : '▶ ÇALIŞTI R'}
+          </button>
+        </div>
+      </div>
+
       {/* ── GÖREV ATAMA FORMU ──────────────────────────────── */}
       {selectedAgent && (
         <div className="glass-card border border-amber-500/40 p-4 shadow-[0_0_20px_rgba(245,158,11,0.15)]">
@@ -202,16 +283,14 @@ export default function AgentPanel() {
               ×
             </button>
           </div>
-          <p className="text-[8px] font-mono text-slate-500 mb-3 line-clamp-1">
-            ROL: {selectedAgent.rol}
-          </p>
+          <p className="text-[8px] font-mono text-slate-500 mb-3 line-clamp-1">ROL: {selectedAgent.rol}</p>
           <div className="flex gap-2">
             <input
               id="agent-task-input"
               value={taskText}
               onChange={e => setTaskText(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter' && !assigning) void handleAssignTask(); }}
-              placeholder="Görev açıklaması..."
+              placeholder="Görevi yaz — bu ajan çalıştıracak..."
               className="flex-1 bg-slate-950/80 border border-slate-700/50 rounded-lg px-3 py-2 text-[10px] font-mono text-white placeholder-slate-600 focus:outline-none focus:border-amber-500/50 transition-colors"
             />
             <button
@@ -223,12 +302,43 @@ export default function AgentPanel() {
               {assigning ? '⟳' : 'EMİR VER'}
             </button>
           </div>
-          {assignResult && (
-            <p className={`text-[9px] font-mono mt-2 flex items-center gap-1 ${assignResult.success ? 'text-green-400' : 'text-red-400'}`}>
-              <span>{assignResult.success ? '✓' : '✕'}</span>
-              <span>{assignResult.message}</span>
-            </p>
+        </div>
+      )}
+
+      {/* ── GÖREV SONUCU ────────────────────────────────────── */}
+      {assignResult && (
+        <div className={`glass-card border p-4 ${
+          assignResult.success ? 'border-green-500/30' : 'border-red-500/30'
+        }`}>
+          <div className={`flex items-center gap-2 mb-2 text-[9px] font-black tracking-wider uppercase ${
+            assignResult.success ? 'text-green-400' : 'text-red-400'
+          }`}>
+            <span>{assignResult.success ? '✓ GÖREV TAMAMLANDI' : '✕ HATA'}</span>
+            {assignResult.ajan && <span className="text-slate-500">→ {assignResult.ajan}</span>}
+          </div>
+          {assignResult.gerekce && (
+            <p className="text-[8px] font-mono text-slate-500 mb-2">📍 {assignResult.gerekce}</p>
           )}
+          <div className="flex gap-3 mb-2">
+            {assignResult.iterasyon !== undefined && (
+              <span className="text-[8px] font-mono text-cyan-400">⟳ {assignResult.iterasyon} iterasyon</span>
+            )}
+            {assignResult.araclar && assignResult.araclar.length > 0 && (
+              <span className="text-[8px] font-mono text-amber-400">🔧 {assignResult.araclar.join(', ')}</span>
+            )}
+          </div>
+          {assignResult.result && (
+            <pre className="text-[8px] font-mono text-slate-400 whitespace-pre-wrap leading-relaxed bg-slate-950/60 rounded p-2 max-h-48 overflow-y-auto border border-slate-800/50">
+              {assignResult.result}
+            </pre>
+          )}
+          {!assignResult.result && (
+            <p className="text-[9px] font-mono text-slate-400">{assignResult.message}</p>
+          )}
+          <button
+            onClick={() => setAssignResult(null)}
+            className="mt-2 text-[8px] text-slate-600 hover:text-slate-400 font-mono"
+          >KAPAT ×</button>
         </div>
       )}
 
