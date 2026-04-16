@@ -22,6 +22,7 @@ import TelegramSender from '@/components/TelegramSender';
 import { exportSystemData } from '@/services/exportService';
 import { toast } from 'sonner';
 import AgentPanel from '@/components/AgentPanel';
+import KnowledgeBasePanel from '@/components/KnowledgeBasePanel';
 
 // ============================================================
 // KARARGAH PANELİ — 9 EKRANLI FÜTÜRİSTİK KOMUTA MERKEZİ
@@ -49,6 +50,7 @@ const HQ_SCREENS = [
   { id: 'SCR-08', label: 'TELEGRAM KÖPRÜSÜ', icon: '◆', color: 'blue', status: 'AKTİF' },
   { id: 'SCR-09', label: 'DENETİM GÜNLÜĞÜ', icon: '▤', color: 'cyan',   status: 'AKTİF' },
   { id: 'SCR-10', label: 'AJAN KADROSU',    icon: '◉', color: 'amber',  status: 'AKTİF' },
+  { id: 'SCR-11', label: 'BİLGİ TABANI',    icon: '▦', color: 'purple', status: 'AKTİF' },
 ] as const;
 
 // ── ZAMAN FORMATLAYICI ───────────────────────────────────────
@@ -521,6 +523,16 @@ export default function Dashboard() {
               isExpanded={expandedScreen === 'SCR-10'}
             >
               <AgentPanel />
+            </HQScreen>
+
+            {/* ── EKRAN 11: BİLGİ TABANI ───────────────────────── */}
+            <HQScreen
+              screen={HQ_SCREENS[10]!}
+              isActive={activeScreen === 'SCR-11'}
+              onClick={() => handleScreenClick('SCR-11')}
+              isExpanded={expandedScreen === 'SCR-11'}
+            >
+              <KnowledgeBasePanel />
             </HQScreen>
 
           </section>
