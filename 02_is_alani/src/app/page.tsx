@@ -25,6 +25,7 @@ import AgentPanel from '@/components/AgentPanel';
 import KnowledgeBasePanel from '@/components/KnowledgeBasePanel';
 import ActivityFeed from '@/components/ActivityFeed';
 import LiveMetrics from '@/components/LiveMetrics';
+import ShieldPanel from '@/components/ShieldPanel';
 
 // ============================================================
 // KARARGAH PANELİ — 9 EKRANLI FÜTÜRİSTİK KOMUTA MERKEZİ
@@ -55,6 +56,7 @@ const HQ_SCREENS = [
   { id: 'SCR-11', label: 'BİLGİ TABANI',    icon: '▦', color: 'purple', status: 'AKTİF' },
   { id: 'SCR-12', label: 'AKTİVİTE AKIŞI',  icon: '◈', color: 'cyan',   status: 'AKTİF' },
   { id: 'SCR-13', label: 'CANLI METRİKLER', icon: '◇', color: 'blue',   status: 'AKTİF' },
+  { id: 'SCR-14', label: 'SİSTEM KALKAN',   icon: '○', color: 'red',    status: 'AKTİF' },
 ] as const;
 
 // ── ZAMAN FORMATLAYICI ───────────────────────────────────────
@@ -556,6 +558,16 @@ export default function Dashboard() {
               isExpanded={expandedScreen === 'SCR-13'}
             >
               <LiveMetrics />
+            </HQScreen>
+
+            {/* ── EKRAN 14: SİSTEM KALKAN ──────────────────────── */}
+            <HQScreen
+              screen={HQ_SCREENS[13]!}
+              isActive={activeScreen === 'SCR-14'}
+              onClick={() => handleScreenClick('SCR-14')}
+              isExpanded={expandedScreen === 'SCR-14'}
+            >
+              <ShieldPanel />
             </HQScreen>
 
           </section>
