@@ -10,6 +10,7 @@
 // ============================================================
 
 import { type Bot, type Context } from 'grammy';
+import { webSearch } from '@/services/webSearch';
 import { supabase, validateSupabaseConnection } from '@/lib/supabase';
 import { ERR, processError } from '@/lib/errorCore';
 import { logAudit } from '@/services/auditService';
@@ -631,6 +632,47 @@ export function registerHandlers(botInstance: Bot): void {
     }
 
     await sendReply(ctx, `❓ Bilinmeyen komut: <code>${arg}</code>\n\n/calistir yazarak komut listesini gör.`);
+  });
+
+  // ── /web <sorgu> — İnternet Araması (DuckDuckGo, ücretsiz) ──
+  botInstance.command('web', async (ctx) => {
+    const chatId = ctx.chat?.id ?? 0;
+    if (!isAuthorized(chatId)) { await sendReply(ctx, '⛔ YETKİSİZ ERİŞİM.'); return; }
+    const sorgu = ctx.match?.trim();
+    if (!sorgu) { await sendReply(ctx, '⚠️ Kullanım: /web <arama terimi>\n\nÖrnek: /web Bitcoin güncel fiyat'); return; }
+
+    await sendReply(ctx, `🌐 <b>"${sorgu}"</b> internette aranıyor...`);
+
+    try {
+      const yanit = await webSearch(sorgu, 5);
+
+      if (yanit.sonuclar.length === 0) {
+        await sendReply(ctx, `🔍 <b>"${sorgu}"</b> için internet sonucu bulunamadı.`);
+        return;
+      }
+
+      const lines: string[] = [
+        `🌐 <b>WEB ARAMA — "${sorgu}"</b>`,
+        '',
+      ];
+
+      if (yanit.ozet && yanit.ozet !== yanit.sonuclar[0]?.ozet) {
+        lines.push(`📌 <b>Özet:</b> ${yanit.ozet.substring(0, 200)}`, '');
+      }
+
+      yanit.sonuclar.forEach((s, i) => {
+        lines.push(`${i + 1}. <b>${s.baslik.substring(0, 60)}</b>`);
+        if (s.ozet && s.ozet !== s.baslik) {
+          lines.push(`   ${s.ozet.substring(0, 120)}`);
+        }
+        if (s.url) lines.push(`   🔗 ${s.url}`);
+        lines.push('');
+      });
+
+      await sendReply(ctx, lines.join('\n'));
+    } catch (err) {
+      await sendReply(ctx, `❌ Web arama hatası: ${String(err)}`);
+    }
   });
 }
 
