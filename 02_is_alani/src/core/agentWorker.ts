@@ -17,8 +17,8 @@ import { auditLog }            from '@/core/localAudit';
 import { pushJobHistory, generateJobId } from '@/core/taskQueue';
 import { ragContext }           from '@/services/ragService';
 import { toolCalistir, type ToolAdi } from '@/core/toolRunner';
-import { queryMemory, ogrenimKaydet, hataKaydet as hatayiKaydet } from '@/core/agentMemory';
-import { buildKuralPrompt, ihlalTespiti } from '@/core/agentRules';
+import { queryMemory, ogrenimKaydet } from '@/core/agentMemory';
+import { gorevOnKontrol, aracKontrol, yanitKontrol } from '@/core/ruleGuard';
 import type { QueueJob }       from '@/core/taskQueue';
 
 const MAX_ITERASYON  = 5;
@@ -94,42 +94,20 @@ YETKIN: ${agent.beceri_listesi.join(', ')}
 YASAK: alan dışı görev, yetkisiz aksiyon`,
   };
 
-  // ─ Nizamname: 28 kural katmana göre dinamik seçilir ─
-  const kuralBlok = buildKuralPrompt(agent.katman);
-
+  // Kurallar kod tarafında zorlanıyor (ruleGuard.ts) — prompt'a eklenmez, TOKEN TASARRUFU
   return `════════════════════════════════════════════════════════
-SİSTEM TAKİP PANELİ — AJAN KİMLİK PAKETİ
+SİSTEM TAKİP PANELİ — AJAN KİMLİK
 ════════════════════════════════════════════════════════
-AJAN    : ${agent.kod_adi}
-KİMLİK  : ${agent.id}
-KATMAN  : ${agent.katman}
+AJAN: ${agent.kod_adi} | KATMAN: ${agent.katman}
+GÖREV: ${agent.rol}
+KATMAN KURALI: ${katmanKural[agent.katman] ?? `BECERİLER: ${agent.beceri_listesi.join(', ')}`}
 ════════════════════════════════════════════════════════
-GÖREV TANIMI:
-${agent.rol}
-
-KATMAN KURALI:
-${katmanKural[agent.katman] ?? `Görevini eksiksiz yap. BECERİLER: ${agent.beceri_listesi.join(', ')}`}
-${kuralBlok}
-════════════════════════════════════════════════════════
-ARAÇ KULLANIM PROTOKOLÜ (ReAct Döngüsü)
-════════════════════════════════════════════════════════
-Araç gerektiğinde SADECE şu formatı kullan:
-
-ARAÇ: <araç_adı>
+ARAÇ FORMAT (gerekirse kullan):
+ARAÇ: <ad>
 PARAMS: <json>
-
-Geçerli araçlar:
-  dosyaOku      → {"yol": "C:\\...\\dosya.ts"}
-  dosyaYaz      → {"yol": "C:\\...\\dosya.ts", "icerik": "..."}
-  dizinListele  → {"yol": "C:\\...\\klasor", "derinlik": 1}
-  webAra        → {"sorgu": "aradığın şey"}
-  ragSorgula    → {"sorgu": "bilgi tabanında ara"}
-  apiCagir      → {"url": "https://...", "metod": "GET"}
-
-Araç sonucu gelince devam et. İşin bitince:
-GÖREV TAMAM: <özet>
-════════════════════════════════════════════════════════
-Göreve başla. Askeri disiplin. Tam icra.`;
+Araçlar: dosyaOku, dosyaYaz, dizinListele, webAra, ragSorgula, apiCagir
+İş bitince: GÖREV TAMAM: <özet>
+Göreve başla.`;
 }
 
 // ── ARAÇ ÇAĞRISI PARSER ───────────────────────────────────────
@@ -235,6 +213,21 @@ export async function runAgentWorker(input: WorkerInput): Promise<WorkerResult> 
 
   agentRegistry.updateDurum(agent.id, 'aktif');
 
+  // ── RULE GUARD — GÖREV ÖN KONTROL (token harcamaz) ─────────
+  const onKontrol = gorevOnKontrol(agent.id, agent.katman, input.task);
+  if (!onKontrol.gecti) {
+    agentRegistry.updateDurum(agent.id, 'pasif');
+    return {
+      job_id, agent_id: agent.id, kod_adi: agent.kod_adi,
+      katman: agent.katman, task: input.task,
+      result: `RULE GUARD [${onKontrol.kural_no}]: ${onKontrol.aciklama}`,
+      status: 'reddedildi', ai_kullandi: false,
+      rag_kullandi: false, web_kullandi: false, arac_kullandi: [],
+      iterasyon: 0, duration_ms: Date.now() - startAt,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
   // ── IDEMPOTENCY ─────────────────────────────────────────────────
   const iKey = idempotencyKey(agent.id, input.task);
   const cachedResult = checkIdempotency(iKey);
@@ -322,29 +315,20 @@ export async function runAgentWorker(input: WorkerInput): Promise<WorkerResult> 
     mesajlar.push({ role: 'assistant', content: aiYanit });
     sonSonuc = aiYanit;
 
-    // ── Kural İhlal Kontrolü ──────────────────────────────
-    const ihlalSonuc = ihlalTespiti(aiYanit, agent.katman);
-    if (ihlalSonuc.ihlal_var) {
-      for (const ihlal of ihlalSonuc.ihlaller) {
-        auditLog(agent.id, 'KURAL_IHLALI', {
-          kural_no: ihlal.kural_no, aciklama: ihlal.aciklama,
-          sonuc: ihlal.sonuc, iterasyon,
-        });
-        if (ihlal.sonuc === 'IPTAL') {
-          // IPTAL → görev iptal edilir
-          agentRegistry.updateDurum(agent.id, 'pasif');
-          return {
-            job_id, agent_id: agent.id, kod_adi: agent.kod_adi,
-            katman: agent.katman, task: input.task,
-            result: `KURAL İHLALİ [${ihlal.kural_no}]: ${ihlal.aciklama} — Görev iptal.`,
-            status: 'reddedildi', ai_kullandi: aiKullandi,
-            rag_kullandi: ragKullandi, web_kullandi: webKullandi,
-            arac_kullandi: kullanilanAraclar,
-            iterasyon, duration_ms: Date.now() - startAt,
-            timestamp: new Date().toISOString(),
-          };
-        }
-      }
+    // ── RULE GUARD — YANIT KONTROL (token harcamaz) ──────────
+    const yanitG = yanitKontrol(agent.id, agent.katman, aiYanit);
+    if (!yanitG.gecti && yanitG.eylem === 'ENGELLE') {
+      agentRegistry.updateDurum(agent.id, 'pasif');
+      return {
+        job_id, agent_id: agent.id, kod_adi: agent.kod_adi,
+        katman: agent.katman, task: input.task,
+        result: `RULE GUARD [${yanitG.kural_no}]: ${yanitG.aciklama}`,
+        status: 'reddedildi', ai_kullandi: aiKullandi,
+        rag_kullandi: ragKullandi, web_kullandi: webKullandi,
+        arac_kullandi: kullanilanAraclar,
+        iterasyon, duration_ms: Date.now() - startAt,
+        timestamp: new Date().toISOString(),
+      };
     }
 
     // Görev tamam mı?
@@ -353,6 +337,13 @@ export async function runAgentWorker(input: WorkerInput): Promise<WorkerResult> 
     // Araç çağrısı var mı?
     const aracCagrisi = parseAracCagrisi(aiYanit);
     if (!aracCagrisi) break;
+
+    // ── RULE GUARD — ARAÇ KONTROL (token harcamaz) ──────────
+    const aracG = aracKontrol(agent.id, agent.katman, aracCagrisi.arac, aracCagrisi.params);
+    if (!aracG.gecti) {
+      mesajlar.push({ role: 'user', content: `ARAÇ ENGELLENDİ [${aracG.kural_no}]: ${aracG.aciklama}. Farklı yöntem dene.` });
+      continue;
+    }
 
     // Aracı çalıştır
     const aracSonucu = await toolCalistir(aracCagrisi);
