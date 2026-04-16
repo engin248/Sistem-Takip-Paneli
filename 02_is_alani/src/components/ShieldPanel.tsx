@@ -73,7 +73,7 @@ export default function ShieldPanel() {
     setResetting(false);
   }
 
-  const cfg = cb ? STATE_CFG[cb.state] : STATE_CFG.KAPALI;
+  const cfg = cb?.state ? (STATE_CFG[cb.state] ?? STATE_CFG.KAPALI) : STATE_CFG.KAPALI;
 
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:16 }}>

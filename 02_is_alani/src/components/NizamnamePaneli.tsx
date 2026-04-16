@@ -58,9 +58,9 @@ export default function NizamnamePaneli() {
   if (!data) return <div className="text-red-400 text-xs font-mono py-4">❌ Kurallar yüklenemedi</div>;
 
   const tumKurallar: Kural[] = [
-    ...data.evrensel.kurallar,
-    ...data.katman_kurali.kurallar,
-    ...data.calisma.kurallar,
+    ...(data.evrensel?.kurallar ?? []),
+    ...(data.katman_kurali?.kurallar ?? []),
+    ...(data.calisma?.kurallar ?? []),
   ];
 
   // Benzersiz kategoriler

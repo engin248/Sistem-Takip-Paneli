@@ -78,6 +78,8 @@ function isRateLimited(ip: string): boolean {
 const ALLOWED_ORIGINS = [
   'http://localhost:3000',
   'http://localhost:3001',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:3001',
   process.env.NEXT_PUBLIC_APP_URL,
 ].filter(Boolean) as string[];
 
