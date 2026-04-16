@@ -11,6 +11,8 @@ export const dynamic = 'force-dynamic';
 interface TaskBody {
   task    : string;
   priority?: number;
+  use_rag ?: boolean;
+  use_web ?: boolean;
 }
 
 export async function POST(
@@ -47,7 +49,7 @@ export async function POST(
     );
   }
 
-  const { task, priority = 2 } = body;
+  const { task, priority = 2, use_rag = true, use_web = false } = body;
 
   if (!task || typeof task !== 'string' || task.trim().length < 3) {
     return NextResponse.json(
@@ -56,28 +58,34 @@ export async function POST(
     );
   }
 
-  // ── WORKER ile icra et ────────────────────────────────────
+  // ── WORKER ile icra et ─────────────────────────────────────────────
   try {
     const workerResult = await runAgentWorker({
       agent_id : agentId,
       task     : task.trim(),
       priority,
+      use_rag,
+      use_web,
     });
 
     return NextResponse.json({
-      success     : workerResult.status === 'tamamlandi',
-      message     : workerResult.status === 'tamamlandi'
+      success       : workerResult.status === 'tamamlandi',
+      message       : workerResult.status === 'tamamlandi'
         ? `${workerResult.kod_adi} görevi tamamladı (${workerResult.ai_kullandi ? 'AI' : 'LOKAL'}, ${workerResult.duration_ms}ms)`
         : `Görev başarısız: ${workerResult.status}`,
-      job_id      : workerResult.job_id,
-      agent_id    : workerResult.agent_id,
-      kod_adi     : workerResult.kod_adi,
-      katman      : workerResult.katman,
-      status      : workerResult.status,
-      ai_kullandi : workerResult.ai_kullandi,
-      duration_ms : workerResult.duration_ms,
-      result      : workerResult.result,
-      timestamp   : workerResult.timestamp,
+      job_id        : workerResult.job_id,
+      agent_id      : workerResult.agent_id,
+      kod_adi       : workerResult.kod_adi,
+      katman        : workerResult.katman,
+      status        : workerResult.status,
+      ai_kullandi   : workerResult.ai_kullandi,
+      rag_kullandi  : workerResult.rag_kullandi,
+      web_kullandi  : workerResult.web_kullandi,
+      arac_kullandi : workerResult.arac_kullandi,
+      iterasyon     : workerResult.iterasyon,
+      duration_ms   : workerResult.duration_ms,
+      result        : workerResult.result,
+      timestamp     : workerResult.timestamp,
     });
 
   } catch (err) {

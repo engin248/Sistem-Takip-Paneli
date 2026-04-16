@@ -13,6 +13,8 @@ import { isExternalConfigured } from '@/lib/supabaseExternal';
 import { pingExternalDB, httpHealthCheck } from '@/services/bridgeService';
 import { logAudit } from '@/services/auditService';
 import { ERR, processError } from '@/lib/errorCore';
+import { getCBDurum } from '@/core/circuitBreaker';
+import { checkOllamaHealth } from '@/lib/aiProvider';
 
 export const dynamic = 'force-dynamic';
 
@@ -98,8 +100,23 @@ export async function GET() {
       });
     }
 
-    // ── GENEL DURUM HESAPLAMA ─────────────────────────────
-    const hasDown = systems.some(s => s.status === 'down');
+    // ── 3. OLLAMA AI ───────────────────────────────────────────────
+    const ollamaHealthy = await checkOllamaHealth();
+    const cbDurum = getCBDurum();
+    systems.push({
+      name: 'Ollama AI (Yerel)',
+      status: ollamaHealthy ? 'healthy' : 'down',
+      latencyMs: Date.now() - startTime,
+      details: {
+        url  : process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
+        model: process.env.OLLAMA_MODEL    || 'llama3:latest',
+        circuit_breaker: cbDurum.state,
+        toplam_trip    : cbDurum.toplam_trip,
+      },
+    });
+
+    // ── GENEL DURUM HESAPLAMA ──────────────────────────────────────
+    const hasDown     = systems.some(s => s.status === 'down');
     const hasDegraded = systems.some(s => s.status === 'degraded' || s.status === 'unknown');
     const overallStatus: HealthReport['status'] = hasDown ? 'down' : hasDegraded ? 'degraded' : 'healthy';
 
