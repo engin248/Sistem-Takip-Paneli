@@ -156,6 +156,14 @@ export interface WorkerInput {
   use_web  ?: boolean;
 }
 
+export interface L2DenetimOzet {
+  ajan_id     : string;
+  kod_adi     : string;
+  durum       : 'ONAYLANDI' | 'HATA_VAR' | 'ATLANAMAZ';
+  ozet        : string;
+  duration_ms : number;
+}
+
 export interface WorkerResult {
   job_id      : string;
   agent_id    : string;
@@ -171,6 +179,7 @@ export interface WorkerResult {
   iterasyon   : number;
   duration_ms : number;
   timestamp   : string;
+  l2_denetim ?: L2DenetimOzet;  // L2 otomatik denetim sonucu
 }
 
 // ── ANA WORKER — REACT DÖNGÜSÜ ────────────────────────────────
@@ -412,6 +421,72 @@ export async function runAgentWorker(input: WorkerInput): Promise<WorkerResult> 
     setIdempotency(iKey, sonSonuc);
   }
 
+  // ── L1 → L2 OTOMATİK DENETİM ─────────────────────────────────
+  // Kural: L1 katmanı tamamlanınca B-01 (DENETÇİ-KOD) otomatik devreye girer
+  // L2 bloklayıcı değil — fire-and-forget sonucu WorkerResult'a eklenir
+  let l2DenetimOzet: import('./agentWorker').L2DenetimOzet | undefined;
+
+  if (agent.katman === 'L1' && aiKullandi && sonSonuc.length > 30) {
+    const l2Ajan = agentRegistry.getById('B-01');
+    if (l2Ajan) {
+      const l2Start = Date.now();
+      try {
+        agentRegistry.updateDurum('B-01', 'aktif');
+        const l2Prompt = [
+          `[L2 OTOMATİK DENETİM] L1 Ajan: ${agent.kod_adi}`,
+          `Görev: ${input.task.slice(0, 150)}`,
+          `Sonuç Özeti: ${sonSonuc.slice(0, 400)}`,
+          '',
+          `5 eksenden denetle: teknik, güvenlik, performans, operasyonel, UX.`,
+          `Çıktı: ONAYLANDI veya HATA_VAR + kısa gerekçe.`,
+        ].join('\n');
+
+        const l2Yanit = await aiComplete({
+          systemPrompt : `Sen L2 DENETÇİ-KOD ajanısın. Sadece denetle, kod değiştirme, karar verme.`,
+          userMessage  : l2Prompt,
+          temperature  : 0.1,
+          maxTokens    : 400,
+          jsonMode     : false,
+        });
+
+        const l2Metin = l2Yanit?.content ?? '';
+        const denetimDurum: L2DenetimOzet['durum'] =
+          l2Metin.toUpperCase().includes('HATA_VAR') ? 'HATA_VAR' : 'ONAYLANDI';
+
+        l2DenetimOzet = {
+          ajan_id    : 'B-01',
+          kod_adi    : l2Ajan.kod_adi,
+          durum      : denetimDurum,
+          ozet       : l2Metin.slice(0, 300),
+          duration_ms: Date.now() - l2Start,
+        };
+
+        agentRegistry.updateDurum('B-01', 'pasif');
+
+        // L2 sonucunu audit'e kaydet
+        void logAudit({
+          operation_type    : 'EXECUTE',
+          action_description: `[L2-AUTO] ${l2Ajan.kod_adi} → ${denetimDurum} — ${agent.kod_adi} denetlendi (${Date.now() - l2Start}ms)`,
+          metadata: {
+            action_code : 'L2_AUTO_REVIEW',
+            l1_job_id   : job_id,
+            l1_ajan     : agent.kod_adi,
+            l2_ajan     : l2Ajan.kod_adi,
+            durum       : denetimDurum,
+          },
+        }).catch(() => {});
+
+      } catch {
+        agentRegistry.updateDurum('B-01', 'pasif');
+        l2DenetimOzet = {
+          ajan_id: 'B-01', kod_adi: l2Ajan.kod_adi,
+          durum: 'ATLANAMAZ', ozet: 'L2 AI çağrısı başarısız',
+          duration_ms: Date.now() - l2Start,
+        };
+      }
+    }
+  }
+
   return {
     job_id, agent_id: agent.id, kod_adi: agent.kod_adi,
     katman: agent.katman, task: input.task, result: sonSonuc,
@@ -419,5 +494,6 @@ export async function runAgentWorker(input: WorkerInput): Promise<WorkerResult> 
     rag_kullandi: ragKullandi, web_kullandi: webKullandi,
     arac_kullandi: kullanilanAraclar,
     iterasyon, duration_ms, timestamp,
+    l2_denetim: l2DenetimOzet,
   };
 }

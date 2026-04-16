@@ -74,6 +74,7 @@ export default function AgentPanel() {
     iterasyon   ?: number;
     araclar     ?: string[];
     result      ?: string;
+    l2_denetim  ?: { durum: string; ozet: string; kod_adi: string; duration_ms: number };
   } | null>(null);
 
   // ── VERİ ÇEK ───────────────────────────────────────────────
@@ -115,16 +116,20 @@ export default function AgentPanel() {
       const data = await res.json() as {
         success: boolean; message?: string;
         atanan_ajan?: string; atama_gerekce?: string;
-        worker?: { iterasyon?: number; arac_kullandi?: string[]; result?: string };
+        worker?: {
+          iterasyon?: number; arac_kullandi?: string[]; result?: string;
+          l2_denetim?: { durum: string; ozet: string; kod_adi: string; duration_ms: number };
+        };
       };
       setAssignResult({
-        success  : data.success,
-        message  : data.message ?? (data.success ? 'Görev tamamlandı.' : 'Atama başarısız.'),
-        ajan     : data.atanan_ajan,
-        gerekce  : data.atama_gerekce,
-        iterasyon: data.worker?.iterasyon,
-        araclar  : data.worker?.arac_kullandi,
-        result   : data.worker?.result?.slice(0, 600),
+        success    : data.success,
+        message    : data.message ?? (data.success ? 'Görev tamamlandı.' : 'Atama başarısız.'),
+        ajan       : data.atanan_ajan,
+        gerekce    : data.atama_gerekce,
+        iterasyon  : data.worker?.iterasyon,
+        araclar    : data.worker?.arac_kullandi,
+        result     : data.worker?.result?.slice(0, 600),
+        l2_denetim : data.worker?.l2_denetim,
       });
       if (data.success) { setTaskText(''); void fetchAgents(); }
     } catch {
@@ -148,16 +153,20 @@ export default function AgentPanel() {
       const data = await res.json() as {
         success: boolean; message?: string;
         atanan_ajan?: string; atama_gerekce?: string;
-        worker?: { iterasyon?: number; arac_kullandi?: string[]; result?: string };
+        worker?: {
+          iterasyon?: number; arac_kullandi?: string[]; result?: string;
+          l2_denetim?: { durum: string; ozet: string; kod_adi: string; duration_ms: number };
+        };
       };
       setAssignResult({
-        success  : data.success,
-        message  : data.message ?? (data.success ? 'Görev tamamlandı.' : 'Hata.'),
-        ajan     : data.atanan_ajan,
-        gerekce  : data.atama_gerekce,
-        iterasyon: data.worker?.iterasyon,
-        araclar  : data.worker?.arac_kullandi,
-        result   : data.worker?.result?.slice(0, 600),
+        success    : data.success,
+        message    : data.message ?? (data.success ? 'Görev tamamlandı.' : 'Hata.'),
+        ajan       : data.atanan_ajan,
+        gerekce    : data.atama_gerekce,
+        iterasyon  : data.worker?.iterasyon,
+        araclar    : data.worker?.arac_kullandi,
+        result     : data.worker?.result?.slice(0, 600),
+        l2_denetim : data.worker?.l2_denetim,
       });
       if (data.success) { setAutoGorev(''); void fetchAgents(); }
     } catch {
@@ -335,6 +344,33 @@ export default function AgentPanel() {
           {!assignResult.result && (
             <p className="text-[9px] font-mono text-slate-400">{assignResult.message}</p>
           )}
+
+          {/* L2 OTOMATİK DENETİM SONUCU */}
+          {assignResult.l2_denetim && (
+            <div className={`mt-3 rounded-lg border px-3 py-2.5 ${
+              assignResult.l2_denetim.durum === 'ONAYLANDI'
+                ? 'border-blue-500/30 bg-blue-500/5'
+                : assignResult.l2_denetim.durum === 'HATA_VAR'
+                ? 'border-red-500/30 bg-red-500/5'
+                : 'border-slate-700/30 bg-slate-900/30'
+            }`}>
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="text-[8px] font-black tracking-[0.15em] text-blue-400 uppercase">◇ L2 OTOMATİK DENETİM</span>
+                <span className={`text-[7px] font-black px-2 py-0.5 rounded border ${
+                  assignResult.l2_denetim.durum === 'ONAYLANDI' ? 'text-green-400 border-green-500/30 bg-green-500/10' :
+                  assignResult.l2_denetim.durum === 'HATA_VAR'  ? 'text-red-400 border-red-500/30 bg-red-500/10' :
+                                                                   'text-slate-400 border-slate-600/30'
+                }`}>
+                  {assignResult.l2_denetim.durum}
+                </span>
+                <span className="text-[7px] font-mono text-slate-600 ml-auto">{assignResult.l2_denetim.kod_adi} • {assignResult.l2_denetim.duration_ms}ms</span>
+              </div>
+              <p className="text-[8px] font-mono text-slate-400 leading-relaxed">
+                {assignResult.l2_denetim.ozet}
+              </p>
+            </div>
+          )}
+
           <button
             onClick={() => setAssignResult(null)}
             className="mt-2 text-[8px] text-slate-600 hover:text-slate-400 font-mono"
