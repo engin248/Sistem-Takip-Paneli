@@ -195,13 +195,12 @@ export default function Dashboard() {
     setExpandedScreen((prev) => prev === screenId ? null : screenId);
   }, []);
 
-  // ── SİSTEM METRİKLERİ ────────────────────────────────────
   const systemMetrics = {
     uptime: '99.97%',
-    activeNodes: 10,
-    totalNodes: 10,
+    activeNodes: HQ_SCREENS.length,
+    totalNodes: HQ_SCREENS.length,
     taskCount: tasks.length,
-    criticalAlerts: 0,
+    criticalAlerts: tasks.filter(t => t.priority === 'kritik' && t.status !== 'tamamlandi').length,
   };
 
   return (
@@ -315,7 +314,7 @@ export default function Dashboard() {
                   </span>
                 </div>
                 <span className="screen-header-tag bg-slate-500/10 text-slate-400 border border-slate-500/30">
-                  9 EKRAN
+                  {HQ_SCREENS.length} EKRAN
                 </span>
               </div>
               <div className="grid grid-cols-3 gap-3">
