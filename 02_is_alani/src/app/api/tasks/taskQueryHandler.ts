@@ -76,6 +76,17 @@ export async function handleTaskQuery(request: NextRequest): Promise<NextRespons
       }
 
       default:
+        // action yoksa veya bilinmiyorsa → list olarak işle
+        if (!action) {
+          const { data, error } = await supabase
+            .from('tasks')
+            .select('id, task_code, title, status, priority, assigned_to, created_at')
+            .eq('is_archived', false)
+            .order('created_at', { ascending: false })
+            .limit(50);
+          if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+          return NextResponse.json({ success: true, data: data ?? [], count: data?.length ?? 0, timestamp: new Date().toISOString() });
+        }
         return NextResponse.json({ success: false, error: 'Geçerli action: list | agents | suggest | auto-assign' }, { status: 400 });
     }
   } catch (error) {
