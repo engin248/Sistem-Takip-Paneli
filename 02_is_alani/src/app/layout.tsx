@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "STP-PANEL",
+    title: "SİSTEM TAKİP PANELİ",
   },
   icons: {
     icon: "/icons/icon-192x192.png",

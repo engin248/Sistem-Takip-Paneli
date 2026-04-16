@@ -37,8 +37,8 @@ describe('i18n', () => {
   describe('t() fonksiyonu', () => {
     it('TR dilinde doğru sözlüğü döner', () => {
       const tr = t('tr');
-      expect(tr.panelTitle).toBe('STP-PANEL');
-      expect(tr.dashboardTitle).toBe('STP-OPERASYON MERKEZİ');
+      expect(tr.panelTitle).toBe('SİSTEM TAKİP PANELİ');
+      expect(tr.dashboardTitle).toBe('MERKEZ OPERASYON DAİRE BAŞKANLIĞI');
     });
 
     it('AR dilinde doğru sözlüğü döner', () => {

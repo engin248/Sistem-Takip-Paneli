@@ -9,11 +9,11 @@
 export const translations = {
   tr: {
     // ── NavBar ────────────────────────────────────────────────
-    panelTitle: 'STP-PANEL',
-    panelSubtitle: 'Sistem Takip Paneli',
+    panelTitle: 'SİSTEM TAKİP PANELİ',
+    panelSubtitle: 'MERKEZ OPERASYON DAİRE BAŞKANLIĞI',
 
     // ── Dashboard Başlık ─────────────────────────────────────
-    dashboardTitle: 'STP-OPERASYON MERKEZİ',
+    dashboardTitle: 'MERKEZ OPERASYON DAİRE BAŞKANLIĞI',
     accessLocked: 'ERİŞİM KİLİTLİ (AÇ)',
     accessOpen: 'ERİŞİM AÇIK (KİLİTLE)',
     systemOnline: 'SİSTEM ÇEVRİMİÇİ',
