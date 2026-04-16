@@ -335,59 +335,64 @@ export default function Dashboard() {
         {/* ══════════════════════════════════════════════════════ */}
         {/* ÜST BAR: KARARGAH BAŞLIK + KONTROLLER                 */}
         {/* ══════════════════════════════════════════════════════ */}
-        <header className="mb-6 animate-fade-in-up">
-          {/* ── Durum Mühürleri ──────────────────────────────── */}
-          <div className="flex flex-wrap gap-3 mb-5">
-            <div className="glass-card neon-glow-green px-4 py-2 flex items-center gap-2.5 border border-green-500/30">
-              <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-              <span className="text-[10px] font-black tracking-[0.2em] uppercase text-green-400">
-                BAĞIMSIZLIK ONAYLANDI
-              </span>
-            </div>
-            <div className="glass-card neon-glow-green px-4 py-2 flex items-center gap-2.5 border border-green-500/30">
-              <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-              <span className="text-[10px] font-black tracking-[0.2em] uppercase text-green-400">
-                SİSTEM YEREL
-              </span>
-            </div>
-            <div className="glass-card px-4 py-2 flex items-center gap-2.5 border border-cyan-500/20">
-              <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse-neon" />
-              <span className="text-[10px] font-bold tracking-[0.15em] uppercase text-cyan-400">
-                UPTIME {systemMetrics.uptime}
-              </span>
-            </div>
-            <div className="glass-card px-4 py-2 flex items-center gap-2.5 border border-slate-500/20 ml-auto">
-              <span className="text-[10px] font-mono text-slate-400 tracking-wider" suppressHydrationWarning>
-                {systemTime.toLocaleDateString('tr-TR', { year: 'numeric', month: '2-digit', day: '2-digit' })}
-              </span>
-              <span className="text-[10px] font-mono neon-text-cyan font-bold" suppressHydrationWarning>
-                {systemTime.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-              </span>
-            </div>
-          </div>
-
-          {/* ── Başlık Satırı ─────────────────────────────────── */}
-          <div className={`flex justify-between items-end ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-            <div>
-              <h1 className="text-2xl lg:text-3xl font-black tracking-tight text-white">
+        <header className="mb-4 animate-fade-in-up">
+          {/* ── TEK SATIRLIK KOMUTA BARI ───────────────────────── */}
+          <div className={`flex flex-wrap items-center gap-3 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+            {/* Sol: Başlık */}
+            <div className="flex items-center gap-2 mr-2">
+              <h1 className="text-xl lg:text-2xl font-black tracking-tight text-white whitespace-nowrap">
                 <span className="neon-text-cyan">KARARGAH</span>
-                <span className="text-slate-500 mx-2">|</span>
+                <span className="text-slate-500 mx-1.5">|</span>
                 <span className="text-slate-300">{tr.dashboardTitle}</span>
               </h1>
-              <p className="text-[10px] font-mono text-slate-500 mt-1 tracking-wider">
-                {systemMetrics.activeNodes}/{systemMetrics.totalNodes} EKRAN AKTİF
-                <span className="text-slate-600 mx-2">•</span>
-                {systemMetrics.taskCount} GÖREV
-                <span className="text-slate-600 mx-2">•</span>
-                {systemMetrics.criticalAlerts} KRİTİK ALARM
-              </p>
             </div>
-            <div className={`flex items-center gap-3 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+
+            {/* Orta: Durum Mühürleri */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="glass-card neon-glow-green px-3 py-1.5 flex items-center gap-2 border border-green-500/30">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                <span className="text-[9px] font-black tracking-[0.15em] uppercase text-green-400">
+                  BAĞIMSIZLIK ONAYLANDI
+                </span>
+              </div>
+              <div className="glass-card neon-glow-green px-3 py-1.5 flex items-center gap-2 border border-green-500/30">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                <span className="text-[9px] font-black tracking-[0.15em] uppercase text-green-400">
+                  SİSTEM YEREL
+                </span>
+              </div>
+              <div className="glass-card px-3 py-1.5 flex items-center gap-2 border border-cyan-500/20">
+                <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse-neon" />
+                <span className="text-[9px] font-bold tracking-[0.12em] uppercase text-cyan-400">
+                  UPTIME {systemMetrics.uptime}
+                </span>
+              </div>
+            </div>
+
+            {/* Alt bilgi: Ekran / Görev sayıları */}
+            <p className="text-[9px] font-mono text-slate-500 tracking-wider hidden lg:block">
+              {systemMetrics.activeNodes}/{systemMetrics.totalNodes} EKRAN
+              <span className="text-slate-600 mx-1">•</span>
+              {systemMetrics.taskCount} GÖREV
+              <span className="text-slate-600 mx-1">•</span>
+              {systemMetrics.criticalAlerts} KRİTİK
+            </p>
+
+            {/* Sağ: Tarih + Butonlar */}
+            <div className={`flex items-center gap-2 ml-auto ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
+              <div className="glass-card px-3 py-1.5 flex items-center gap-2 border border-slate-500/20">
+                <span className="text-[9px] font-mono text-slate-400 tracking-wider" suppressHydrationWarning>
+                  {systemTime.toLocaleDateString('tr-TR', { year: 'numeric', month: '2-digit', day: '2-digit' })}
+                </span>
+                <span className="text-[9px] font-mono neon-text-cyan font-bold" suppressHydrationWarning>
+                  {systemTime.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                </span>
+              </div>
               <button
                 onClick={() => setIsLocked(!isLocked)}
                 className={`
-                  text-[10px] font-black px-4 py-2 rounded-lg border transition-all duration-300
-                  tracking-[0.15em] uppercase
+                  text-[9px] font-black px-3 py-1.5 rounded-lg border transition-all duration-300
+                  tracking-[0.12em] uppercase
                   ${isLocked
                     ? 'bg-red-500/10 text-red-400 border-red-500/30 hover:bg-red-500/20 neon-glow-red'
                     : 'bg-green-500/10 text-green-400 border-green-500/30 hover:bg-green-500/20 neon-glow-green'
@@ -400,7 +405,7 @@ export default function Dashboard() {
                 <button
                   onClick={handleExport}
                   disabled={isExporting}
-                  className="text-[10px] font-black px-4 py-2 rounded-lg border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 transition-all duration-300 tracking-[0.15em] uppercase disabled:opacity-40 neon-glow-cyan"
+                  className="text-[9px] font-black px-3 py-1.5 rounded-lg border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 transition-all duration-300 tracking-[0.12em] uppercase disabled:opacity-40 neon-glow-cyan"
                 >
                   {isExporting ? tr.sealing : tr.sealSystem}
                 </button>
