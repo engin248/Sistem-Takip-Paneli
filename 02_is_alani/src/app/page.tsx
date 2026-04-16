@@ -24,6 +24,7 @@ import { toast } from 'sonner';
 import AgentPanel from '@/components/AgentPanel';
 import KnowledgeBasePanel from '@/components/KnowledgeBasePanel';
 import ShieldPanel from '@/components/ShieldPanel';
+import ScreenErrorBoundary from '@/components/ScreenErrorBoundary';
 import ActivityFeed from '@/components/ActivityFeed';
 import LiveMetrics from '@/components/LiveMetrics';
 
@@ -135,7 +136,9 @@ function HQScreen({
 
       {/* ── EKRAN İÇERİK ─────────────────────────────────────── */}
       <div className={`p-4 ${isExpanded ? '' : 'max-h-[320px] overflow-y-auto'}`}>
-        {children}
+        <ScreenErrorBoundary screenId={screen.id}>
+          {children}
+        </ScreenErrorBoundary>
       </div>
     </div>
   );
