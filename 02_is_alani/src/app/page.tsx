@@ -86,12 +86,16 @@ function HQScreen({
   isActive,
   onClick,
   isExpanded,
+  isCollapsed,
+  onToggleCollapse,
 }: {
   screen: typeof HQ_SCREENS[number];
   children: React.ReactNode;
   isActive: boolean;
   onClick: () => void;
   isExpanded: boolean;
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
 }) {
   const colorMap: Record<string, { border: string; text: string; bg: string; dot: string; glow: string }> = {
     cyan:   { border: 'border-cyan-500/30',   text: 'text-cyan-400',   bg: 'bg-cyan-500/10',   dot: 'bg-cyan-400',   glow: 'neon-glow-cyan' },
@@ -106,19 +110,15 @@ function HQScreen({
   return (
     <div
       className={`
-        hq-screen glass-card cursor-pointer
+        hq-screen glass-card
         transition-all duration-500 ease-out
-        ${isExpanded ? 'col-span-3 row-span-2' : ''}
+        ${isExpanded ? 'lg:col-span-2' : ''}
         ${isActive ? `${c.glow} animate-glow-breathe` : 'opacity-80 hover:opacity-100'}
       `}
-      onClick={onClick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => e.key === 'Enter' && onClick()}
       id={`hq-screen-${screen.id}`}
     >
       {/* ── EKRAN HEADER ──────────────────────────────────────── */}
-      <div className="screen-header">
+      <div className="screen-header cursor-pointer" onClick={onClick} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && onClick()}>
         <div className="flex items-center gap-2.5">
           <span className={`text-lg ${c.text}`}>{screen.icon}</span>
           <div>
@@ -135,15 +135,29 @@ function HQScreen({
             {screen.status}
           </span>
           <div className={`status-dot ${c.dot}`} />
+          {/* ── DARALT/GENİŞLET BUTONU ────────────── */}
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleCollapse(); }}
+            className={`ml-1 w-6 h-6 flex items-center justify-center rounded-md border transition-all text-[10px] font-bold
+              ${isCollapsed
+                ? 'border-slate-600 text-slate-400 hover:text-cyan-400 hover:border-cyan-500/30 bg-slate-800/50'
+                : 'border-slate-600 text-slate-400 hover:text-amber-400 hover:border-amber-500/30 bg-slate-800/50'
+              }`}
+            title={isCollapsed ? 'Genişlet' : 'Daralt'}
+          >
+            {isCollapsed ? '▼' : '▲'}
+          </button>
         </div>
       </div>
 
       {/* ── EKRAN İÇERİK ─────────────────────────────────────── */}
-      <div className={`p-4 ${isExpanded ? '' : 'max-h-[320px] overflow-y-auto'}`}>
-        <ScreenErrorBoundary screenId={screen.id}>
-          {children}
-        </ScreenErrorBoundary>
-      </div>
+      {!isCollapsed && (
+        <div className={`p-4 ${isExpanded ? '' : 'max-h-[400px] overflow-y-auto'} animate-fade-in-up`}>
+          <ScreenErrorBoundary screenId={screen.id}>
+            {children}
+          </ScreenErrorBoundary>
+        </div>
+      )}
     </div>
   );
 }
@@ -160,6 +174,25 @@ export default function Dashboard() {
   const [isExporting, setIsExporting] = useState(false);
   const [activeScreen, setActiveScreen] = useState<string | null>(null);
   const [expandedScreen, setExpandedScreen] = useState<string | null>(null);
+  const [collapsedScreens, setCollapsedScreens] = useState<Set<string>>(new Set());
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  // ── PANEL DARALT/GENİŞLET ───────────────────────────────────
+  const toggleCollapse = useCallback((screenId: string) => {
+    setCollapsedScreens(prev => {
+      const next = new Set(prev);
+      if (next.has(screenId)) next.delete(screenId);
+      else next.add(screenId);
+      return next;
+    });
+  }, []);
+
+  // ── SIDEBAR SCROLL ──────────────────────────────────────────
+  const scrollToScreen = useCallback((screenId: string) => {
+    const el = document.getElementById(`hq-screen-${screenId}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setActiveScreen(screenId);
+  }, []);
 
   // ── FETCH + SUBSCRIBE ─────────────────────────────────────
   useEffect(() => {
@@ -222,7 +255,81 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-57px)]">
+    <div className="flex min-h-[calc(100vh-57px)]">
+      {/* ══════════════════════════════════════════════════════ */}
+      {/* SOL SIDEBAR — EKRAN NAVİGASYON                        */}
+      {/* ══════════════════════════════════════════════════════ */}
+      {!isLocked && (
+        <aside className={`hidden lg:flex flex-col transition-all duration-300 sticky top-[57px] h-[calc(100vh-57px)] z-30
+          ${sidebarOpen ? 'w-52' : 'w-12'}
+        `}>
+          <div className="glass-card h-full rounded-none border-r border-cyan-500/10 flex flex-col">
+            {/* Sidebar toggle */}
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-2 text-slate-500 hover:text-cyan-400 transition-colors border-b border-slate-700/30 flex items-center justify-center"
+              title={sidebarOpen ? 'Daralt' : 'Genişlet'}
+            >
+              <span className="text-xs font-mono">{sidebarOpen ? '◂' : '▸'}</span>
+            </button>
+            {/* Ekran listesi */}
+            <div className="flex-1 overflow-y-auto py-1 scrollbar-thin">
+              {HQ_SCREENS.map((screen) => {
+                const isActive_ = activeScreen === screen.id;
+                const colorMap_: Record<string, string> = {
+                  cyan: 'text-cyan-400', blue: 'text-blue-400', purple: 'text-purple-400',
+                  amber: 'text-amber-400', green: 'text-green-400', red: 'text-red-400',
+                };
+                const textColor = colorMap_[screen.color] ?? 'text-cyan-400';
+                return (
+                  <button
+                    key={screen.id}
+                    onClick={() => scrollToScreen(screen.id)}
+                    className={`w-full flex items-center gap-2 px-2 py-1.5 text-left transition-all group
+                      ${isActive_
+                        ? 'bg-cyan-500/10 border-r-2 border-cyan-400'
+                        : 'hover:bg-slate-800/50 border-r-2 border-transparent'
+                      }
+                    `}
+                    title={screen.label}
+                  >
+                    <span className={`text-sm ${textColor} ${isActive_ ? 'opacity-100' : 'opacity-50 group-hover:opacity-80'} transition-opacity`}>
+                      {screen.icon}
+                    </span>
+                    {sidebarOpen && (
+                      <div className="min-w-0 flex-1">
+                        <div className={`text-[8px] font-black tracking-[0.15em] uppercase truncate ${isActive_ ? textColor : 'text-slate-500 group-hover:text-slate-300'} transition-colors`}>
+                          {screen.label}
+                        </div>
+                        <div className="text-[7px] font-mono text-slate-600">{screen.id}</div>
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            {/* Sidebar alt — tüm panelleri daralt/genişlet */}
+            {sidebarOpen && (
+              <div className="p-2 border-t border-slate-700/30 flex gap-1">
+                <button
+                  onClick={() => setCollapsedScreens(new Set(HQ_SCREENS.map(s => s.id)))}
+                  className="flex-1 text-[7px] font-bold text-slate-500 hover:text-amber-400 py-1 rounded hover:bg-slate-800/50 transition-all uppercase tracking-wider"
+                >
+                  TÜMÜNÜ DARALT
+                </button>
+                <button
+                  onClick={() => setCollapsedScreens(new Set())}
+                  className="flex-1 text-[7px] font-bold text-slate-500 hover:text-cyan-400 py-1 rounded hover:bg-slate-800/50 transition-all uppercase tracking-wider"
+                >
+                  TÜMÜNÜ AÇ
+                </button>
+              </div>
+            )}
+          </div>
+        </aside>
+      )}
+
+      <div className="flex-1 flex flex-col min-w-0">
       <main className="flex-1 p-4 lg:p-6 max-w-[1920px] mx-auto w-full">
 
         {/* ══════════════════════════════════════════════════════ */}
@@ -421,7 +528,7 @@ export default function Dashboard() {
           /* ═══════════════════════════════════════════════════ */
           /* AKTİF MOD: 9 EKRANLI KARARGAH GRID                 */
           /* ═══════════════════════════════════════════════════ */
-          <section className="space-y-4 animate-fade-in-up">
+          <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-fade-in-up">
 
             {/* ── EKRAN 01: SİSTEM SAĞLIK ─────────────────────── */}
             <HQScreen
@@ -429,6 +536,8 @@ export default function Dashboard() {
               isActive={activeScreen === 'SCR-01'}
               onClick={() => handleScreenClick('SCR-01')}
               isExpanded={expandedScreen === 'SCR-01'}
+              isCollapsed={collapsedScreens.has('SCR-01')}
+              onToggleCollapse={() => toggleCollapse('SCR-01')}
             >
               <HealthDashboard />
             </HQScreen>
@@ -439,6 +548,8 @@ export default function Dashboard() {
               isActive={activeScreen === 'SCR-02'}
               onClick={() => handleScreenClick('SCR-02')}
               isExpanded={expandedScreen === 'SCR-02'}
+              isCollapsed={collapsedScreens.has('SCR-02')}
+              onToggleCollapse={() => toggleCollapse('SCR-02')}
             >
               <Stats />
             </HQScreen>
@@ -449,6 +560,8 @@ export default function Dashboard() {
               isActive={activeScreen === 'SCR-03'}
               onClick={() => handleScreenClick('SCR-03')}
               isExpanded={expandedScreen === 'SCR-03'}
+              isCollapsed={collapsedScreens.has('SCR-03')}
+              onToggleCollapse={() => toggleCollapse('SCR-03')}
             >
               <div className="space-y-6">
                 <div>
@@ -478,6 +591,8 @@ export default function Dashboard() {
               isActive={activeScreen === 'SCR-04'}
               onClick={() => handleScreenClick('SCR-04')}
               isExpanded={expandedScreen === 'SCR-04'}
+              isCollapsed={collapsedScreens.has('SCR-04')}
+              onToggleCollapse={() => toggleCollapse('SCR-04')}
             >
               <BoardPanel />
             </HQScreen>
@@ -488,6 +603,8 @@ export default function Dashboard() {
               isActive={activeScreen === 'SCR-05'}
               onClick={() => handleScreenClick('SCR-05')}
               isExpanded={expandedScreen === 'SCR-05'}
+              isCollapsed={collapsedScreens.has('SCR-05')}
+              onToggleCollapse={() => toggleCollapse('SCR-05')}
             >
               <L2Panel />
             </HQScreen>
@@ -498,6 +615,8 @@ export default function Dashboard() {
               isActive={activeScreen === 'SCR-06'}
               onClick={() => handleScreenClick('SCR-06')}
               isExpanded={expandedScreen === 'SCR-06'}
+              isCollapsed={collapsedScreens.has('SCR-06')}
+              onToggleCollapse={() => toggleCollapse('SCR-06')}
             >
               <SelfLearningPanel />
             </HQScreen>
@@ -508,6 +627,8 @@ export default function Dashboard() {
               isActive={activeScreen === 'SCR-07'}
               onClick={() => handleScreenClick('SCR-07')}
               isExpanded={expandedScreen === 'SCR-07'}
+              isCollapsed={collapsedScreens.has('SCR-07')}
+              onToggleCollapse={() => toggleCollapse('SCR-07')}
             >
               <AlarmPanel />
             </HQScreen>
@@ -518,6 +639,8 @@ export default function Dashboard() {
               isActive={activeScreen === 'SCR-08'}
               onClick={() => handleScreenClick('SCR-08')}
               isExpanded={expandedScreen === 'SCR-08'}
+              isCollapsed={collapsedScreens.has('SCR-08')}
+              onToggleCollapse={() => toggleCollapse('SCR-08')}
             >
               <TelegramSender />
             </HQScreen>
@@ -528,6 +651,8 @@ export default function Dashboard() {
               isActive={activeScreen === 'SCR-09'}
               onClick={() => handleScreenClick('SCR-09')}
               isExpanded={expandedScreen === 'SCR-09'}
+              isCollapsed={collapsedScreens.has('SCR-09')}
+              onToggleCollapse={() => toggleCollapse('SCR-09')}
             >
               <AuditLog />
             </HQScreen>
@@ -538,6 +663,8 @@ export default function Dashboard() {
               isActive={activeScreen === 'SCR-10'}
               onClick={() => handleScreenClick('SCR-10')}
               isExpanded={expandedScreen === 'SCR-10'}
+              isCollapsed={collapsedScreens.has('SCR-10')}
+              onToggleCollapse={() => toggleCollapse('SCR-10')}
             >
               <AgentPanel />
             </HQScreen>
@@ -548,6 +675,8 @@ export default function Dashboard() {
               isActive={activeScreen === 'SCR-11'}
               onClick={() => handleScreenClick('SCR-11')}
               isExpanded={expandedScreen === 'SCR-11'}
+              isCollapsed={collapsedScreens.has('SCR-11')}
+              onToggleCollapse={() => toggleCollapse('SCR-11')}
             >
               <KnowledgeBasePanel />
             </HQScreen>
@@ -558,6 +687,8 @@ export default function Dashboard() {
               isActive={activeScreen === 'SCR-12'}
               onClick={() => handleScreenClick('SCR-12')}
               isExpanded={expandedScreen === 'SCR-12'}
+              isCollapsed={collapsedScreens.has('SCR-12')}
+              onToggleCollapse={() => toggleCollapse('SCR-12')}
             >
               <ActivityFeed />
             </HQScreen>
@@ -568,6 +699,8 @@ export default function Dashboard() {
               isActive={activeScreen === 'SCR-13'}
               onClick={() => handleScreenClick('SCR-13')}
               isExpanded={expandedScreen === 'SCR-13'}
+              isCollapsed={collapsedScreens.has('SCR-13')}
+              onToggleCollapse={() => toggleCollapse('SCR-13')}
             >
               <LiveMetrics />
             </HQScreen>
@@ -578,6 +711,8 @@ export default function Dashboard() {
               isActive={activeScreen === 'SCR-14'}
               onClick={() => handleScreenClick('SCR-14')}
               isExpanded={expandedScreen === 'SCR-14'}
+              isCollapsed={collapsedScreens.has('SCR-14')}
+              onToggleCollapse={() => toggleCollapse('SCR-14')}
             >
               <ShieldPanel />
             </HQScreen>
@@ -588,6 +723,8 @@ export default function Dashboard() {
               isActive={activeScreen === 'SCR-15'}
               onClick={() => handleScreenClick('SCR-15')}
               isExpanded={expandedScreen === 'SCR-15'}
+              isCollapsed={collapsedScreens.has('SCR-15')}
+              onToggleCollapse={() => toggleCollapse('SCR-15')}
             >
               <NizamnamePaneli />
             </HQScreen>
@@ -598,6 +735,8 @@ export default function Dashboard() {
               isActive={activeScreen === 'SCR-16'}
               onClick={() => handleScreenClick('SCR-16')}
               isExpanded={expandedScreen === 'SCR-16'}
+              isCollapsed={collapsedScreens.has('SCR-16')}
+              onToggleCollapse={() => toggleCollapse('SCR-16')}
             >
               <JobMonitorPanel />
             </HQScreen>
@@ -633,6 +772,7 @@ export default function Dashboard() {
           </div>
         </div>
       </footer>
+      </div>
     </div>
   );
 }

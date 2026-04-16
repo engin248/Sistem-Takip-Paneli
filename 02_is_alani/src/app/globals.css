@@ -426,3 +426,41 @@ html[dir="rtl"] .ms-2 {
     padding-right: env(safe-area-inset-right);
   }
 }
+
+/* ══════════════════════════════════════════════════════════════ */
+/* SIDEBAR STİLLERİ                                              */
+/* ══════════════════════════════════════════════════════════════ */
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(6, 182, 212, 0.15);
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(6, 182, 212, 0.3);
+}
+
+/* ══════════════════════════════════════════════════════════════ */
+/* GRİD LAYOUT GEÇİŞ ANİMASYONLARI                              */
+/* ══════════════════════════════════════════════════════════════ */
+
+/* Panel daralt/genişlet geçişi */
+.hq-screen {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 2 sütunlu grid'de genişletilmiş panel */
+@media (min-width: 1024px) {
+  .hq-screen.lg\:col-span-2 {
+    grid-column: span 2 / span 2;
+  }
+}
+
