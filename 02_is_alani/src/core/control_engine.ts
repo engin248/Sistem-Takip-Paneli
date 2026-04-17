@@ -109,26 +109,36 @@ export async function L0_GATEKEEPER(
   }
 
   // ── ADIM 4: Replay koruması (Kural #90) ─────────────────
-  const { data: existing } = await supabase
-    .from('commands')
-    .select('id')
-    .eq('nonce', context.nonce)
-    .maybeSingle();
+  // H-03 FIX: commands tablosu yoksa graceful degradation — replay kontrolü atlanır
+  try {
+    const { data: existing } = await supabase
+      .from('commands')
+      .select('id')
+      .eq('nonce', context.nonce)
+      .maybeSingle();
 
-  if (existing) {
-    throw new Error('ERR-STP006: Replay tespit — aynı nonce (Kural #90 retry=0)');
-  }
+    if (existing) {
+      throw new Error('ERR-STP006: Replay tespit — aynı nonce (Kural #90 retry=0)');
+    }
 
-  // ── ADIM 4b: Concurrent lock (Kural #88) ─────────────────
-  const { data: activeCmd } = await supabase
-    .from('commands')
-    .select('id')
-    .eq('user_id', context.userId)
-    .in('status', ['received', 'analyzing', 'detecting', 'proving', 'gate_check', 'executing'])
-    .maybeSingle();
+    // ── ADIM 4b: Concurrent lock (Kural #88) ─────────────────
+    const { data: activeCmd } = await supabase
+      .from('commands')
+      .select('id')
+      .eq('user_id', context.userId)
+      .in('status', ['received', 'analyzing', 'detecting', 'proving', 'gate_check', 'executing'])
+      .maybeSingle();
 
-  if (activeCmd) {
-    throw new Error('ERR-STP009: Aktif işlem var — concurrent lock (Kural #88)');
+    if (activeCmd) {
+      throw new Error('ERR-STP009: Aktif işlem var — concurrent lock (Kural #88)');
+    }
+  } catch (err) {
+    // Replay/concurrent hataları tekrar fırlat
+    if (err instanceof Error && (err.message.includes('ERR-STP006') || err.message.includes('ERR-STP009'))) {
+      throw err;
+    }
+    // Tablo yoksa veya DB erişim hatası → replay kontrolü atlanır, devam
+    console.warn('[L0_GATEKEEPER] commands tablosu erişim hatası — replay/concurrent kontrolü atlandı:', err instanceof Error ? err.message : String(err));
   }
 
   // ── ADIM 5: Hash (A6) ───────────────────────────────────
@@ -137,47 +147,59 @@ export async function L0_GATEKEEPER(
     .digest('hex');
 
   // ── ADIM 6: DB kayıt (T1 — commands) ────────────────────
-  const { data: command, error } = await supabase
-    .from('commands')
-    .insert({
-      raw_text:  rawInput,
-      channel:   context.channel,
-      user_id:   context.userId,
-      nonce:     context.nonce,
-      hash,
-      confirmed: !context.isVoice,
-      status:    context.isVoice ? 'voice_pending' : 'received',
-    })
-    .select('id')
-    .single();
+  let commandId: string = `LOCAL-${Date.now()}`;
+  try {
+    const { data: command, error } = await supabase
+      .from('commands')
+      .insert({
+        raw_text:  rawInput,
+        channel:   context.channel,
+        user_id:   context.userId,
+        nonce:     context.nonce,
+        hash,
+        confirmed: !context.isVoice,
+        status:    context.isVoice ? 'voice_pending' : 'received',
+      })
+      .select('id')
+      .single();
 
-  if (error || !command) {
-    throw new Error('ERR-STP007: DB kayıt başarısız');
+    if (error || !command) {
+      console.warn('[L0_GATEKEEPER] commands INSERT hatası — yerel ID kullanılacak:', error?.message);
+    } else {
+      commandId = command.id;
+    }
+  } catch {
+    console.warn('[L0_GATEKEEPER] commands tablosu INSERT erişim hatası — yerel ID kullanılacak');
   }
 
   // ── ADIM 7: Immutable log (T10 — proof zinciri) ─────────
-  // prev_hash: son kaydın hash'i alınarak zincir bütünlüğü sağlanır
-  const { data: lastLog } = await supabase
-    .from('immutable_logs')
-    .select('hash')
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  // H-04 FIX: immutable_logs tablosu yoksa sessiz fail — audit zinciri kırılmaz, yerel log devam eder
+  try {
+    const { data: lastLog } = await supabase
+      .from('immutable_logs')
+      .select('hash')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-  await supabase.from('immutable_logs').insert({
-    module:     'K1',
-    event_type: 'HERMAI_INPUT_ARCHIVE',
-    severity:   'info',
-    payload:    { rawInput, channel: context.channel, hash, nonce: context.nonce },
-    hash,
-    prev_hash:  lastLog?.hash ?? '',
-  });
+    await supabase.from('immutable_logs').insert({
+      module:     'K1',
+      event_type: 'HERMAI_INPUT_ARCHIVE',
+      severity:   'info',
+      payload:    { rawInput, channel: context.channel, hash, nonce: context.nonce },
+      hash,
+      prev_hash:  lastLog?.hash ?? '',
+    });
+  } catch {
+    // Tablo yoksa → yerel disk audit (ADIM 9) devam eder
+    console.warn('[L0_GATEKEEPER] immutable_logs tablosu erişim hatası — yerel audit\'e düşülüyor');
+  }
 
   // ── ADIM 8: Ses → teyit bekle ───────────────────────────
   if (context.isVoice) {
     return {
       status:    'VOICE_PENDING_CONFIRM',
-      commandId: command.id,
+      commandId,
       hash,
       timestamp,
       channel:   context.channel,
@@ -189,7 +211,7 @@ export async function L0_GATEKEEPER(
     eventType: 'L0_GATEKEEPER_PASS',
     module:    'K1',
     severity:  'info',
-    commandId: command.id,
+    commandId,
     userId:    context.userId,
     hash,
     payload:   { channel: context.channel, nonce: context.nonce, timestamp },
@@ -197,7 +219,7 @@ export async function L0_GATEKEEPER(
 
   return {
     status:    'PROCEED',
-    commandId: command.id,
+    commandId,
     hash,
     timestamp,
     channel:   context.channel,

@@ -1,5 +1,6 @@
 // src/app/api/queue/route.ts
-// GET /api/queue — Son iş geçmişi + istatistik
+// GET /api/queue — Son 50 iş geçmişi + istatistik + audit log
+// NOT: /api/jobs tüm geçmişi döner (audit yok). /api/queue operasyonel sorgulama içindir.
 // ============================================================
 
 import { NextResponse } from 'next/server';

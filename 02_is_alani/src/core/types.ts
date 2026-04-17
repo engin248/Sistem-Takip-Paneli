@@ -7,8 +7,11 @@ export type SystemMode = 'STRICT' | 'NORMAL' | 'SAFE';
 
 export type CommandStatus =
     | 'received' | 'voice_pending' | 'validated' | 'analyzing'
+    | 'understanding_pending' | 'plan_pending'
     | 'detecting' | 'specifying' | 'proving' | 'verifying'
-    | 'refuting' | 'consensus' | 'gate_check' | 'executing'
+    | 'refuting' | 'consensus' | 'gate_check'
+    | 'evidence_pending' | 'approval_pending'
+    | 'executing'
     | 'completed' | 'failed' | 'escalated' | 'killed';
 
 export const CommandContextSchema = z.object({

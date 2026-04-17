@@ -2,15 +2,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLanguageStore } from "@/store/useLanguageStore";
 import { t } from "@/lib/i18n";
+import { toast } from "sonner";
 
 // ============================================================
 // ALARM PANEL — Alarm Merkezi Arayüzü
 // ============================================================
-// Kırılım #4 düzeltmesi
-//
-// ÜST: /api/alarms endpoint'i
-// ALT: alarmService.ts (in-memory alarm deposu)
-// ÖN: Açık alarm listesi + istatistik kartları
+// ÜST: /api/alarms endpoint'i (GET + PATCH)
+// ALT: alarmService.ts → stp_alarms tablosu (Supabase persist) + in-memory cache
+// ÖN: Açık alarm listesi + istatistik kartları + ÇÖZÜLDÜ butonu
 // ============================================================
 
 interface AlarmKaydi {
@@ -39,6 +38,7 @@ export default function AlarmPanel() {
 
   const [alarms, setAlarms] = useState<AlarmKaydi[]>([]);
   const [stats, setStats] = useState<AlarmStats>({ toplam: 0, acik: 0, emergency: 0, critical: 0, warning: 0 });
+  const [resolvingId, setResolvingId] = useState<string | null>(null);
 
   const loadAlarms = useCallback(async () => {
     try {
@@ -53,7 +53,6 @@ export default function AlarmPanel() {
 
   useEffect(() => {
     let cancelled = false;
-    // İlk yüklemede inline fetch — setState-in-effect ihlalini önler
     async function initialFetch() {
       try {
         const res = await fetch("/api/alarms");
@@ -65,8 +64,31 @@ export default function AlarmPanel() {
       } catch { /* sessiz — bağlantı yoksa UI boş kalır */ }
     }
     initialFetch();
-    const interval = setInterval(loadAlarms, 30_000); // 30 saniyede bir
+    const interval = setInterval(loadAlarms, 30_000);
     return () => { cancelled = true; clearInterval(interval); };
+  }, [loadAlarms]);
+
+  // ── ALARM ÇÖZME ──────────────────────────────────────────────
+  const resolveAlarm = useCallback(async (alarm: AlarmKaydi) => {
+    setResolvingId(alarm.id);
+    try {
+      const res = await fetch("/api/alarms", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ modul: alarm.modul, baslik: alarm.baslik, durum: "COZULDU" }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(`✅ Alarm çözüldü: ${alarm.baslik}`);
+        await loadAlarms();
+      } else {
+        toast.error(`Alarm çözülemedi: ${data.error || "Bilinmeyen hata"}`);
+      }
+    } catch {
+      toast.error("Alarm çözme başarısız — bağlantı hatası");
+    } finally {
+      setResolvingId(null);
+    }
   }, [loadAlarms]);
 
   function getSeverityStyle(seviye: string) {
@@ -86,11 +108,19 @@ export default function AlarmPanel() {
           <h2 className="text-sm font-bold text-slate-500 tracking-widest uppercase text-start">{tr.alarmTitle}</h2>
           <p className="text-[10px] text-slate-400 mt-0.5 text-start">{tr.alarmSubtitle}</p>
         </div>
-        {stats.acik > 0 && (
-          <span className="text-[10px] font-black bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-3 py-1 rounded-full">
-            {stats.acik} aktif
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {stats.acik > 0 && (
+            <span className="text-[10px] font-black bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-3 py-1 rounded-full">
+              {stats.acik} aktif
+            </span>
+          )}
+          <button
+            onClick={loadAlarms}
+            className="text-[9px] font-bold text-slate-500 hover:text-cyan-400 transition-colors tracking-wider uppercase"
+          >
+            ⟳ YENİLE
+          </button>
+        </div>
       </div>
 
       {/* İstatistik Çubuğu */}
@@ -112,12 +142,26 @@ export default function AlarmPanel() {
         <div className="space-y-2 max-h-60 overflow-y-auto">
           {alarms.map((alarm) => {
             const style = getSeverityStyle(alarm.seviye);
+            const isResolving = resolvingId === alarm.id;
             return (
               <div key={alarm.id} className={`p-3 rounded-xl border ${style.bg} ${style.border}`}>
                 <div className={`flex items-center gap-2 mb-1 ${dir === "rtl" ? "flex-row-reverse" : ""}`}>
                   <span>{style.icon}</span>
-                  <span className={`text-[11px] font-bold ${style.text} text-start`}>{alarm.baslik}</span>
-                  <span className="text-[9px] bg-slate-200 dark:bg-slate-700 text-slate-600 px-1.5 py-0.5 rounded ms-auto">{alarm.modul}</span>
+                  <span className={`text-[11px] font-bold ${style.text} text-start flex-1`}>{alarm.baslik}</span>
+                  <span className="text-[9px] bg-slate-200 dark:bg-slate-700 text-slate-600 px-1.5 py-0.5 rounded">{alarm.modul}</span>
+                  {/* ── ÇÖZÜLDÜ BUTONU ────────────────────────── */}
+                  <button
+                    id={`alarm-resolve-${alarm.id}`}
+                    onClick={(e) => { e.stopPropagation(); void resolveAlarm(alarm); }}
+                    disabled={isResolving}
+                    className="text-[8px] font-black tracking-wider uppercase px-2 py-1 rounded-lg border transition-all
+                      bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400
+                      border-emerald-300 dark:border-emerald-700
+                      hover:bg-emerald-100 dark:hover:bg-emerald-900/40
+                      disabled:opacity-40 flex-shrink-0"
+                  >
+                    {isResolving ? "⟳" : "✓ ÇÖZÜLDÜ"}
+                  </button>
                 </div>
                 <p className="text-[10px] text-slate-600 dark:text-slate-400 text-start">{alarm.aciklama}</p>
                 <div className={`flex items-center gap-3 mt-1.5 ${dir === "rtl" ? "flex-row-reverse" : ""}`}>

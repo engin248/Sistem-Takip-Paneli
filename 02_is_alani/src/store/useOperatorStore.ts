@@ -28,7 +28,8 @@ interface OperatorState {
 }
 
 // ── YÜKSEK YETKİLİ ROLLER — tüm görevlere yazma erişimi ────
-const ELEVATED_ROLES: OperatorRole[] = ['YÖNETİCİ', 'ADMIN'];
+// SİSTEM rolü: varsayılan operatör — otonom işlemler bu rolle çalışır
+const ELEVATED_ROLES: OperatorRole[] = ['YÖNETİCİ', 'ADMIN', 'SİSTEM'];
 
 export const useOperatorStore = create<OperatorState>()(
   devtools(

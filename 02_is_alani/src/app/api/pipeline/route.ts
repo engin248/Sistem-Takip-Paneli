@@ -38,6 +38,11 @@ export async function POST(req: NextRequest) {
             stage:     result.stage,
             commandId: result.commandId,
             totalMs:   result.totalMs,
+            // Gate bilgisi — onay bekleyen kapı varsa
+            pendingGate:    result.pendingGate ?? null,
+            understanding:  result.understanding ?? null,
+            plan:           result.plan ?? null,
+            approvalReport: result.approvalReport ?? null,
             criteria: result.criteria ? {
                 score:  result.criteria.score,
                 passed: result.criteria.passed,

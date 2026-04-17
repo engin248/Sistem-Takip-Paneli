@@ -11,7 +11,7 @@
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
 
-const AUDIT_DIR = process.env.STP_AUDIT_DIR ?? 'C:\\agent_audit';
+const AUDIT_DIR = process.env.STP_AUDIT_DIR ?? join(process.cwd(), '.agent_audit');
 const IS_PROD   = process.env.NODE_ENV === 'production';
 
 export interface LocalAuditEntry {

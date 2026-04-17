@@ -127,14 +127,14 @@ export const BrowserActionSchema = z.object({
 
 // ─── AUDIT LOG ŞEMASI ───────────────────────────────────────
 export const AuditLogSchema = z.object({
-  operation_type: z.enum(['CREATE', 'UPDATE', 'DELETE', 'EXECUTE', 'SYSTEM', 'REJECT']),
+  operation_type: z.enum(['CREATE', 'READ', 'UPDATE', 'DELETE', 'EXECUTE', 'SYSTEM', 'REJECT', 'ERROR']),
   action_description: z
     .string()
     .min(1, 'Açıklama zorunlu')
     .max(2000),
   task_id: z.string().uuid().nullable().optional(),
   error_code: z.string().max(50).nullable().optional(),
-  error_severity: z.enum(['INFO', 'WARNING', 'CRITICAL', 'FATAL']).nullable().optional(),
+  error_severity: z.enum(['INFO', 'WARNING', 'ERROR', 'CRITICAL', 'FATAL']).nullable().optional(),
   status: z.string().max(50).nullable().optional(),
   metadata: z.record(z.string(), z.unknown()).nullable().optional(),
 });

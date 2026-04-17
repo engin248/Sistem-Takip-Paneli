@@ -1,11 +1,18 @@
 // src/core/taskQueue.ts
 // ============================================================
-// GÖREV KUYRUGU — In-Memory FIFO + Öncelik Desteği
+// GÖREV KUYRUGU — In-Memory FIFO + Dosya Persist
 // ============================================================
-// Vercel serverless'ta kalıcı kuyruk yok.
-// Her API isteği kendi kuyruğuyla ilgilenir (senkron işlem).
-// Bu modül: state tutma + istatistik + son N iş kaydı.
+// Sunucu yeniden başlatıldığında veri kaybını önlemek için
+// iş geçmişi JSON dosyasına persist edilir.
+//
+// KALİCILIK STRATEJİSİ:
+//   1. Her pushJobHistory() çağrısında dosyaya yaz
+//   2. Modül ilk yüklendiğinde dosyadan oku
+//   3. Dosya I/O hatası → sessiz fail, in-memory devam
 // ============================================================
+
+import * as fs from 'fs';
+import * as path from 'path';
 
 export type JobStatus =
   | 'bekliyor'
@@ -43,15 +50,53 @@ export interface QueueJob {
   duration_ms?: number;
 }
 
+// ── PERSIST KATMANI ─────────────────────────────────────────
+// .agent_memory dizinine JSON olarak persist eder.
+// Vercel serverless'ta bu dizin read-only olabilir → sessiz fail.
+// ─────────────────────────────────────────────────────────────
+
+const PERSIST_DIR = path.join(process.cwd(), '.agent_memory');
+const PERSIST_FILE = path.join(PERSIST_DIR, 'job_history.json');
+
+/** Dosyadan iş geçmişini yükle — modül ilk yüklendiğinde çağrılır */
+function loadFromDisk(): QueueJob[] {
+  try {
+    if (fs.existsSync(PERSIST_FILE)) {
+      const raw = fs.readFileSync(PERSIST_FILE, 'utf-8');
+      const parsed = JSON.parse(raw) as QueueJob[];
+      if (Array.isArray(parsed)) {
+        return parsed.slice(-MAX_HISTORY); // son MAX_HISTORY kadar al
+      }
+    }
+  } catch {
+    // Dosya okunamadı — sessiz fail, boş dizi dön
+  }
+  return [];
+}
+
+/** İş geçmişini dosyaya yaz — her push'ta çağrılır */
+function persistToDisk(jobs: QueueJob[]): void {
+  try {
+    if (!fs.existsSync(PERSIST_DIR)) {
+      fs.mkdirSync(PERSIST_DIR, { recursive: true });
+    }
+    fs.writeFileSync(PERSIST_FILE, JSON.stringify(jobs), 'utf-8');
+  } catch {
+    // Dosya yazılamadı — sessiz fail (Vercel read-only, vb.)
+  }
+}
+
 // ── RING BUFFER — Son 100 iş ──────────────────────────────
 const MAX_HISTORY = 100;
-const jobHistory: QueueJob[] = [];
+const jobHistory: QueueJob[] = loadFromDisk();
 
 export function pushJobHistory(job: QueueJob): void {
   if (jobHistory.length >= MAX_HISTORY) {
     jobHistory.shift(); // en eskiyi çıkar
   }
   jobHistory.push({ ...job });
+  // Dosyaya persist
+  persistToDisk(jobHistory);
 }
 
 export function getJobHistory(): QueueJob[] {
@@ -99,3 +144,4 @@ export function generateJobId(agentId: string): string {
   const rnd = Math.random().toString(36).slice(2, 5).toUpperCase();
   return `JOB-${agentId}-${ts}-${rnd}`;
 }
+

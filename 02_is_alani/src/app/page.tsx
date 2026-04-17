@@ -31,7 +31,7 @@ import NizamnamePaneli from '@/components/NizamnamePaneli';
 import JobMonitorPanel from '@/components/JobMonitorPanel';
 
 // ============================================================
-// KARARGAH PANİLİ — 14 EKRANLI FÜTÜRİSTİK KOMUTA MERKEZİ
+// KARARGAH PANİLİ — 16 EKRANLI FÜTÜRİSTİK KOMUTA MERKEZİ
 // ============================================================
 // Ekran 01: SİSTEM SAĞLİK       — HealthDashboard
 // Ekran 02: OPS İSTATİSTİK      — Stats
@@ -104,6 +104,7 @@ function HQScreen({
     amber:  { border: 'border-amber-500/30',  text: 'text-amber-400',  bg: 'bg-amber-500/10',  dot: 'bg-amber-400',  glow: 'neon-glow-amber' },
     green:  { border: 'border-green-500/30',  text: 'text-green-400',  bg: 'bg-green-500/10',  dot: 'bg-green-400',  glow: 'neon-glow-green' },
     red:    { border: 'border-red-500/30',    text: 'text-red-400',    bg: 'bg-red-500/10',    dot: 'bg-red-400',    glow: 'neon-glow-red' },
+    indigo: { border: 'border-indigo-500/30', text: 'text-indigo-400', bg: 'bg-indigo-500/10', dot: 'bg-indigo-400', glow: 'neon-glow-purple' },
   };
   const c = colorMap[screen.color] ?? colorMap.cyan!;
 

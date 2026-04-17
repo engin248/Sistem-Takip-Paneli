@@ -49,6 +49,16 @@ export type { PostExecResult } from './postExec';
 export { executePipeline } from './pipeline';
 export type { PipelineResult } from './pipeline';
 
+// Human Gate — G-1/G-2/G-6/G-7 Kapılı Onay Mekanizması
+export {
+    saveCheckpoint, loadCheckpoint,
+    confirmGate, rejectGate, getPendingCheckpoints,
+} from './humanGate';
+export type {
+    GateId, GateStatus, CheckpointData, CheckpointRecord,
+    GateUnderstanding, GatePlan, GateEvidence, GateApprovalReport,
+} from './humanGate';
+
 // K0 — Bootstrap
 export { runBootstrap } from './bootstrap';
 export type { BootstrapResult } from './bootstrap';
