@@ -1,0 +1,295 @@
+1. KATMAN: GÜVENLİK (proxy.ts)
+Her istek önce bu katmandan geçer. 4 kontrol sırayla çalışır:
+
+Sıra	Kontrol	Ne Yapar?	Başarısızsa?
+1	Localhost Guard	Sadece localhost erişimi izinli	403 Yasaklı
+2	Rate Limiter	Dakikada 300 istek limiti	429 Çok Fazla İstek
+3	CSRF Kontrolü	Origin başlığı doğrulama	403 Yasaklı
+4	Auth Kontrolü	Oturum doğrulama	Login sayfasına yönlendir
+WARNING
+
+middleware.ts dosyası oluşturulamaz — Next.js 16+ kısıtlaması. Tüm güvenlik proxy.ts içinde.
+
+2. KATMAN: KOMUTA PANELİ (page.tsx) — 16 EKRAN
+Komuta Paneli, 16 ayrı ekranı 2 sütunlu grid'de gösterir. Her ekran bir API'den veri çeker:
+
+SOL KOLON (1-8)
+Ekran	İsim	API	Ne Gösterir?
+SCR-01	SİSTEM SAĞLIK	/api/health-check	DB, Ollama, Dış Platform durumu
+SCR-02	OPS İSTATİSTİK	/api/tasks	Toplam/Beklemede/Devam/Tamamlanan görev
+SCR-03	GÖREV PANOSU	/api/tasks	Yeni görev oluştur, görev listesi
+SCR-04	YÖNETİM KURULU	/api/board/decide	Karar alma, oylama
+SCR-05	L2 DENETİM	/api/agents	L2 denetim sonuçları
+SCR-06	G-8 ÖĞRENME	/api/learn	Öğrenme motoru çıktıları
+SCR-07	ALARM MERKEZİ	/api/alarms	Aktif alarmlar, alarm oluştur
+SCR-08	TELEGRAM KÖPRÜSÜ	/api/telegram	Telegram mesaj gönder
+SAĞ KOLON (9-16)
+Ekran	İsim	API	Ne Gösterir?
+SCR-09	DENETİM GÜNLÜĞÜ	/api/logs	Audit log kayıtları
+SCR-10	AJAN KADROSU	/api/agents	50 ajan listesi, durum, görev atama
+SCR-11	BİLGİ TABANI	/api/rag	RAG bilgi tabanı sorgu
+SCR-12	AKTİVİTE AKIŞI	/api/queue	Son iş kuyruğu olayları
+SCR-13	CANLI METRİKLER	/api/health	Sistem performans metrikleri
+SCR-14	SİSTEM KALKAN	/api/circuit-breaker	Circuit Breaker durumu
+SCR-15	NİZAMNAME	/api/rules	Kural listesi, ihlaller
+SCR-16	JOB MONITOR	/api/jobs	İş kuyruğu geçmişi
+Komuta Paneli UI Özellikleri
+Özellik	Ne Yapar?
+Sol Sidebar	16 ekrana hızlı atlama, tıkla → scroll
+▲/▼ Butonları	Her paneli daralt/genişlet
+TÜMÜNÜ DARALT	Tüm panelleri tek tıkla kapat
+TÜMÜNÜ AÇ	Tüm panelleri tek tıkla aç
+ERİŞİM AÇIK / KİLİTLE	Paneli kilitler, değişiklik engeller
+SİSTEMİ MÜHÜRLE	Tüm durumu JSON olarak dışa aktar
+3. KATMAN: API — 28 ENDPOINT
+Frontend (Komuta Paneli) ile backend arasında köprü. Her endpoint bir servis çağırır:
+
+Veri Okuma (GET)
+Endpoint	Ne Döndürür?	Hangi Ekran Kullanır?
+/api/health	Sistem durumu	SCR-13
+/api/health-check	DB + Ollama + Dış platform sağlık	SCR-01
+/api/tasks	Görev listesi	SCR-02, SCR-03
+/api/agents	50 ajan listesi + durumları	SCR-05, SCR-10
+/api/jobs	İş kuyruğu geçmişi	SCR-16
+/api/queue	Aktif kuyruk	SCR-12
+/api/logs	Audit logları	SCR-09
+/api/rules	Nizamname kuralları	SCR-15
+/api/alarms	Alarmlar	SCR-07
+/api/circuit-breaker	CB durumu	SCR-14
+/api/rag	Bilgi tabanı	SCR-11
+/api/learn	Öğrenme verileri	SCR-06
+Komut Gönderme (POST)
+Endpoint	Ne Yapar?	Tetikleyen
+/api/tasks	Yeni görev oluştur	SCR-03 TaskForm
+/api/agents/[id]/task	Belirli ajana görev ver	SCR-10
+/api/orchestrate	Otomatik ajan ata + çalıştır	Görev atama
+/api/pipeline	9 katmanlı doğrulama çalıştır	Kritik komutlar
+/api/board/decide	Yönetim kurulu kararı	SCR-04
+/api/telegram	Telegram mesaj gönder	SCR-08
+/api/notify	Bildirim gönder	Alarm sistemi
+/api/decompose	Karmaşık görevi parçala	Büyük görevler
+/api/validate	Veri doğrulama	Form'lar
+/api/bootstrap	Sistem başlat	Deploy sonrası
+4. KATMAN: İŞ MANTIĞI (core/)
+Bu katman asıl işi yapan modüllerdir. Komuta Paneli → API → buraya gelir.
+
+Bir Görev Nasıl İşlenir? (Adım Adım)
+KULLANICI görev yazar (SCR-03)
+    │
+    ▼
+1. POST /api/orchestrate { görev: "..." }
+    │
+    ▼
+2. orchestrator.ts → Görevdeki anahtar kelimelere bakar
+    │  Örnek: "frontend" → A-01, "veritabanı" → A-03
+    │  Eşleşme yoksa → K-1 KOMUTAN'a gider
+    │
+    ▼
+3. agentWorker.ts → Seçilen ajan ile ReAct döngüsüne girer:
+    │
+    │  3a. Ajan var mı? → agentRegistry kontrol
+    │  3b. Görev ön kontrol → ruleGuard (yetki kontrolü)
+    │  3c. Idempotency → aynı görev 30sn içinde tekrar mı?
+    │  3d. RAG hafıza → geçmiş bilgi enjekte et
+    │
+    │  ┌─── ReAct Döngüsü (max 5 tur) ───────────┐
+    │  │                                            │
+    │  │  DÜŞÜN (AI çağır) → ARAÇ KULLAN → TEKRARLA │
+    │  │                                            │
+    │  │  "GÖREV TAMAM" yazana kadar devam           │
+    │  └────────────────────────────────────────────┘
+    │
+    ▼
+4. Sonuç kaydedilir:
+    │  → audit_logs tablosuna (auditService)
+    │  → iş kuyruğuna (taskQueue)
+    │  → LTM hafızaya (agentMemory)
+    │
+    ▼
+5. L1 ajan ise → L2 otomatik denetim başlar (B-01)
+    │  L2 hata bulursa → L3 hakem devreye girer (B-03)
+    │
+    ▼
+6. Sonuç API üzerinden → Komuta Paneli'ne döner
+Ajan Çalışma Modları
+Mod	AI Kullanır?	Maliyet	Hangi Ajanlar?
+Kural Tabanlı	Hayır	0₺	K-4, A-05, A-06, A-09, A-10, B-03, B-04, B-05, D-01, D-02
+Hibrit	Gerekirse	Düşük	K-1, K-2, K-3
+Tam AI	Evet (ReAct)	Normal	A-01, A-02, A-03, A-04, A-07, A-08
+5. KATMAN: VERİ (lib/ + services/)
+Supabase Veritabanı Tabloları
+Tablo	Ne Tutar?	Kim Yazar?
+commands	Gelen komutlar (hash, nonce, status)	L0 Gatekeeper (pipeline)
+tasks	Görevler (başlık, durum, öncelik)	taskService (kullanıcı + ajan)
+audit_logs	Denetim kayıtları (her işlem)	auditService (her modül)
+immutable_logs	Değiştirilemez kanıt zinciri (SHA-256)	control_engine (pipeline)
+proof_chain	Matematiksel ispat zinciri	proofEngine (pipeline)
+alerts	Sistem alarmları	alarmService, pipeline hataları
+performance_metrics	Performans ölçümleri	pipeline tamamlandığında
+operator_certs	Operatör sertifikaları	pipeline onaylandığında
+AI Provider Zinciri
+AI İsteği gelir
+    │
+    ▼
+Circuit Breaker durumu ne?
+    │
+    ├── KAPALI (normal)
+    │       │
+    │       ▼
+    │   Ollama'yı çağır (localhost:11434, maliyet: 0₺)
+    │       │
+    │       ├── Başarılı → Yanıt döndür ✅
+    │       └── 3 kez hata → Circuit Breaker AÇILIR 🔴
+    │
+    ├── AÇIK (bozuk, 30sn bekle)
+    │       │
+    │       ▼
+    │   Lokal kural yanıtı döndür (maliyet: 0₺) ⚠️
+    │
+    └── YARI AÇIK (test modu)
+            │
+            ▼
+        Ollama'yı bir kez dene
+            │
+            ├── Başarılı → Circuit Breaker KAPANIR ✅
+            └── Hata → Circuit Breaker tekrar AÇILIR 🔴
+IMPORTANT
+
+OpenAI HER ZAMAN DEVRE DIŞI. forceDisableOpenAI: true — sıfır maliyet politikası.
+
+AJAN SİSTEMİ — 50 AJAN
+Kadro Yapısı
+Katman	Sayı	Görev	Örnekler
+KOMUTA	4	Strateji, karar, güvenlik	K-1 KOMUTAN, K-2 KURMAY, K-3 İSTİHBARAT, K-4 MUHAFIZ
+L1 İcraatçı	10	Doğrudan iş yapma	A-01 Frontend, A-02 Backend, A-03 DB, A-04 Bot, A-05 Test...
+L2 Denetçi	6	Denetim, kontrol	B-01 Kod, B-02 Doğrulama, B-03 Güvenlik, B-04 Performans...
+L3 Hakem	2	Çelişki çözme	H-01 Teknik Hakem, H-02 Stratejik Hakem
+Destek	28	Özel uzmanlık	D-01 Mühürdar, D-02 Otomasyon, D-03 AR-GE, D-04 Hafızacı...
+Ajan Yaşam Döngüsü
+PASİF (boşta bekliyor)
+    │
+    │  Görev atandı
+    ▼
+AKTİF (çalışıyor)
+    │
+    │  ReAct döngüsü: DÜŞÜN → ARAÇ KULLAN → TEKRARLA (max 5)
+    │
+    ├── GÖREV TAMAM → PASİF'e dön ✅
+    ├── HATA → PASİF'e dön, hata logla ❌
+    └── TIMEOUT (30sn) → PASİF'e dön, lokal yanıt ⚠️
+Otomatik Denetim Zinciri (L1 → L2 → L3)
+L1 ajan görevi tamamlar
+    │
+    │  AI kullandı mı? Sonuç > 30 karakter mi?
+    │
+    ├── HAYIR → Denetim atlanır ✅
+    │
+    └── EVET → L2 DENETÇİ-KOD (B-01) otomatik devreye girer
+                    │
+                    │  5 eksenden denetler:
+                    │  teknik, güvenlik, performans, operasyonel, UX
+                    │
+                    ├── ONAYLANDI → Sonuç geçerli ✅
+                    │
+                    └── HATA_VAR → L3 HAKEM (B-03) devreye girer
+                                    │
+                                    ├── KABUL → Hata önemsiz ✅
+                                    └── REVİZYON → Düzeltme gerekli 🔄
+NOTE
+
+L2 denetimi bloklayıcı değil — L1 sonucu hemen döner, L2 arka planda çalışır.
+
+9 KATMANLI PİPELINE (K0 → K9)
+Kritik komutlar bu pipeline'dan geçer. Her adım sırayla çalışır:
+
+Adım	İsim	Ne Yapar?	DURUR mu?
+K0	Bootstrap	DB, ENV, Webhook kontrol	DB yoksa → FATAL
+K1.2	L0 Gatekeeper	Input temizle, nonce kontrol, rate limit	Boş input → HATA, replay → HATA
+K2.1	HermAI Analiz	AI ile komut analizi	—
+K2.3	92 Kriter	Skor hesapla (0-100)	Skor < 75 → REJECTED ❌
+K3	Formal Spec	Pre/Post koşullar üret	—
+K5	Proof Engine	Matematiksel ispat oluştur + doğrula	Kısıt yoksa → ESCALATED ⚠️
+K4	Red Team	Çürütmeye çalış	—
+K6	Konsensüs	Quorum 2/3 oylama	HALT → REJECTED ❌, ESCALATE → İNSAN ⚠️
+K7	Gate Check	8+1 kapı kontrolü	Bir kapı başarısız → REJECTED ❌
+K8	Execution	Komutu çalıştır	Handler hatası → ERROR ❌
+K9	Post-Exec	Son doğrulama	— → APPROVED ✅
+KORUMA MEKANİZMALARI
+Sistem 14 ayrı koruma mekanizmasına sahip:
+
+#	Mekanizma	Nerede?	Ne Zaman Devreye Girer?	Ne Yapar?
+1	Localhost Guard	proxy.ts	Her istek	Dış IP engeller
+2	Rate Limiter (Proxy)	proxy.ts	Her istek	300/dk aşarsa → 429
+3	Rate Limiter (L0)	control_engine.ts	Pipeline girişi	10 komut/dk/user
+4	CSRF Kontrolü	proxy.ts	POST/PUT/DELETE	Origin doğrulama
+5	Circuit Breaker	circuitBreaker.ts	Her AI çağrısı	3 hata → 30sn devre aç
+6	Idempotency	agentWorker.ts	Her görev	Aynı görev 30sn tekrar çalışmaz
+7	Concurrent Lock	control_engine.ts	Pipeline girişi	Aynı user paralel yasak
+8	Replay Koruması	control_engine.ts	Pipeline girişi	Aynı nonce → red
+9	Error Block	control_engine.ts	Pipeline girişi	3 hata → 5dk blok
+10	Rule Guard (Görev)	ruleGuard.ts	Görev atanmadan	Yetki dışı görev engeli
+11	Rule Guard (Araç)	ruleGuard.ts	Araç çağrılmadan	İzinsiz araç engeli
+12	Rule Guard (Yanıt)	ruleGuard.ts	AI yanıtından sonra	Yasak içerik engeli
+13	fetchWithTimeout	fetchWithTimeout.ts	Panel veri çekme	10-15sn timeout
+14	SHA-256 Zincir	immutable_logs	Her pipeline işlemi	Değiştirilemez kanıt
+TAM SİSTEM AKIŞI — BAŞTAN SONA
+👤 KULLANICI
+    │
+    │ Tarayıcı açar → http://127.0.0.1:3000
+    ▼
+🛡️ GÜVENLİK (proxy.ts)
+    │  Localhost mu? Rate limit? CSRF? Auth?
+    │  Hepsi geçti ✅
+    ▼
+🖥️ KOMUTA PANELİ (page.tsx) — 16 EKRAN YÜKLENIR
+    │
+    │  Her ekran kendi API'sini çağırır:
+    │  SCR-01 → /api/health-check
+    │  SCR-02 → /api/tasks
+    │  SCR-10 → /api/agents
+    │  ... (16 paralel istek)
+    │
+    │  Kullanıcı görev yazar (SCR-03)
+    ▼
+⚡ API KATMANI (/api/orchestrate)
+    │
+    ▼
+🧭 ORCHESTRATOR — Görevi analiz et, doğru ajanı bul
+    │  "frontend" varsa → A-01
+    │  "veritabanı" varsa → A-03
+    │  eşleşme yoksa → K-1 KOMUTAN
+    ▼
+⚙️ AGENT WORKER — ReAct döngüsü başlat
+    │  Rule Guard → Idempotency → RAG → AI çağrısı
+    │  Düşün → Araç kullan → Tekrarla (max 5)
+    │  "GÖREV TAMAM" → Döngü biter
+    ▼
+🤖 AI PROVIDER
+    │  Circuit Breaker kontrol → Ollama çağır
+    │  Başarısızsa → Lokal kural yanıtı
+    ▼
+🗄️ SUPABASE
+    │  audit_logs → denetim kaydı
+    │  immutable_logs → SHA-256 kanıt
+    │  tasks → görev güncelle
+    ▼
+🔍 L2 OTOMATİK DENETİM (arka plan)
+    │  B-01 → 5 eksen denetim
+    │  Hata varsa → B-03 L3 Hakem
+    ▼
+📊 SONUÇ → KOMUTA PANELİ'NE DÖNER
+    │  SCR-10 ajan durumu güncellenir
+    │  SCR-12 aktivite akışı güncellenir
+    │  SCR-16 job monitor güncellenir
+DOSYA HARİTASI
+Klasör	Dosya Sayısı	Ne İçerir?
+src/app/	2 + API	Dashboard + Layout + 28 API route
+src/components/	27	16 ekran bileşeni + NavBar + Auth + hata sınırı
+src/core/	26	Pipeline, Orchestrator, AgentWorker, CircuitBreaker, RuleGuard...
+src/services/	28	AgentRegistry(50 ajan), AuditService, TaskService, AlarmService...
+src/lib/	18	Supabase, AIProvider, ErrorCore, Validation, i18n, fetchWithTimeout...
+src/store/	5	Zustand: Task, Auth, Operator, Language store'ları
+src/	2	proxy.ts (güvenlik), instrumentation.ts (telemetri)
+Agent
+Antigravity
+AI may make mistakes. Double-check all generated code.

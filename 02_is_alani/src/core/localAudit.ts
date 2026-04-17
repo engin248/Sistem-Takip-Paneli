@@ -12,7 +12,7 @@ import { createHash } from 'crypto';
 
 // ── YAPILANDIRMA ─────────────────────────────────────────────
 const LOG_DIR  = process.env.AUDIT_LOG_DIR ||
-  'C:\\Users\\Esisya\\Desktop\\AGENT_AUDIT_LOG';
+  path.join(process.cwd(), '.agent_audit');
 const LOG_FILE = path.join(LOG_DIR, 'audit_chain.jsonl');
 const LOCK_FILE = path.join(LOG_DIR, '.lock');
 
