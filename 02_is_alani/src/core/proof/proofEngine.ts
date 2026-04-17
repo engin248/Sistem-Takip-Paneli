@@ -5,7 +5,7 @@ import { createHash } from 'crypto';
 import { supabase } from '@/lib/supabase';
 import type { ProofResult } from '../types';
 
-const Z3_AVAILABLE = false;
+const Z3_AVAILABLE = process.env.Z3_ENABLED === 'true';
 const OPA_VER      = process.env.OPA_POLICY_VERSION || 'v1.0';
 const SOLVER_VER   = Z3_AVAILABLE ? '4.13.0' : 'zod-v1';
 
@@ -93,18 +93,37 @@ export async function verifyProof(
 }
 
 // ─── Zod Constraint Solver (Z3 yokken — degraded mode) ──────
+// Geliştirilmiş doğrulama: string arama yerine yapısal kontrol
 
 async function solveWithZod(constraints: string[], t0: number): Promise<ProofResult> {
     let allSat     = true;
     let failReason = '';
 
+    const UNSAT_PATTERNS = [
+        /\bUNSAT\b/i,
+        /\bfalse\b/,
+        /\bcontradiction\b/i,
+        /\bimpossible\b/i,
+        /\binconsistent\b/i,
+        /\bviolat(e|ion)\b/i,
+    ];
+
     for (const c of constraints) {
-        if (c.includes('UNSAT') || c.includes('false') || c.includes('contradiction')) {
-            allSat = false; failReason = c; break;
-        }
+        // Boş constraint → UNSAT
         if (c.trim().length === 0) {
             allSat = false; failReason = 'empty constraint'; break;
         }
+        // Minimum anlamlı uzunluk
+        if (c.trim().length < 3) {
+            allSat = false; failReason = `constraint too short: "${c}"`; break;
+        }
+        // UNSAT pattern eşleşmesi
+        for (const pattern of UNSAT_PATTERNS) {
+            if (pattern.test(c)) {
+                allSat = false; failReason = `UNSAT pattern: ${c.substring(0, 80)}`; break;
+            }
+        }
+        if (!allSat) break;
     }
 
     const hash = createHash('sha256')

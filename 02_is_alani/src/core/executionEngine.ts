@@ -3,6 +3,7 @@
 // Snapshot → Execute → Rollback (hata halinde)
 
 import { supabase } from '@/lib/supabase';
+import { createHash } from 'crypto';
 
 export interface ExecutionResult {
   status:        'success' | 'failed' | 'rolled_back' | 'killed';
@@ -31,13 +32,24 @@ export async function executeCommand(
 
   if (snapErr) {
     // Snapshot alınamazsa çalıştırma — güvenli hata
+    const { data: lastSnapLog } = await supabase
+        .from('immutable_logs')
+        .select('hash')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    const snapHash = createHash('sha256')
+        .update(commandId + 'SNAPSHOT_FAILED' + Date.now())
+        .digest('hex');
+
     await supabase.from('immutable_logs').insert({
       module:     'K8',
       event_type: 'SNAPSHOT_FAILED',
       severity:   'critical',
       payload:    { commandId, error: snapErr.message },
-      hash:       `SNAP_FAIL_${commandId}`,
-      prev_hash:  '',
+      hash:       snapHash,
+      prev_hash:  lastSnapLog?.hash ?? '',
     });
     const processingMs = Date.now() - t0;
     return { status: 'failed', output: { error: 'Snapshot alınamadı' }, processingMs, rolledBack: false };
@@ -78,14 +90,25 @@ export async function executeCommand(
       processing_ms: processingMs,
     });
 
-    // A6 log — rollback kaydı
+    // A6 log — rollback kaydı (prev_hash zinciri)
+    const { data: lastExecLog } = await supabase
+        .from('immutable_logs')
+        .select('hash')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    const execHash = createHash('sha256')
+        .update(commandId + (rolledBack ? 'ROLLED_BACK' : 'FAILED') + Date.now())
+        .digest('hex');
+
     await supabase.from('immutable_logs').insert({
       module:     'K8',
       event_type: rolledBack ? 'EXEC_ROLLED_BACK' : 'EXEC_FAILED',
       severity:   'critical',
       payload:    { commandId, error: errMsg, rolledBack },
-      hash:       `EXEC_${rolledBack ? 'RB' : 'FAIL'}_${commandId}`,
-      prev_hash:  '',
+      hash:       execHash,
+      prev_hash:  lastExecLog?.hash ?? '',
     });
 
     return {

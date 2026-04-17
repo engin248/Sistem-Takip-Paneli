@@ -76,8 +76,18 @@ export async function runRedTeam(
 // ─── Saldırı fonksiyonları ─────────────────────────────────────
 
 function testContradiction(a: HermAIAnalysis): { passed: boolean; reason: string } {
-    const has = a.reasoning.includes(a.refutation.substring(0, 30)) && a.refutation.length > 30;
-    return { passed: !has, reason: has ? 'Reasoning ve refutation çelişiyor' : 'Çelişki yok' };
+    // Çürütme metni anlamlı mı? (en az 20 karakter olmalı)
+    if (!a.refutation || a.refutation.length < 20) {
+        return { passed: false, reason: 'Çürütme metni yetersiz veya boş — güvenilir analiz değil' };
+    }
+    // Reasoning ile refutation arasında kelime bazlı çakışma kontrolü
+    const refWords = a.refutation.toLowerCase().split(/\s+/).filter(w => w.length > 4);
+    const reasonWords = a.reasoning.toLowerCase().split(/\s+/).filter(w => w.length > 4);
+    const overlap = refWords.filter(w => reasonWords.includes(w)).length;
+    const overlapRatio = refWords.length > 0 ? overlap / refWords.length : 0;
+    // %80+ kelime çakışması → reasoning kendini çürütüyor
+    const has = overlapRatio > 0.8;
+    return { passed: !has, reason: has ? `Reasoning-refutation çakışma: %${Math.round(overlapRatio * 100)}` : 'Çelişki yok' };
 }
 function testCircularReasoning(a: HermAIAnalysis): { passed: boolean; reason: string } {
     const c = a.methodology.substring(0, 50) === a.reasoning.substring(0, 50);

@@ -601,12 +601,13 @@ export async function runAgentWorker(input: WorkerInput): Promise<WorkerResult> 
         }).catch(() => {});
 
         // ── L2 HATA_VAR → L3 HAKEM OTOMATİK ──────────────────────
+        // C-01 (HAKEM-1) = L3 katman hakemi — B-03 L2 denetçi idi (rol ihlali düzeltildi)
         if (denetimDurum === 'HATA_VAR') {
-          const l3Ajan = agentRegistry.getById('B-03');
+          const l3Ajan = agentRegistry.getById('C-01');
           if (l3Ajan) {
             const l3Start = Date.now();
             try {
-              agentRegistry.updateDurum('B-03', 'aktif');
+              agentRegistry.updateDurum('C-01', 'aktif');
               const l3Yanit = await aiComplete({
                 systemPrompt: `Sen L3 HAKEM ajanısın. L1-L2 çelişkisini çöz. Objektif, kanıt bazlı karar ver. KARAR: KABUL veya REVIZYON_GEREKLI.`,
                 userMessage : [
@@ -619,18 +620,18 @@ export async function runAgentWorker(input: WorkerInput): Promise<WorkerResult> 
                 temperature : 0.15,
                 maxTokens   : 300,
                 jsonMode    : false,
-              }, buildProviderConfig('B-03'));
+              }, buildProviderConfig('C-01'));
 
               const l3Metin = l3Yanit?.content ?? '';
               l2DenetimOzet.l3_hakem = {
-                ajan_id    : 'B-03',
+                ajan_id    : 'C-01',
                 kod_adi    : l3Ajan.kod_adi,
                 karar      : l3Metin.toUpperCase().includes('KABUL') ? 'KABUL' : 'REVIZYON_GEREKLI',
                 ozet       : l3Metin.slice(0, 250),
                 duration_ms: Date.now() - l3Start,
               };
 
-              agentRegistry.updateDurum('B-03', 'pasif');
+              agentRegistry.updateDurum('C-01', 'pasif');
 
               void logAudit({
                 operation_type    : 'EXECUTE',
@@ -639,9 +640,9 @@ export async function runAgentWorker(input: WorkerInput): Promise<WorkerResult> 
               }).catch(() => {});
 
             } catch {
-              agentRegistry.updateDurum('B-03', 'pasif');
+              agentRegistry.updateDurum('C-01', 'pasif');
               l2DenetimOzet.l3_hakem = {
-                ajan_id: 'B-03', kod_adi: l3Ajan.kod_adi,
+                ajan_id: 'C-01', kod_adi: l3Ajan.kod_adi,
                 karar: 'REVIZYON_GEREKLI', ozet: 'L3 AI çağrısı başarısız — ihtiyatlı ret',
                 duration_ms: Date.now() - l3Start,
               };

@@ -1,11 +1,19 @@
 import { supabase } from '@/lib/supabase';
-import { useTaskStore } from '@/store/useTaskStore';
 import { logAudit, logAuditError } from './auditService';
 import { validateSupabaseConnection } from '@/lib/supabase';
 import { ERR, processError } from '@/lib/errorCore';
 import { guardWritePermission, getTaskOwner } from '@/lib/permissionGuard';
 import { CONTROL } from '@/core/control_engine';
 
+// ── ZUSTAND STORE GUARD ─────────────────────────────────────
+// Server-side'da (API routes) Zustand store anlamsızdır.
+// typeof window kontrolü ile sadece client-side'da çalışır.
+import { useTaskStore } from '@/store/useTaskStore';
+
+function getStore() {
+  if (typeof window === 'undefined') return null;
+  return useTaskStore.getState();
+}
 
 // ============================================================
 // BAĞLANTI ÖN KONTROLÜ
@@ -22,7 +30,7 @@ export const fetchTasksFromDB = async () => {
     processError(ERR.CONNECTION_INVALID, new Error('.env.local SUPABASE bilgileri eksik'), {
       tablo: 'tasks', islem: 'SELECT'
     }, 'CRITICAL');
-    useTaskStore.getState().setError(`${ERR.TASK_FETCH}: Veritabanı bağlantı bilgileri eksik`);
+    getStore()?.setError(`${ERR.TASK_FETCH}: Veritabanı bağlantı bilgileri eksik`);
     return;
   }
 
@@ -35,16 +43,16 @@ export const fetchTasksFromDB = async () => {
 
     if (error) {
       processError(ERR.TASK_FETCH, error, { tablo: 'tasks', islem: 'SELECT' });
-      useTaskStore.getState().setError(`${ERR.TASK_FETCH}: Veritabanı bağlantı hatası`);
+      getStore()?.setError(`${ERR.TASK_FETCH}: Veritabanı bağlantı hatası`);
       await logAuditError(ERR.TASK_FETCH, 'Görev listesi çekilirken sistem hatası oluştu', { error: error.message });
       return;
     }
-    useTaskStore.getState().setTasks(data);
+    getStore()?.setTasks(data);
   } catch (err) {
     processError(ERR.UNIDENTIFIED_COLLAPSE, err, {
       tablo: 'tasks', islem: 'SELECT', context: 'fetchTasksFromDB'
     }, 'FATAL');
-    useTaskStore.getState().setError(`${ERR.UNIDENTIFIED_COLLAPSE}: Ağ bağlantısı hatası`);
+    getStore()?.setError(`${ERR.UNIDENTIFIED_COLLAPSE}: Ağ bağlantısı hatası`);
   }
 };
 

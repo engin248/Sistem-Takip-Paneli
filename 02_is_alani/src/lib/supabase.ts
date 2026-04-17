@@ -60,7 +60,7 @@ export function validateSupabaseConnection(): {
   const missingVars: string[] = [];
 
   try {
-    if (!supabaseUrl || supabaseUrl === "" || supabaseUrl.includes("your-project-id")) {
+    if (!supabaseUrl || supabaseUrl === "" || supabaseUrl.includes("your-project-id") || supabaseUrl.includes("placeholder.supabase.co")) {
       missingVars.push("NEXT_PUBLIC_SUPABASE_URL");
     }
 
