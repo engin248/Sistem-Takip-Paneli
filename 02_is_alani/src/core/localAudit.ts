@@ -52,6 +52,26 @@ function readLastEntry(): AuditEntry | null {
   } catch { return null; }
 }
 
+// ── DOSYA KİLİDİ (Concurrent yazma koruması) ─────────────────
+function acquireLock(retries = 5, delayMs = 50): boolean {
+  for (let i = 0; i < retries; i++) {
+    try {
+      // O_EXCL: Dosya zaten varsa hata verir — atomik kilit
+      fs.writeFileSync(LOCK_FILE, String(process.pid), { flag: 'wx' });
+      return true;
+    } catch {
+      // Kilit başkasında — bekle
+      const start = Date.now();
+      while (Date.now() - start < delayMs) { /* busy wait */ }
+    }
+  }
+  return false;
+}
+
+function releaseLock(): void {
+  try { fs.unlinkSync(LOCK_FILE); } catch { /* zaten yok */ }
+}
+
 // ── KAYIT YAZ ─────────────────────────────────────────────────
 export function auditLog(
   agent_id: string,
@@ -60,25 +80,31 @@ export function auditLog(
 ): AuditEntry {
   ensureLogDir();
 
-  const last    = readLastEntry();
-  const seq     = (last?.seq ?? 0) + 1;
-  const prevHash = last?.hash ?? '0'.repeat(64);
+  // Kilit al — concurrent yazma koruması
+  const locked = acquireLock();
+  try {
+    const last    = readLastEntry();
+    const seq     = (last?.seq ?? 0) + 1;
+    const prevHash = last?.hash ?? '0'.repeat(64);
 
-  const base: Omit<AuditEntry, 'hash' | 'integrity'> = {
-    seq,
-    timestamp : new Date().toISOString(),
-    agent_id,
-    action,
-    data,
-    prev_hash : prevHash,
-  };
+    const base: Omit<AuditEntry, 'hash' | 'integrity'> = {
+      seq,
+      timestamp : new Date().toISOString(),
+      agent_id,
+      action,
+      data,
+      prev_hash : prevHash,
+    };
 
-  const hash = computeHash(base);
+    const hash = computeHash(base);
 
-  const entry: AuditEntry = { ...base, hash, integrity: 'OK' };
+    const entry: AuditEntry = { ...base, hash, integrity: 'OK' };
 
-  fs.appendFileSync(LOG_FILE, JSON.stringify(entry) + '\n', 'utf-8');
-  return entry;
+    fs.appendFileSync(LOG_FILE, JSON.stringify(entry) + '\n', 'utf-8');
+    return entry;
+  } finally {
+    if (locked) releaseLock();
+  }
 }
 
 // ── ZİNCİR DOĞRULAMA ─────────────────────────────────────────

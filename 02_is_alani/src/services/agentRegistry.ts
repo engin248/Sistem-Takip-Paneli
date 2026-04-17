@@ -682,8 +682,9 @@ class AgentRegistryManager {
 
   private initialize(): void {
     if (this.initialized) return;
+    const now = new Date().toISOString();
     for (const agent of DEFAULT_ROSTER) {
-      this.agents.set(agent.id, { ...agent });
+      this.agents.set(agent.id, { ...agent, son_aktif: now, olusturulma: now });
     }
     this.initialized = true;
   }

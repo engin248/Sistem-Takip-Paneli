@@ -21,8 +21,10 @@ interface BootstrapCheck {
 // Bu sayede "webhook boş kalma" sorunu kalıcı olarak çözülür.
 async function ensureTelegramWebhook(): Promise<BootstrapCheck> {
     const token      = process.env.TELEGRAM_BOT_TOKEN ?? '';
-    // Sabit production URL — env bağımlılığı yok, Vercel APP_URL yanlış olsa da çalışır
-    const webhookUrl = 'https://sistem-takip-paneli.vercel.app/api/telegram';
+    // Webhook URL: Env var → APP_URL → Hardcode fallback
+    const webhookUrl = process.env.TELEGRAM_WEBHOOK_URL
+        || (process.env.NEXT_PUBLIC_APP_URL ? `${process.env.NEXT_PUBLIC_APP_URL}/api/telegram` : '')
+        || 'https://sistem-takip-paneli.vercel.app/api/telegram';
 
     if (!token || token.length < 20) {
         return {

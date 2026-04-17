@@ -4,7 +4,10 @@
 // ============================================================
 // Ollama 3 kez başarısız → devre açılır → OpenAI'ya düşer
 // 30sn sonra yarı açık → test → başarılıysa kapanır
+// Serverless uyumu: Durum Supabase'de persist edilir.
 // ============================================================
+
+import { supabase } from '@/lib/supabase';
 
 type State = 'KAPALI' | 'ACIK' | 'YARI_ACIK';
 
@@ -20,15 +23,43 @@ interface CBDurum {
 const ESIK        = 3;           // Kaç hatada açılır
 const BEKLEME_MS  = 30_000;      // Açık kalma süresi (ms)
 const BASKI_LOG   = true;        // Console log
+const CB_MODULE   = 'ollama_cb'; // DB kayıt adı
 
-// ── GLOBAL DURUM (in-memory) ─────────────────────────────────
-const durum: CBDurum = {
+// ── GLOBAL DURUM (in-memory + DB persist) ────────────────────
+let durum: CBDurum = {
   state        : 'KAPALI',
   hata_sayisi  : 0,
   son_hata     : null,
   toplam_trip  : 0,
   toplam_basari: 0,
 };
+
+let _loaded = false;
+
+// DB'den durumu yükle (serverless cold start'ta bir kez çalışır)
+async function loadFromDB(): Promise<void> {
+  if (_loaded) return;
+  try {
+    const { data } = await supabase
+      .from('circuit_breaker_state')
+      .select('*')
+      .eq('module', CB_MODULE)
+      .maybeSingle();
+    if (data?.state_json) {
+      durum = { ...durum, ...(data.state_json as CBDurum) };
+    }
+  } catch { /* DB erişilemezse in-memory devam */ }
+  _loaded = true;
+}
+
+// Durumu DB'ye kaydet (fire-and-forget)
+function saveToDB(): void {
+  supabase.from('circuit_breaker_state').upsert({
+    module:     CB_MODULE,
+    state_json: durum,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: 'module' }).then(() => {}, () => {});
+}
 
 function log(msg: string) {
   if (BASKI_LOG) console.log(`[CIRCUIT-BREAKER] ${new Date().toISOString()} ${msg}`);
@@ -43,7 +74,8 @@ export function getCBDurum(): CBDurum & { sure_kaldi_ms: number } {
 }
 
 // ── İZİN VER Mİ? ─────────────────────────────────────────────
-export function izinVarMi(): boolean {
+export async function izinVarMi(): Promise<boolean> {
+  await loadFromDB();
   if (durum.state === 'KAPALI') return true;
 
   if (durum.state === 'ACIK') {
@@ -51,6 +83,7 @@ export function izinVarMi(): boolean {
     if (durum.son_hata && Date.now() - durum.son_hata >= BEKLEME_MS) {
       durum.state = 'YARI_ACIK';
       log('YARI_ACIK — test isteğine izin verildi');
+      saveToDB();
       return true;
     }
     return false;
@@ -69,6 +102,7 @@ export function basariKaydet(): void {
     durum.son_hata    = null;
     log('KAPALI — devre onarıldı');
   }
+  saveToDB();
 }
 
 // ── HATA KAYDET ──────────────────────────────────────────────
@@ -80,6 +114,7 @@ export function hataKaydet(): void {
     durum.state = 'ACIK';
     durum.toplam_trip++;
     log(`ACIK — yarı açıkta hata, tekrar açıldı`);
+    saveToDB();
     return;
   }
 
@@ -88,6 +123,7 @@ export function hataKaydet(): void {
     durum.toplam_trip++;
     log(`ACIK — ${ESIK} hatada devre açıldı (toplam trip: ${durum.toplam_trip})`);
   }
+  saveToDB();
 }
 
 // ── SIFIRLA ──────────────────────────────────────────────────
@@ -96,6 +132,7 @@ export function sifirla(): void {
   durum.hata_sayisi = 0;
   durum.son_hata    = null;
   log('SIFIRLANDIII — manuel reset');
+  saveToDB();
 }
 
 // ── SARICI FONKSİYON ─────────────────────────────────────────
@@ -103,7 +140,7 @@ export async function cbSarici<T>(
   fn          : () => Promise<T>,
   fallback   ?: () => Promise<T>,
 ): Promise<T> {
-  if (!izinVarMi()) {
+  if (!await izinVarMi()) {
     const d = getCBDurum();
     log(`ENGELLENDI — devre açık (${Math.round(d.sure_kaldi_ms/1000)}sn kaldı)`);
     if (fallback) {

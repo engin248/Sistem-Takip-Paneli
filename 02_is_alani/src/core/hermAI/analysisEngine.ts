@@ -6,7 +6,7 @@ import { aiComplete } from '@/lib/aiProvider';
 import { processError, ERR } from '@/lib/errorCore';
 import type { HermAIAnalysis } from '../types';
 
-const TIMEOUT_MS = 10_000;
+const TIMEOUT_MS = Number(process.env.HERMAI_TIMEOUT_MS) || 25_000;
 
 // Kural #73 + #74: 5 Eksen Analizi + Analiz Soruları zorunlu
 const SYSTEM_PROMPT = `Sen V-FINAL HermAI analiz modülüsün.

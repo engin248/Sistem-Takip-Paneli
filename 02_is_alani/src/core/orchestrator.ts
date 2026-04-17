@@ -145,15 +145,18 @@ const YONLENDIRME_KURALLARI: YonlendirmeKurali[] = [
 function gorevdenAjanBul(gorev: string): { ajanId: string; aciklama: string; skor: number } {
   const gorevLower = gorev.toLowerCase();
 
-  let enIyi = { ajanId: 'K-1', aciklama: 'Varsayılan → KOMUTAN (skor eşiği altında)', skor: 0 };
+  let enIyi = { ajanId: 'K-1', aciklama: 'Varsayılan → KOMUTAN (skor eşiği altında)', skor: 0, specificity: Infinity };
 
   for (const kural of YONLENDIRME_KURALLARI) {
     let skor = 0;
     for (const anahtar of kural.anahtar) {
       if (gorevLower.includes(anahtar.toLowerCase())) skor++;
     }
-    if (skor > enIyi.skor) {
-      enIyi = { ajanId: kural.birincil, aciklama: kural.aciklama, skor };
+    // Tie-breaking: Eşit skorda daha spesifik kural kazanır
+    // (daha az anahtar kelimesi = daha spesifik = daha güvenilir eşleşme)
+    const specificity = kural.anahtar.length;
+    if (skor > enIyi.skor || (skor === enIyi.skor && skor > 0 && specificity < enIyi.specificity)) {
+      enIyi = { ajanId: kural.birincil, aciklama: kural.aciklama, skor, specificity };
     }
   }
 

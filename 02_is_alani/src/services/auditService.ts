@@ -75,7 +75,12 @@ function generateLogCode(): string {
  */
 function toDbRow(entry: AuditLogEntry) {
   const logCode = generateLogCode();
-  const actionCode = `${entry.operation_type}_${logCode.slice(-8)}`;
+  // metadata.action_code varsa onu kullan (örn: AGENT_COUNTER_UPDATE),
+  // yoksa operation_type + rand formatında oto-üret.
+  const metaActionCode = entry.metadata?.action_code;
+  const actionCode = typeof metaActionCode === 'string' && metaActionCode.length > 0
+    ? metaActionCode
+    : `${entry.operation_type}_${logCode.slice(-8)}`;
 
   return {
     task_id: entry.task_id || null,

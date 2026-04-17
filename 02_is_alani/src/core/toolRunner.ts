@@ -39,12 +39,17 @@ export interface ToolSonuc {
 }
 
 // ── GÜVENLİK: İzin verilen yollar ────────────────────────────
-const IZINLI_DIZINLER = [
+// Env var ile konfigüre edilebilir: TOOL_ALLOWED_DIRS=C:\path1;C:\path2
+const DEFAULT_DIRS = [
   'C:\\Users\\Esisya\\Desktop\\',
   'C:\\Users\\Esisya\\Desktop\\Sistem-Takip-Paneli\\',
   'C:\\Users\\Esisya\\Desktop\\KONSOLIDE_ARSIV\\',
   'C:\\agent_audit\\',
 ];
+
+const IZINLI_DIZINLER = process.env.TOOL_ALLOWED_DIRS
+  ? process.env.TOOL_ALLOWED_DIRS.split(';').filter(d => d.trim().length > 0)
+  : DEFAULT_DIRS;
 
 const YASAK_UZANTILAR = ['.exe', '.bat', '.cmd', '.ps1', '.sh'];
 const MAX_DOSYA_KB    = 500;

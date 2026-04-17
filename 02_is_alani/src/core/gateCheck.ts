@@ -1,5 +1,7 @@
 // src/core/gateCheck.ts
 // K7 — 8+1 Gate Check (Kapılı Onay Sistemi)
+// Gate ID'leri: KG1-KG9 (K7 Gate prefix)
+// humanGate.ts'deki G1/G2/G6/G7 ile ÇAKIŞMA ÖNLENDİ.
 
 import { supabase } from '@/lib/supabase';
 import type { HermAIAnalysis, CriteriaResult, ProofResult } from './types';
@@ -34,47 +36,47 @@ export async function runGateCheck(
 ): Promise<GateCheckResult> {
     const gates: GateResult[] = [
         {
-            gateId: 'G1', name: 'Girdi Temizliği',
+            gateId: 'KG1', name: 'Girdi Temizliği',
             passed: true, reason: 'L0 Gatekeeper onayladı',
         },
         {
-            gateId: 'G2', name: 'Analiz Kalitesi',
+            gateId: 'KG2', name: 'Analiz Kalitesi',
             passed: analysis.reasoning.length >= 20 && analysis.alternatives.length >= 1,
             reason: analysis.reasoning.length < 20 ? 'Reasoning yetersiz' :
                     analysis.alternatives.length < 1 ? 'Alternatif yok' : 'Yeterli',
         },
         {
-            gateId: 'G3', name: 'Kriter Eşiği',
+            gateId: 'KG3', name: 'Kriter Eşiği',
             passed: criteria.passed && criteria.score >= 75,
             reason: `Skor: ${criteria.score}/100 (eşik: 75)`,
         },
         {
-            gateId: 'G4', name: 'Formal Spec Tutarlılığı',
+            gateId: 'KG4', name: 'Formal Spec Tutarlılığı',
             passed: formalSpec.preConditions.length > 0 && formalSpec.invariants.length > 0,
             reason: formalSpec.preConditions.length === 0 ? 'Pre-condition yok' : 'Tutarlı',
         },
         {
-            gateId: 'G5', name: 'Proof Geçerliliği',
+            gateId: 'KG5', name: 'Proof Geçerliliği',
             passed: proof.status === 'SAT' && proof.solved,
             reason: proof.status !== 'SAT' ? `Proof: ${proof.status}` :
                     !proof.solved ? 'Solve edilmemiş' : 'SAT + Solved',
         },
         {
-            gateId: 'G6', name: 'Red Team Sağkalım',
+            gateId: 'KG6', name: 'Red Team Sağkalım',
             passed: redTeam.survived,
             reason: `Monte Carlo: ${redTeam.monteCarloScore}% (eşik: 70%)`,
         },
         {
-            gateId: 'G7', name: 'Konsensüs Onayı',
+            gateId: 'KG7', name: 'Konsensüs Onayı',
             passed: consensus.decision === 'PROCEED',
             reason: `Karar: ${consensus.decision} (güven: ${consensus.confidence})`,
         },
         {
-            gateId: 'G8', name: 'Kaynak Limiti',
+            gateId: 'KG8', name: 'Kaynak Limiti',
             passed: true, reason: 'Kaynak limitleri aşılmadı',
         },
         {
-            gateId: 'G9', name: 'İnsan Onayı',
+            gateId: 'KG9', name: 'İnsan Onayı',
             passed: !isStrictMode,
             reason: isStrictMode ? 'STRICT mod — insan onayı gerekli' : 'NORMAL/SAFE mod — otomatik',
         },
