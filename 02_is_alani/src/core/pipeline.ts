@@ -1,6 +1,6 @@
 // src/core/pipeline.ts
-// V-FINAL Tam Pipeline — K1 → K2.1 → K2.3 → K3 → K5 → K4 → K6 → K7 → K8 → K9
-// 9 Katman, 6 Aksiyom, 3 Mod
+// V-FINAL Tam Pipeline — K1 → G1 → K2.1 → G2 → K2.3 → K3 → K5 → K4 → K6 → G6 → K7 → G7 → K8 → K9
+// 9 Katman, 6 Aksiyom, 3 Mod, 4 İnsan Kapısı (G1/G2/G6/G7)
 
 import { supabase } from '@/lib/supabase';
 import { L0_GATEKEEPER, recordError, clearErrorRecord } from './control_engine';
@@ -13,6 +13,10 @@ import { runConsensus } from './consensus';
 import { runGateCheck } from './gateCheck';
 import { executeCommand } from './executionEngine';
 import { runPostExec } from './postExec';
+import {
+    saveCheckpoint, loadCheckpoint,
+    type GateUnderstanding, type GatePlan, type GateApprovalReport,
+} from './humanGate';
 import type {
     CommandContext, SystemMode, L0Result, HermAIAnalysis,
     CriteriaResult, ProofResult,
@@ -25,22 +29,26 @@ import type { ExecutionResult } from './executionEngine';
 import type { PostExecResult } from './postExec';
 
 export interface PipelineResult {
-    commandId:  string;
-    status:     'APPROVED' | 'REJECTED' | 'ESCALATED' | 'ERROR';
-    stage:      string;
-    l0:         L0Result | null;
-    analysis:   HermAIAnalysis | null;
-    criteria:   CriteriaResult | null;
-    formalSpec: FormalSpec | null;
-    proof:      ProofResult | null;
-    redTeam:    RedTeamResult | null;
-    consensus:  ConsensusResult | null;
-    gateCheck:  GateCheckResult | null;
-    execution:  ExecutionResult | null;
-    postExec:   PostExecResult | null;
-    errors:     string[];
-    totalMs:    number;
-    timestamp:  number;
+    commandId:       string;
+    status:          'APPROVED' | 'REJECTED' | 'ESCALATED' | 'ERROR';
+    stage:           string;
+    pendingGate?:    string;
+    understanding?:  GateUnderstanding;
+    plan?:           GatePlan;
+    approvalReport?: GateApprovalReport;
+    l0:              L0Result | null;
+    analysis:        HermAIAnalysis | null;
+    criteria:        CriteriaResult | null;
+    formalSpec:      FormalSpec | null;
+    proof:           ProofResult | null;
+    redTeam:         RedTeamResult | null;
+    consensus:       ConsensusResult | null;
+    gateCheck:       GateCheckResult | null;
+    execution:       ExecutionResult | null;
+    postExec:        PostExecResult | null;
+    errors:          string[];
+    totalMs:         number;
+    timestamp:       number;
 }
 
 /**
@@ -76,6 +84,106 @@ export async function executePipeline(
         // ═══ K2.1: HermAI ANALİZ ════════════════════════════
         await updateStatus(r.l0.commandId, 'analyzing');
         r.analysis = await runHermAIAnalysis(r.l0.commandId, rawInput);
+
+        // ═══ G-1: GÖREV ANLAMA KAPISI ═══════════════════════
+        // Doküman: "Görev ne? Hangi sistem? Eksik varsa → DURAK → Kullanıcıya rapor"
+        // Pipeline BURADA durur — kullanıcı onayı olmadan devam ETMEZ.
+        {
+            const g1Existing = await loadCheckpoint(r.l0.commandId, 'G1_UNDERSTANDING');
+            if (!g1Existing || g1Existing.status === 'PENDING') {
+                // Henüz onay yok — checkpoint kaydet ve ESCALATED dön
+                const understanding: GateUnderstanding = {
+                    raw_command:     rawInput,
+                    understood_as:   r.analysis.reasoning,
+                    affected_system: r.analysis.methodology,
+                    affected_vars:   r.analysis.constraints,
+                    confidence:      r.analysis.confidence,
+                    questions:       r.analysis.questions,
+                    methodology:     r.analysis.methodology,
+                    risks:           r.analysis.risks,
+                };
+
+                if (!g1Existing) {
+                    await saveCheckpoint({
+                        commandId:     r.l0.commandId,
+                        gateId:        'G1_UNDERSTANDING',
+                        understanding,
+                        pipelineState: { rawInput, mode, analysis: r.analysis },
+                        mode,
+                        createdBy:     context.userId,
+                    });
+                }
+
+                const result = finish(r, 'ESCALATED', 'G1',
+                    ['G-1: Görev anlama onayı bekleniyor — kullanıcı KABUL/RED verecek'], t0);
+                result.pendingGate    = 'G1_UNDERSTANDING';
+                result.understanding  = understanding;
+                return result;
+            }
+
+            if (g1Existing.status === 'REJECTED') {
+                await updateStatus(r.l0.commandId, 'failed');
+                return finish(r, 'REJECTED', 'G1',
+                    [`G-1: Kullanıcı görevi REDDETTİ — ${g1Existing.reject_reason ?? 'sebep belirtilmedi'}`], t0);
+            }
+            // APPROVED → devam
+        }
+
+        // ═══ G-2: İŞ PLANI KAPISI ═══════════════════════════
+        // Doküman: "İş Planı → Kullanıcı onayı zorunlu → G-3. KURAL: İş planı onaysız G-3'e GEÇİLEMEZ"
+        // taskDecomposer ile plan oluştur → kullanıcıya sun → KABUL/RED bekle.
+        {
+            const g2Existing = await loadCheckpoint(r.l0.commandId, 'G2_PLAN');
+            if (!g2Existing || g2Existing.status === 'PENDING') {
+                // İş planı oluştur
+                const { goreviPlanla } = await import('./taskDecomposer');
+                const planResult = goreviPlanla(rawInput);
+
+                const plan: GatePlan = {
+                    steps: planResult.alt_gorevler.map((ag: { sira: number; gorev: string; ajan_kodu: string }) => ({
+                        no:              ag.sira,
+                        description:     ag.gorev,
+                        responsible:     ag.ajan_kodu,
+                        expected_output: `${ag.ajan_kodu} tarafından tamamlanacak`,
+                    })),
+                    total_steps:   planResult.alt_gorevler.length,
+                    estimated_ms:  planResult.alt_gorevler.length * 5000,
+                    requires_ai:   planResult.karmasik,
+                    requires_db:   rawInput.toLowerCase().includes('veritabanı') || rawInput.toLowerCase().includes('supabase'),
+                    complexity:    planResult.complexity_score >= 8 ? 'high' :
+                                   planResult.complexity_score >= 4 ? 'medium' : 'low',
+                };
+
+                if (!g2Existing) {
+                    await saveCheckpoint({
+                        commandId:     r.l0.commandId,
+                        gateId:        'G2_PLAN',
+                        plan,
+                        pipelineState: {
+                            rawInput, mode,
+                            analysis: r.analysis,
+                            planOzet: planResult.ozet,
+                            complexity_score: planResult.complexity_score,
+                        },
+                        mode,
+                        createdBy:     context.userId,
+                    });
+                }
+
+                const result = finish(r, 'ESCALATED', 'G2',
+                    ['G-2: İş planı onayı bekleniyor — kullanıcı KABUL/RED verecek'], t0);
+                result.pendingGate = 'G2_PLAN';
+                result.plan        = plan;
+                return result;
+            }
+
+            if (g2Existing.status === 'REJECTED') {
+                await updateStatus(r.l0.commandId, 'failed');
+                return finish(r, 'REJECTED', 'G2',
+                    [`G-2: İş planı REDDEDİLDİ — ${g2Existing.reject_reason ?? 'sebep belirtilmedi'}`], t0);
+            }
+            // APPROVED → devam
+        }
 
         // ═══ K2.3: 92 KRİTER ════════════════════════════════
         await updateStatus(r.l0.commandId, 'detecting');
@@ -213,18 +321,22 @@ function finish(
     t0:     number
 ): PipelineResult {
     return {
-        commandId:  r.l0?.commandId ?? 'unknown',
+        commandId:       r.l0?.commandId ?? 'unknown',
         status, stage,
-        l0:         r.l0         ?? null,
-        analysis:   r.analysis   ?? null,
-        criteria:   r.criteria   ?? null,
-        formalSpec: r.formalSpec ?? null,
-        proof:      r.proof      ?? null,
-        redTeam:    r.redTeam    ?? null,
-        consensus:  r.consensus  ?? null,
-        gateCheck:  r.gateCheck  ?? null,
-        execution:  r.execution  ?? null,
-        postExec:   r.postExec   ?? null,
+        pendingGate:     r.pendingGate,
+        understanding:   r.understanding,
+        plan:            r.plan,
+        approvalReport:  r.approvalReport,
+        l0:              r.l0         ?? null,
+        analysis:        r.analysis   ?? null,
+        criteria:        r.criteria   ?? null,
+        formalSpec:      r.formalSpec ?? null,
+        proof:           r.proof      ?? null,
+        redTeam:         r.redTeam    ?? null,
+        consensus:       r.consensus  ?? null,
+        gateCheck:       r.gateCheck  ?? null,
+        execution:       r.execution  ?? null,
+        postExec:        r.postExec   ?? null,
         errors, totalMs: Date.now() - t0, timestamp: Date.now(),
     };
 }
