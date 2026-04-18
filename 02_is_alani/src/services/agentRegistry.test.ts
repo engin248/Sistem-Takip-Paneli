@@ -7,7 +7,7 @@ import { agentRegistry, type AgentCard } from './agentRegistry';
 // ============================================================
 
 describe('AgentRegistry', () => {
-  // â”€â”€ BAÅLANGIÃ‡ KADROSU â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€ BAÅžLANGIÃ‡ KADROSU â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   describe('baÅŸlangÄ±Ã§ kadrosu', () => {
     it('58 kişilik kadro yüklü', () => {
       const all = agentRegistry.getAll();
