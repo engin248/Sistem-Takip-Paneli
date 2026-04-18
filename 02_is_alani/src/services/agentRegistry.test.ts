@@ -9,9 +9,9 @@ import { agentRegistry, type AgentCard } from './agentRegistry';
 describe('AgentRegistry', () => {
   // â”€â”€ BAÅLANGIÃ‡ KADROSU â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   describe('baÅŸlangÄ±Ã§ kadrosu', () => {
-    it('50 kiÅŸilik kadro yÃ¼klÃ¼', () => {
+    it('58 kişilik kadro yüklü', () => {
       const all = agentRegistry.getAll();
-      expect(all.length).toBe(50);
+      expect(all.length).toBe(58);
     });
 
     it('4 komuta kartÄ± var', () => {
@@ -33,25 +33,25 @@ describe('AgentRegistry', () => {
 
   // â”€â”€ SORGULAMA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   describe('sorgulama', () => {
-    it('katmana gÃ¶re filtreler â€” L1 = 10 ajan', () => {
-      expect(agentRegistry.getByKatman('L1').length).toBe(10);
+    it('katmana göre filtreler — L1 = 14 ajan', () => {
+      expect(agentRegistry.getByKatman('L1').length).toBe(14);
     });
 
-    it('katmana gÃ¶re filtreler â€” L2 = 6 ajan', () => {
-      expect(agentRegistry.getByKatman('L2').length).toBe(6);
+    it('katmana göre filtreler — L2 = 10 ajan', () => {
+      expect(agentRegistry.getByKatman('L2').length).toBe(10);
     });
 
-    it('katmana gÃ¶re filtreler â€” L3 = 2 ajan', () => {
+    it('katmana göre filtreler — L3 = 2 ajan', () => {
       expect(agentRegistry.getByKatman('L3').length).toBe(2);
     });
 
-    it('katmana gÃ¶re filtreler â€” DESTEK = 28 ajan', () => {
+    it('katmana göre filtreler — DESTEK = 28 ajan', () => {
       expect(agentRegistry.getByKatman('DESTEK').length).toBe(28);
     });
 
-    it('duruma göre filtreler — 50 aktif (tam kadro)', () => {
+    it('duruma göre filtreler — 58 aktif (tam kadro)', () => {
       const aktif = agentRegistry.getByDurum('aktif');
-      expect(aktif.length).toBe(50);
+      expect(aktif.length).toBe(58);
     });
 
     it('duruma göre filtreler — 0 pasif (tam kadro aktif)', () => {
@@ -136,12 +136,12 @@ describe('AgentRegistry', () => {
 
   // â”€â”€ Ä°STATÄ°STÄ°K â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   describe('istatistik', () => {
-    it('stats doÄŸru hesaplanÄ±r', () => {
+    it('stats doğru hesaplanır', () => {
       const stats = agentRegistry.getStats();
-      expect(stats.toplam).toBe(50);
+      expect(stats.toplam).toBe(58);
       expect(stats.komuta).toBe(4);
-      expect(stats.katmanDagilimi.L1).toBe(10);
-      expect(stats.katmanDagilimi.L2).toBe(6);
+      expect(stats.katmanDagilimi.L1).toBe(14);
+      expect(stats.katmanDagilimi.L2).toBe(10);
       expect(stats.katmanDagilimi.L3).toBe(2);
       expect(stats.katmanDagilimi.DESTEK).toBe(28);
     });
