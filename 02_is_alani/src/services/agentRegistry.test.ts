@@ -2,19 +2,19 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { agentRegistry, type AgentCard } from './agentRegistry';
 
 // ============================================================
-// Agent Registry â€” 50 KiÅŸilik Hibrit Kadro Unit Testleri
-// Sorgulama, kayÄ±t, gÃ¼ncelleme, istatistik
+// Agent Registry — 58 Kişilik Hibrit Kadro Unit Testleri
+// Sorgulama, kayıt, güncelleme, istatistik
 // ============================================================
 
 describe('AgentRegistry', () => {
-  // â”€â”€ BAÅžLANGIÃ‡ KADROSU â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  describe('baÅŸlangÄ±Ã§ kadrosu', () => {
+  // —— BAŞLANGIÇ KADROSU —————————————————————————————————————
+  describe('başlangıç kadrosu', () => {
     it('58 kişilik kadro yüklü', () => {
       const all = agentRegistry.getAll();
       expect(all.length).toBe(58);
     });
 
-    it('4 komuta kartÄ± var', () => {
+    it('4 komuta kartı var', () => {
       const komuta = agentRegistry.getByKatman('KOMUTA');
       expect(komuta.length).toBe(4);
     });
@@ -31,7 +31,7 @@ describe('AgentRegistry', () => {
     });
   });
 
-  // â”€â”€ SORGULAMA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // —— SORGULAMA —————————————————————————————————————————————
   describe('sorgulama', () => {
     it('katmana göre filtreler — L1 = 14 ajan', () => {
       expect(agentRegistry.getByKatman('L1').length).toBe(14);
@@ -59,33 +59,29 @@ describe('AgentRegistry', () => {
       expect(pasif.length).toBe(0);
     });
 
-    it('beceriye gÃ¶re arar â€” react bulunur (durum filtresi yok)', () => {
-      // getByBeceri durum filtresi YAPMAZ â€” pasif ajanlarÄ± da dÃ¶ndÃ¼rÃ¼r
+    it('beceriye göre arar — react bulunur (durum filtresi yok)', () => {
       const react = agentRegistry.getByBeceri('react');
       expect(react.length).toBeGreaterThan(0);
-      // Ä°CRACI-FE pasif ama getByBeceri listede gÃ¶sterir
       expect(react.some(a => a.id === 'A-01')).toBe(true);
     });
 
-    it('gÃ¶rev yapabilecek ajanlarÄ± bulur â€” karar_verme (KOMUTA)', () => {
-      // findCapableAgents yalnÄ±zca aktif ajanlarÄ± dÃ¶ndÃ¼rÃ¼r
-      // KOMUTA ajanÄ± aktif ve karar_verme becerisine sahip
+    it('görev yapabilecek ajanları bulur — karar_verme (KOMUTA)', () => {
       const capable = agentRegistry.findCapableAgents('karar_verme');
       expect(capable.some(a => a.kod_adi === 'KOMUTAN')).toBe(true);
     });
 
-    it('olmayan ID undefined dÃ¶ner', () => {
+    it('olmayan ID undefined döner', () => {
       expect(agentRegistry.getById('X-99')).toBeUndefined();
     });
   });
 
-  // â”€â”€ KAYIT VE GÃœNCELLEME â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  describe('kayÄ±t ve gÃ¼ncelleme', () => {
-    it('yeni ajan kaydÄ± yapÄ±labilir', () => {
+  // —— KAYIT VE GÜNCELLEME ———————————————————————————————————
+  describe('kayıt ve güncelleme', () => {
+    it('yeni ajan kaydı yapılabilir', () => {
       const yeniAjan: AgentCard = {
         id: 'TEST-01',
         kod_adi: 'TEST-AJAN',
-        rol: 'Test amaÃ§lÄ± ajan',
+        rol: 'Test amaçlı ajan',
         katman: 'DESTEK',
         beceri_listesi: ['test'],
         kapsam_siniri: [],
@@ -105,13 +101,13 @@ describe('AgentRegistry', () => {
       agentRegistry.remove('TEST-01');
     });
 
-    it('aynÄ± ID ile kayÄ±t baÅŸarÄ±sÄ±z', () => {
+    it('aynı ID ile kayıt başarısız', () => {
       const result = agentRegistry.register({ id: 'K-1' } as AgentCard);
       expect(result.success).toBe(false);
       expect(result.error).toContain('zaten mevcut');
     });
 
-    it('durum gÃ¼ncelleme Ã§alÄ±ÅŸÄ±r', () => {
+    it('durum güncelleme çalışır', () => {
       const updated = agentRegistry.updateDurum('A-01', 'bakimda');
       expect(updated).toBe(true);
       expect(agentRegistry.getById('A-01')!.durum).toBe('bakimda');
@@ -120,21 +116,21 @@ describe('AgentRegistry', () => {
       agentRegistry.updateDurum('A-01', 'aktif');
     });
 
-    it('gÃ¶rev tamamlama sayacÄ± Ã§alÄ±ÅŸÄ±r', () => {
+    it('görev tamamlama sayacı çalışır', () => {
       const agent = agentRegistry.getById('A-01')!;
       const onceki = agent.tamamlanan_gorev;
       agentRegistry.recordGorevTamamlama('A-01', true);
       expect(agentRegistry.getById('A-01')!.tamamlanan_gorev).toBe(onceki + 1);
     });
 
-    it('Ã¶ÄŸrenme kapasitesi olan ajana beceri eklenebilir', () => {
+    it('öğrenme kapasitesi olan ajana beceri eklenebilir', () => {
       const result = agentRegistry.addBeceri('A-01', ['yeni_beceri_test']);
       expect(result).toBe(true);
       expect(agentRegistry.getById('A-01')!.beceri_listesi).toContain('yeni_beceri_test');
     });
   });
 
-  // â”€â”€ Ä°STATÄ°STÄ°K â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // —— İSTATİSTİK ————————————————————————————————————————————
   describe('istatistik', () => {
     it('stats doğru hesaplanır', () => {
       const stats = agentRegistry.getStats();
@@ -146,7 +142,7 @@ describe('AgentRegistry', () => {
       expect(stats.katmanDagilimi.DESTEK).toBe(28);
     });
 
-    it('sonraki ajan ID Ã¼retilir', () => {
+    it('sonraki ajan ID üretilir', () => {
       const nextId = agentRegistry.getNextAgentId();
       expect(nextId).toMatch(/^A-\d{2}$/);
     });
