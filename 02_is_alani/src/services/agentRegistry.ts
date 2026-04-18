@@ -637,6 +637,98 @@ const DEFAULT_ROSTER: AgentCard[] = [
     durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
     son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
   },
+
+  // ===========================================================================
+  // THE ORDER / NİZAM ÖZEL EKİBİ (8) — 4 İşlem & Denetim Grubu
+  // ===========================================================================
+  {
+    id: 'ANTI-01', kod_adi: 'ANTI-A1',
+    rol: 'Antigravity Üyesi A1 — Aritmetik işlem icracısı',
+    katman: 'L1',
+    beceri_listesi: ['aritmetik_islem', 'toplama', 'cikarma', 'carpma', 'bolme'],
+    kapsam_siniri: ['karar_verme', 'veritabani_islemleri'],
+    ogrenme_kapasitesi: true,
+    bagimliliklari: ['dosya_sistemi'],
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
+  },
+  {
+    id: 'ANTI-02', kod_adi: 'ANTI-A2',
+    rol: 'Antigravity Üyesi A2 — Aritmetik işlem icracısı',
+    katman: 'L1',
+    beceri_listesi: ['aritmetik_islem', 'toplama', 'cikarma', 'carpma', 'bolme'],
+    kapsam_siniri: ['karar_verme', 'veritabani_islemleri'],
+    ogrenme_kapasitesi: true,
+    bagimliliklari: ['dosya_sistemi'],
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
+  },
+  {
+    id: 'IVDE-01', kod_adi: 'IVDE-C1',
+    rol: 'IVDE Codex Üyesi C1 — Aritmetik işlem icracısı',
+    katman: 'L1',
+    beceri_listesi: ['aritmetik_islem', 'toplama', 'cikarma', 'carpma', 'bolme'],
+    kapsam_siniri: ['karar_verme', 'veritabani_islemleri'],
+    ogrenme_kapasitesi: true,
+    bagimliliklari: ['dosya_sistemi'],
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
+  },
+  {
+    id: 'IVDE-02', kod_adi: 'IVDE-C2',
+    rol: 'IVDE Codex Üyesi C2 — Aritmetik işlem icracısı',
+    katman: 'L1',
+    beceri_listesi: ['aritmetik_islem', 'toplama', 'cikarma', 'carpma', 'bolme'],
+    kapsam_siniri: ['karar_verme', 'veritabani_islemleri'],
+    ogrenme_kapasitesi: true,
+    bagimliliklari: ['dosya_sistemi'],
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
+  },
+  {
+    id: 'CNTRL-01', kod_adi: 'KONTROL-1',
+    rol: 'Sistem Denetçisi 1 — Sadece kontrol, müdahale yasak',
+    katman: 'L2',
+    beceri_listesi: ['dogrulama', 'islem_kontrolu', 'aritmetik_denetim'],
+    kapsam_siniri: ['islem_yapma', 'mudahale_etme'],
+    ogrenme_kapasitesi: false,
+    bagimliliklari: ['auditService'],
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
+  },
+  {
+    id: 'CNTRL-02', kod_adi: 'KONTROL-2',
+    rol: 'Sistem Denetçisi 2 — Sadece kontrol, müdahale yasak',
+    katman: 'L2',
+    beceri_listesi: ['dogrulama', 'islem_kontrolu', 'aritmetik_denetim'],
+    kapsam_siniri: ['islem_yapma', 'mudahale_etme'],
+    ogrenme_kapasitesi: false,
+    bagimliliklari: ['auditService'],
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
+  },
+  {
+    id: 'CNTRL-03', kod_adi: 'KONTROL-3',
+    rol: 'Sistem Denetçisi 3 — Sadece kontrol, müdahale yasak',
+    katman: 'L2',
+    beceri_listesi: ['dogrulama', 'islem_kontrolu', 'aritmetik_denetim'],
+    kapsam_siniri: ['islem_yapma', 'mudahale_etme'],
+    ogrenme_kapasitesi: false,
+    bagimliliklari: ['auditService'],
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
+  },
+  {
+    id: 'CNTRL-04', kod_adi: 'KONTROL-4',
+    rol: 'Sistem Denetçisi 4 — Sadece kontrol, müdahale yasak',
+    katman: 'L2',
+    beceri_listesi: ['dogrulama', 'islem_kontrolu', 'aritmetik_denetim'],
+    kapsam_siniri: ['islem_yapma', 'mudahale_etme'],
+    ogrenme_kapasitesi: false,
+    bagimliliklari: ['auditService'],
+    durum: 'aktif', tamamlanan_gorev: 0, hata_sayisi: 0,
+    son_aktif: new Date().toISOString(), olusturulma: new Date().toISOString(),
+  },
 ];
 
 // â”€â”€â”€ REGISTRY SINGLETON â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -825,6 +917,22 @@ class AgentRegistryManager {
       .filter(n => !isNaN(n));
     const maxId = existing.length > 0 ? Math.max(...existing) : 0;
     return `A-${String(maxId + 1).padStart(2, '0')}`;
+  }
+
+  /** Force re-initialize registry from default roster (development helper) */
+  reinitialize(): { success: boolean; toplam: number } {
+    try {
+      this.agents.clear();
+      const now = new Date().toISOString();
+      for (const agent of DEFAULT_ROSTER) {
+        this.agents.set(agent.id, { ...agent, son_aktif: now, olusturulma: now });
+      }
+      this.initialized = true;
+      return { success: true, toplam: this.agents.size };
+    } catch (e) {
+      processError(ERR.AGENT_REGISTER, e instanceof Error ? e : new Error(String(e)), { kaynak: 'agentRegistry.ts', islem: 'REINIT' });
+      return { success: false, toplam: this.agents.size };
+    }
   }
 }
 

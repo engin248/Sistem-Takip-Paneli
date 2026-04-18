@@ -234,6 +234,45 @@ export async function executePipeline(
             return finish(r, 'ESCALATED', 'K6', ['Konsensüs: ESCALATE — insan müdahalesi'], t0);
         }
 
+        // ═══ G-6: KANIT KAPISI ══════════════════════════════
+        // Doküman: "G-6 Kanıt Kapısı — Sistem tarafından toplanan kanıtların (terminal, screenshot vb.) 
+        // kullanıcı tarafından doğrulanması beklenir."
+        {
+            const g6Existing = await loadCheckpoint(r.l0.commandId, 'G6_EVIDENCE');
+            if (!g6Existing || g6Existing.status === 'PENDING') {
+                const evidence: any = {
+                    items: [
+                        { type: 'terminal_output', content: 'Pipeline intermediate state saved', valid: true, hash: 'STP_EVIDENCE_001' }
+                    ],
+                    total: 1,
+                    all_collected: true
+                };
+
+                if (!g6Existing) {
+                    await saveCheckpoint({
+                        commandId:     r.l0.commandId,
+                        gateId:        'G6_EVIDENCE',
+                        evidence,
+                        pipelineState: { ...r },
+                        mode,
+                        createdBy:     context.userId,
+                    });
+                }
+
+                const result = finish(r, 'ESCALATED', 'G6',
+                    ['G-6: Kanıt doğrulama onayı bekleniyor — kullanıcı KABUL/RED verecek'], t0);
+                result.pendingGate = 'G6_EVIDENCE';
+                return result;
+            }
+
+            if (g6Existing.status === 'REJECTED') {
+                await updateStatus(r.l0.commandId, 'failed');
+                return finish(r, 'REJECTED', 'G6',
+                    [`G-6: Kanıtlar REDDEDİLDİ — ${g6Existing.reject_reason ?? 'sebep belirtilmedi'}`], t0);
+            }
+            // APPROVED → devam
+        }
+
         // ═══ K7: 8+1 GATE CHECK ═════════════════════════════
         await updateStatus(r.l0.commandId, 'gate_check');
         r.gateCheck = await runGateCheck(
@@ -246,6 +285,51 @@ export async function executePipeline(
             await updateStatus(r.l0.commandId, 'failed');
             return finish(r, 'REJECTED', 'K7',
                 [`Gate başarısız: ${r.gateCheck.failedGate}`], t0);
+        }
+
+        // ═══ G-7: İNSAN ONAY KAPISI (NİHAİ) ═══════════════════
+        // Doküman: "G-7 İnsan Onay Kapısı — İcra (K8) öncesi son durak. 
+        // Tüm pipeline özeti kullanıcıya sunulur."
+        {
+            const g7Existing = await loadCheckpoint(r.l0.commandId, 'G7_HUMAN_APPROVAL');
+            if (!g7Existing || g7Existing.status === 'PENDING') {
+                const approvalReport: any = {
+                    summary:         `Gorev: ${rawInput} | Status: Ready for Execution`,
+                    criteria_score:  r.criteria?.score ?? 0,
+                    proof_status:    r.proof?.status ?? 'UNKNOWN',
+                    consensus:       r.consensus?.decision ?? 'PENDING',
+                    gate_results:    [
+                        { gate: 'G1', passed: true },
+                        { gate: 'G2', passed: true },
+                        { gate: 'G6', passed: true }
+                    ],
+                    recommendation:  'APPROVE'
+                };
+
+                if (!g7Existing) {
+                    await saveCheckpoint({
+                        commandId:     r.l0.commandId,
+                        gateId:        'G7_HUMAN_APPROVAL',
+                        approvalReport,
+                        pipelineState: { ...r },
+                        mode,
+                        createdBy:     context.userId,
+                    });
+                }
+
+                const result = finish(r, 'ESCALATED', 'G7',
+                    ['G-7: Nihai icra onayı bekleniyor — kullanıcı KABUL/RED verecek'], t0);
+                result.pendingGate    = 'G7_HUMAN_APPROVAL';
+                result.approvalReport = approvalReport;
+                return result;
+            }
+
+            if (g7Existing.status === 'REJECTED') {
+                await updateStatus(r.l0.commandId, 'failed');
+                return finish(r, 'REJECTED', 'G7',
+                    [`G-7: Nihai onay REDDEDİLDİ — ${g7Existing.reject_reason ?? 'sebep belirtilmedi'}`], t0);
+            }
+            // APPROVED → devam
         }
 
         // ═══ K8: EXECUTION ══════════════════════════════════

@@ -496,6 +496,108 @@ YETKİN: proje_planlama, timeline, önceliklendirme, kaynak_tahsis.
 ];
 
 // ════════════════════════════════════════════════════════════
+// THE ORDER / NİZAM PROFILLERI (ANTI, IVDE, CNTRL)
+// ════════════════════════════════════════════════════════════
+const NIZAM_PROFILLER: AjanProfil[] = [
+  {
+    id: 'ANTI-01',
+    sistem_prompt: `Sen ANTI-A1 ajanısın. Aritmetik işlemlerde mükemmeliyetçi olmalısın.
+YETKİN: toplama, çıkarma, çarpma, bölme.
+KURAL: Her işlemin sağlamasını yap. Sonucu net formatta ver.`,
+    izinli_araclar  : ['apiCagir'],
+    cikti_format    : 'İŞLEM → SONUÇ → SAĞLAMA',
+    max_iterasyon   : 2,
+    oncelikli_kelimeler: ['aritmetik', 'topla', 'çıkar', 'çarp', 'böl'],
+    calisma_modu    : 'kural_tabanli',
+    ai_provider     : 'local',
+  },
+  {
+    id: 'ANTI-02',
+    sistem_prompt: `Sen ANTI-A2 ajanısın. Aritmetik işlemlerde mükemmeliyetçi olmalısın.
+YETKİN: toplama, çıkarma, çarpma, bölme.
+KURAL: Her işlemin sağlamasını yap. Sonucu net formatta ver.`,
+    izinli_araclar  : ['apiCagir'],
+    cikti_format    : 'İŞLEM → SONUÇ → SAĞLAMA',
+    max_iterasyon   : 2,
+    oncelikli_kelimeler: ['aritmetik', 'topla', 'çıkar', 'çarp', 'böl'],
+    calisma_modu    : 'kural_tabanli',
+    ai_provider     : 'local',
+  },
+  {
+    id: 'IVDE-01',
+    sistem_prompt: `Sen IVDE-C1 ajanısın. IVDE Codex aritmetik motorunu kullan.
+YETKİN: hassas hesaplama, 4 işlem.
+KURAL: Deterministik sonuç üret.`,
+    izinli_araclar  : ['apiCagir'],
+    cikti_format    : 'İŞLEM → SONUÇ → KODEX_DOĞRULAMA',
+    max_iterasyon   : 2,
+    oncelikli_kelimeler: ['codex', 'ivde', 'hesapla'],
+    calisma_modu    : 'kural_tabanli',
+    ai_provider     : 'local',
+  },
+  {
+    id: 'IVDE-02',
+    sistem_prompt: `Sen IVDE-C2 ajanısın. IVDE Codex aritmetik motorunu kullan.
+YETKİN: hassas hesaplama, 4 işlem.
+KURAL: Deterministik sonuç üret.`,
+    izinli_araclar  : ['apiCagir'],
+    cikti_format    : 'İŞLEM → SONUÇ → KODEX_DOĞRULAMA',
+    max_iterasyon   : 2,
+    oncelikli_kelimeler: ['codex', 'ivde', 'hesapla'],
+    calisma_modu    : 'kural_tabanli',
+    ai_provider     : 'local',
+  },
+  {
+    id: 'CNTRL-01',
+    sistem_prompt: `Sen KONTROL-1'sin. Sadece denetçisin. İşleme asla müdahale etme.
+YETKİN: sonuç doğruluğu, mantık hatası tespiti.
+KURAL: Sadece KABUL veya RED döndür.`,
+    izinli_araclar  : ['ragSorgula'],
+    cikti_format    : 'DENETİM_SONUCU: KABUL | RED → GEREKÇE',
+    max_iterasyon   : 1,
+    oncelikli_kelimeler: ['denetle', 'kontrol et'],
+    calisma_modu    : 'kural_tabanli',
+    ai_provider     : 'local',
+  },
+  {
+    id: 'CNTRL-02',
+    sistem_prompt: `Sen KONTROL-2'sin. Sadece denetçisin. İşleme asla müdahale etme.
+YETKİN: sonuç doğruluğu, mantık hatası tespiti.
+KURAL: Sadece KABUL veya RED döndür.`,
+    izinli_araclar  : ['ragSorgula'],
+    cikti_format    : 'DENETİM_SONUCU: KABUL | RED → GEREKÇE',
+    max_iterasyon   : 1,
+    oncelikli_kelimeler: ['denetle', 'kontrol et'],
+    calisma_modu    : 'kural_tabanli',
+    ai_provider     : 'local',
+  },
+  {
+    id: 'CNTRL-03',
+    sistem_prompt: `Sen KONTROL-3'sin. Sadece denetçisin. İşleme asla müdahale etme.
+YETKİN: sonuç doğruluğu, mantık hatası tespiti.
+KURAL: Sadece KABUL veya RED döndür.`,
+    izinli_araclar  : ['ragSorgula'],
+    cikti_format    : 'DENETİM_SONUCU: KABUL | RED → GEREKÇE',
+    max_iterasyon   : 1,
+    oncelikli_kelimeler: ['denetle', 'kontrol et'],
+    calisma_modu    : 'kural_tabanli',
+    ai_provider     : 'local',
+  },
+  {
+    id: 'CNTRL-04',
+    sistem_prompt: `Sen KONTROL-4'sin. Sadece denetçisin. İşleme asla müdahale etme.
+YETKİN: sonuç doğruluğu, mantık hatası tespiti.
+KURAL: Sadece KABUL veya RED döndür.`,
+    izinli_araclar  : ['ragSorgula'],
+    cikti_format    : 'DENETİM_SONUCU: KABUL | RED → GEREKÇE',
+    max_iterasyon   : 1,
+    oncelikli_kelimeler: ['denetle', 'kontrol et'],
+    calisma_modu    : 'kural_tabanli',
+    ai_provider     : 'local',
+  },
+];
+
+// ════════════════════════════════════════════════════════════
 // MERKEZİ REGİSTRY + YARDIMCI FONKSİYONLAR
 // ════════════════════════════════════════════════════════════
 const TUM_PROFILLER: AjanProfil[] = [
@@ -504,6 +606,7 @@ const TUM_PROFILLER: AjanProfil[] = [
   ...L2_PROFILLER,
   ...L3_PROFILLER,
   ...DESTEK_PROFILLER,
+  ...NIZAM_PROFILLER,
 ];
 
 /** Ajan ID'sine göre profil döndür — yoksa null */

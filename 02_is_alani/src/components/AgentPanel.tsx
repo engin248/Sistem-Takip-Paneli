@@ -77,6 +77,10 @@ export default function AgentPanel() {
     result      ?: string;
     l2_denetim  ?: { durum: string; ozet: string; kod_adi: string; duration_ms: number };
   } | null>(null);
+  const [diagLoading, setDiagLoading] = useState(false);
+  const [diagData, setDiagData] = useState<any>(null);
+  const [bootLoading, setBootLoading] = useState(false);
+  const [messagesCount, setMessagesCount] = useState<number>(0);
 
   // ── VERİ ÇEK ───────────────────────────────────────────────
   const fetchAgents = useCallback(async () => {
@@ -179,6 +183,55 @@ export default function AgentPanel() {
     }
   }, [autoGorev, fetchAgents]);
 
+  // ── DIAGNOSTICS ───────────────────────────────────────
+  const fetchDiagnostics = useCallback(async () => {
+    setDiagLoading(true);
+    setDiagData(null);
+    try {
+      const res = await fetch('/api/diagnostics');
+      const data = await res.json();
+      setDiagData(data);
+    } catch (e) {
+      setDiagData({ success: false, error: String(e) });
+    } finally {
+      setDiagLoading(false);
+    }
+  }, []);
+
+  // ── DEV BOOTSTRAP — Force registry reload ──────────────
+  const runDevBootstrap = useCallback(async () => {
+    setBootLoading(true);
+    try {
+      const res = await fetch('/api/bootstrap/dev', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+      const data = await res.json();
+      if (data?.success) {
+        void fetchAgents();
+      }
+      setAssignResult({ success: !!data?.success, message: data?.success ? 'Bootstrap tamamlandı' : (data?.error ?? 'Bootstrap hata') });
+    } catch (e) {
+      setAssignResult({ success: false, message: String(e) });
+    } finally {
+      setBootLoading(false);
+    }
+  }, [fetchAgents]);
+
+  // ── HUB POLLING (mesaj sayısı) ─────────────────────────
+  const fetchMessagesCount = useCallback(async () => {
+    try {
+      const res = await fetch('/api/hub/messages');
+      const data = await res.json();
+      if (data?.success && Array.isArray(data.messages)) setMessagesCount(data.messages.length);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    void fetchMessagesCount();
+    const iv = setInterval(() => void fetchMessagesCount(), 10_000);
+    return () => clearInterval(iv);
+  }, [fetchMessagesCount]);
+
   // ── YARDIMCILAR ────────────────────────────────────────────
   const visibleAgents = activeFilter === 'TUMU' ? agents : agents.filter(a => a.katman === activeFilter);
   const agentsByTier  = (tier: AgentTier) => visibleAgents.filter(a => a.katman === tier);
@@ -249,8 +302,34 @@ export default function AgentPanel() {
           );
         })}
       </div>
+        {/* ── HIZLI KONTROLLER: BOOT / DIAGNOSTICS ─────────────── */}
+        <div className="glass-card border border-slate-700/30 p-3 flex items-center gap-2">
+          <button
+            id="boot-agents-btn"
+            onClick={() => void runDevBootstrap()}
+            disabled={bootLoading}
+            className="px-3 py-1 text-[9px] font-black uppercase bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-lg hover:bg-amber-500/20 disabled:opacity-40"
+          >
+            {bootLoading ? '⟳' : 'BOOT AGENTS'}
+          </button>
 
-      {/* ── OTO GÖREV — Orchestrator Direkt ───────────────────── */}
+          <button
+            id="diagnostics-btn"
+            onClick={() => void fetchDiagnostics()}
+            disabled={diagLoading}
+            className="px-3 py-1 text-[9px] font-black uppercase bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 rounded-lg hover:bg-cyan-500/20 disabled:opacity-40"
+          >
+            {diagLoading ? '⟳' : 'DIAGNOSTICS'}
+          </button>
+
+          <div className="ml-auto text-[8px] font-mono text-slate-500">
+            {diagData ? (diagData.success ? `Agents:${diagData.stats?.toplam ?? diagData.agents_count}` : 'Diag: hata') : 'Durum: bekliyor'}
+            <span className="mx-2">|</span>
+            <span className="text-[8px]">Mesajlar: {messagesCount}</span>
+          </div>
+        </div>
+
+        {/* ── OTO GÖREV — Orchestrator Direkt ───────────────────── */}
       <div className="glass-card border border-cyan-500/20 p-4">
         <div className="flex items-center gap-2 mb-3">
           <span className="text-cyan-400 text-sm">⚡</span>

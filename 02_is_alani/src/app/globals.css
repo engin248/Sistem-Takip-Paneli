@@ -196,6 +196,34 @@ body {
   animation: radar-sweep 4s linear infinite;
 }
 
+/* ── MEKANİK VİDA / DİŞLİ ANİMASYONLARI ───────────────────── */
+@keyframes gear-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes gear-spin-reverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+@keyframes screw-pulse {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.3; }
+  50% { transform: scale(1.1) rotate(180deg); opacity: 0.6; }
+}
+
+.animate-gear {
+  animation: gear-spin 12s linear infinite;
+}
+
+.animate-gear-slow {
+  animation: gear-spin-reverse 25s linear infinite;
+}
+
+.animate-screw {
+  animation: screw-pulse 4s ease-in-out infinite;
+}
+
 /* ── SCROLLBAR FÜTÜRİSTİK ───────────────────────────────── */
 ::-webkit-scrollbar {
   width: 6px;

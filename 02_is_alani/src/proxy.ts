@@ -1,30 +1,8 @@
+﻿// ============================================================
+// NEXT.JS 16+ PROXY — BIRLESIK GUVENLIK KATMANI
 // ============================================================
-// NEXT.JS 16+ PROXY — BİRLEŞİK GÜVENLİK KATMANI
-// ============================================================
-// Next.js 16'dan itibaren middleware convention KALDIRILDI.
-// Bu dosya TEK güvenlik katmanı olarak çalışır.
-//
-// ⚠️ KRİTİK KURAL:
-//   middleware.ts DOSYASI OLUŞTURULAMAZ!
-//   Next.js 16+ middleware.ts + proxy.ts birlikte YASAKLADI.
-//   Tüm güvenlik mantığı BU DOSYADA toplanmalıdır.
-//
-// Görevler:
-//   1. PUBLIC_PATHS — rate limit ve auth bypass listesi
-//   2. MUHAFIZ — Localhost guard (dev modda dış ağ erişimini engeller)
-//   3. API rate limiting (Map + TTL)
-//   4. CSRF benzeri origin kontrolü
-//   5. Auth kontrolü — page route'larını korur (K-4 fix)
-//   6. Güvenlik başlıkları ekleme
-//
-// Hata Kodları:
-//   ERR-STP001-MUHAFIZ-001 — Dış ağ erişim engeli
-// ============================================================
-
 import { NextRequest, NextResponse } from 'next/server';
 
-// ── PUBLIC PATHS — Auth ve rate limit bypass ──────────────────
-// Bu path'ler tüm güvenlik kontrollerinden muaf tutulur.
 const PUBLIC_PATHS = [
   '/api/telegram/webhook',
   '/api/telegram',
@@ -34,25 +12,25 @@ const PUBLIC_PATHS = [
   '/api/agents',
 ];
 
-// ─── MUHAFIZ: Localhost Guard ────────────────────────────────
-const ALLOWED_HOSTS = new Set([
-  'localhost',
-  '127.0.0.1',
-  '::1',
-  '[::1]',
-]);
+const ALLOWED_HOSTS = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
+const ALLOWED_ORIGINS = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:3001',
+  'http://127.0.0.1',
+  process.env.NEXT_PUBLIC_APP_URL,
+].filter(Boolean) as string[];
 
-// ─── RATE LIMITER (In-Memory Map + TTL) ─────────────────────
 interface RateLimitEntry {
   count: number;
   resetAt: number;
 }
 
 const rateLimitMap = new Map<string, RateLimitEntry>();
-
-const RATE_LIMIT_WINDOW_MS    = 60_000; // 1 dakika
-const RATE_LIMIT_MAX_REQUESTS = 300;    // Dakikada 300 istek (dashboard ~5 panel polling)
-const CLEANUP_THRESHOLD       = 500;    // 500+ kayıtta otomatik temizlik
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX_REQUESTS = 300;
+const CLEANUP_THRESHOLD = 500;
 
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
@@ -64,7 +42,6 @@ function isRateLimited(ip: string): boolean {
   }
 
   const entry = rateLimitMap.get(ip);
-
   if (!entry || now > entry.resetAt) {
     rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
     return false;
@@ -74,116 +51,78 @@ function isRateLimited(ip: string): boolean {
   return entry.count > RATE_LIMIT_MAX_REQUESTS;
 }
 
-// ─── İZİN VERİLEN ORİGİN'LER ───────────────────────────────
-const ALLOWED_ORIGINS = [
-  'http://localhost:3000',
-  'http://localhost:3001',
-  'http://127.0.0.1:3000',
-  'http://127.0.0.1:3001',
-  'http://127.0.0.1',
-  process.env.NEXT_PUBLIC_APP_URL,
-].filter(Boolean) as string[];
-
-// ============================================================
-// PROXY FONKSİYONU — Next.js 16+ Convention
-// ============================================================
-
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // ── 0. PUBLIC PATHS — Tüm kontrollerden muaf ─────────────
-  if (PUBLIC_PATHS.some(p => pathname.startsWith(p))) {
+  if (pathname.startsWith('/_next/')) {
+    return NextResponse.next();
+  }
+
+  if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
     return addSecurityHeaders(NextResponse.next());
   }
 
-  // ── 1. MUHAFIZ: LOCALHOST GUARD (Dev Only) ─────────────────
   if (process.env.NODE_ENV !== 'production') {
-    const host         = request.headers.get('host')?.split(':')[0] ?? '';
-    const forwardedFor = request.headers.get('x-forwarded-for');
+    const host = request.headers.get('host')?.split(':')[0] ?? '';
 
     if (!ALLOWED_HOSTS.has(host)) {
       return new NextResponse(
         JSON.stringify({
-          hata:      'Erişim engellendi. Bu sistem yalnızca localhost üzerinden çalışır.',
+          hata: 'Erisim engellendi. Bu sistem yalnizca localhost uzerinden calisir.',
           hata_kodu: 'ERR-STP001-MUHAFIZ-001',
-          mod:       'GÜVENLİ MOD',
+          mod: 'GUVENLI MOD',
           timestamp: new Date().toISOString(),
-          debug:     { host, forwardedFor, pathname },
+          debug: { host, pathname },
         }),
         {
           status: 403,
-          headers: {
-            'Content-Type':    'application/json',
-            'X-Muhafiz-Status': 'BLOCKED',
-          },
+          headers: { 'Content-Type': 'application/json', 'X-Muhafiz-Status': 'BLOCKED' },
         }
       );
     }
   }
 
-  // ── 2. SAYFA ROUTE'LARI — Doğrudan geçir ────────────────────
-  // Auth kontrolü middleware'de YAPILMIYOR.
-  // /login sayfası mevcut değil — redirect 404 üretiyor.
-  // Auth yönetimi uygulama içinde (client-side AuthProvider) yapılır.
   if (!pathname.startsWith('/api/')) {
     return addSecurityHeaders(NextResponse.next());
   }
 
-  // ── 3. RATE LIMITING (Sadece /api/* ) ──────────────────────
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-    || request.headers.get('x-real-ip')
-    || 'unknown';
+  const ip =
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    request.headers.get('x-real-ip') ||
+    'unknown';
 
   if (isRateLimited(ip)) {
     return NextResponse.json(
-      { success: false, error: 'ERR-RATE-001: Çok fazla istek — 60s bekleyin.' },
+      { success: false, error: 'ERR-RATE-001: Cok fazla istek — 60s bekleyin.' },
       {
         status: 429,
         headers: {
-          'Retry-After':           '60',
-          'X-RateLimit-Limit':     String(RATE_LIMIT_MAX_REQUESTS),
+          'Retry-After': '60',
+          'X-RateLimit-Limit': String(RATE_LIMIT_MAX_REQUESTS),
           'X-RateLimit-Remaining': '0',
         },
       }
     );
   }
 
-  // ── 4. ORİGİN KONTROLÜ (CSRF benzeri) ─────────────────────
-  // Mutasyon isteklerinde (POST/PUT/DELETE) origin ZORUNLU kontrol edilir.
-  // Origin veya referer yoksa → localhost guard zaten ALLOWED_HOSTS ile
-  // host bazlı koruma sağlıyor, ancak origin header'ı olmayan non-GET
-  // istekler yalnızca dev modda geçer.
   if (request.method !== 'GET') {
-    const origin  = request.headers.get('origin');
+    const origin = request.headers.get('origin');
     const referer = request.headers.get('referer');
-    const source  = origin || referer;
+    const source = origin || referer;
 
-    if (!source) {
-      // Origin/Referer yok — yalnızca server-side (SSR) veya localhost
-      // fetch'lerinde olur. Host kontrolü zaten yapıldı (step 1).
-      // Production'da bunu sıkılaştırmak gerekebilir.
-      if (process.env.NODE_ENV === 'production') {
-        return NextResponse.json(
-          { success: false, error: 'CSRF: Origin header eksik.' },
-          { status: 403 }
-        );
-      }
-    } else {
-      const isAllowed = ALLOWED_ORIGINS.some(allowed => source.startsWith(allowed));
+    if (source) {
+      const isAllowed = ALLOWED_ORIGINS.some((allowed) => source.startsWith(allowed));
       if (!isAllowed) {
-        return NextResponse.json(
-          { success: false, error: 'CSRF: Yetkisiz kaynak.' },
-          { status: 403 }
-        );
+        return NextResponse.json({ success: false, error: 'CSRF: Yetkisiz kaynak.' }, { status: 403 });
       }
+    } else if (process.env.NODE_ENV === 'production') {
+      return NextResponse.json({ success: false, error: 'CSRF: Origin header eksik.' }, { status: 403 });
     }
   }
 
-  // ── 5. GÜVENLİK BAŞLIKLARI ───────────────────────────────
   return addSecurityHeaders(NextResponse.next());
 }
 
-// ─── GÜVENLİK BAŞLIKLARI ───────────────────────────────────
 function addSecurityHeaders(response: NextResponse): NextResponse {
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('X-Frame-Options', 'DENY');
@@ -193,9 +132,6 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
   return response;
 }
 
-// ─── MATCHER: Tüm route'lar (statik dosyalar hariç) ────────
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|_next/webpack-hmr|favicon.ico).*)'],
 };

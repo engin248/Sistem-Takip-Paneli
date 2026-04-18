@@ -14,6 +14,7 @@ import TaskBoard from '@/components/TaskBoard';
 import Stats from '@/components/Stats';
 import AuditLog from '@/components/AuditLog';
 import BoardPanel from '@/components/BoardPanel';
+import PlanningPanel from '@/components/PlanningPanel';
 import HealthDashboard from '@/components/HealthDashboard';
 import L2Panel from '@/components/L2Panel';
 import SelfLearningPanel from '@/components/SelfLearningPanel';
@@ -163,6 +164,35 @@ function HQScreen({
   );
 }
 
+// ── SİSTEM ÇEKİRDEĞİ (VİDACILAR) ─────────────────────────────
+function SystemCore() {
+  return (
+    <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-10">
+      <div className="relative w-[600px] h-[600px] flex items-center justify-center">
+        {/* Büyük Dişli */}
+        <div className="absolute w-full h-full border-[20px] border-dashed border-cyan-500/20 rounded-full animate-gear" />
+        {/* Ters Dişli */}
+        <div className="absolute w-3/4 h-3/4 border-[15px] border-dotted border-blue-500/20 rounded-full animate-gear-slow" />
+        {/* Vidalar / Screws */}
+        {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => (
+          <div
+            key={deg}
+            className="absolute text-2xl text-cyan-400/40 animate-screw"
+            style={{
+              transform: `rotate(${deg}deg) translateY(-240px)`,
+              animationDelay: `${deg * 5}ms`
+            }}
+          >
+            ⚙️
+          </div>
+        ))}
+        {/* Merkez Işıma */}
+        <div className="w-32 h-32 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" />
+      </div>
+    </div>
+  );
+}
+
 // ══════════════════════════════════════════════════════════════
 // ANA DASHBOARD BİLEŞENİ
 // ══════════════════════════════════════════════════════════════
@@ -257,6 +287,9 @@ export default function Dashboard() {
 
   return (
     <div className="flex min-h-[calc(100vh-57px)]">
+      {/* ── SİSTEM ARKAPLAN DİNAMİĞİ (VİDACILAR) ── */}
+      {!isLocked && <SystemCore />}
+      
       {/* ══════════════════════════════════════════════════════ */}
       {/* SOL SIDEBAR — EKRAN NAVİGASYON                        */}
       {/* ══════════════════════════════════════════════════════ */}
@@ -598,7 +631,7 @@ export default function Dashboard() {
               isCollapsed={collapsedScreens.has('SCR-04')}
               onToggleCollapse={() => toggleCollapse('SCR-04')}
             >
-              <BoardPanel />
+              <PlanningPanel />
             </HQScreen>
 
             {/* ── EKRAN 05: L2 DENETİM ────────────────────────── */}

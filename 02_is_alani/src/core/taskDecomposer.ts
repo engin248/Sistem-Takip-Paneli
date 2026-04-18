@@ -12,6 +12,7 @@
 // ============================================================
 
 import { agentRegistry } from '@/services/agentRegistry';
+import { isNizamTask, applyNizamDiscipline, validateNizamPlan } from './nizamProtocol';
 
 // ── TİPLER ────────────────────────────────────────────────────
 export interface AltGorev {
@@ -154,6 +155,22 @@ export function goreviPlanla(gorev: string): GorevPlani {
   const ozet = alt_gorevler
     .map(a => `${a.sira}. ${a.ajan_kodu}: ${a.gorev.slice(0, 60)}`)
     .join(' → ');
+
+  // ── NİZAM DİSİPLİNİ UYGULAMA ──
+  if (isNizamTask(gorev)) {
+    const nizamSteps = applyNizamDiscipline(alt_gorevler);
+    const nizamCheck = validateNizamPlan(nizamSteps.map(s => s.ajan_kodu).join(','));
+    
+    if (nizamCheck.valid) {
+      return {
+        orijinal_gorev: gorev,
+        karmasik: true,
+        complexity_score: complexity_score + 10, // Nizam ek yükü
+        alt_gorevler: nizamSteps,
+        ozet: `[NİZAM DİSİPLİNİ] ${ozet} → +8 EKİP ÜYESİ DENETİMİ`,
+      };
+    }
+  }
 
   return {
     orijinal_gorev: gorev,

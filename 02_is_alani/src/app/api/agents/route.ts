@@ -13,17 +13,21 @@ export async function GET() {
     const agents = agentRegistry.getAll();
     const stats  = agentRegistry.getStats();
 
-    // Audit kaydı
-    await logAudit({
-      operation_type: 'READ',
-      action_description: `Agent kadrosu sorgulandı — ${agents.length} ajan`,
-      metadata: {
-        action_code: 'AGENT_STATUS_QUERY',
-        toplam: stats.toplam,
-        aktif:  stats.aktif,
-        pasif:  stats.pasif,
-      },
-    }).catch(() => {});
+    // Audit log işlemini izole et
+    try {
+      await logAudit({
+        operation_type: 'READ',
+        action_description: `Agent kadrosu sorgulandı — ${agents.length} ajan`,
+        metadata: {
+          action_code: 'AGENT_STATUS_QUERY',
+          toplam: stats.toplam,
+          aktif:  stats.aktif,
+          pasif:  stats.pasif,
+        },
+      });
+    } catch (e) {
+      console.warn('[AUDIT_SKIP] Agent list log failed:', e);
+    }
 
     return NextResponse.json({
       success: true,
@@ -33,6 +37,7 @@ export async function GET() {
     });
 
   } catch (err) {
+    console.error('[API_500] /api/agents:', err);
     return NextResponse.json(
       { success: false, error: err instanceof Error ? err.message : String(err) },
       { status: 500 }

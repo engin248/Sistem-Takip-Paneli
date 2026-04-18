@@ -1,4 +1,4 @@
-﻿// src/app/api/hub/messages/route.ts
+// src/app/api/hub/messages/route.ts
 import { NextResponse, type NextRequest } from 'next/server';
 import { getRecentMessages } from '@/lib/eventBus';
 import { logAudit } from '@/services/auditService';
@@ -8,20 +8,41 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   try {
     const rawLimit = request.nextUrl.searchParams.get('limit');
-    const parsedLimit = Number.parseInt(rawLimit ?? '50', 10);
-    const limit = Number.isFinite(parsedLimit) && parsedLimit > 0 ? Math.min(parsedLimit, 200) : 50;
+    let limit = 50;
+    
+    if (rawLimit) {
+      const parsed = Number.parseInt(rawLimit, 10);
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        limit = Math.min(parsed, 200);
+      }
+    }
+
     const messages = getRecentMessages(limit);
 
-    void logAudit({
-      operation_type: 'READ',
-      action_description: `Hub messages fetched: ${messages.length}`,
-      metadata: { action_code: 'HUB_FETCH', count: messages.length },
-    }).catch(() => {});
+    // Audit log işlemini izole et ve yanıtı bozmasını engelle
+    try {
+      await logAudit({
+        operation_type: 'READ',
+        action_description: `Hub messages fetched: ${messages.length}`,
+        metadata: { action_code: 'HUB_FETCH', count: messages.length },
+      });
+    } catch (e) {
+      console.warn('[AUDIT_SKIP] Hub log failed:', e);
+    }
 
-    return NextResponse.json({ success: true, messages, count: messages.length });
+    return NextResponse.json({ 
+      success: true, 
+      messages: messages ?? [], 
+      count: messages?.length ?? 0 
+    });
   } catch (err) {
+    console.error('[API_500] /api/hub/messages:', err);
     return NextResponse.json(
-      { success: false, error: err instanceof Error ? err.message : String(err) },
+      { 
+        success: false, 
+        error: err instanceof Error ? err.message : String(err),
+        timestamp: new Date().toISOString()
+      },
       { status: 500 }
     );
   }
