@@ -11,6 +11,67 @@ import { ERR, processError } from '@/lib/errorCore';
 import { logAudit } from '@/services/auditService';
 import { sendTelegramNotification, formatTaskNotification, isTelegramNotificationAvailable } from '@/services/telegramNotifier';
 
+// -------------------------------------------------
+// Memory layers (in‑memory placeholders – replace with persistent store if needed)
+// -------------------------------------------------
+/** Global memory – shared across all tasks/projects */
+const GLOBAL_MEMORY: Record<string, any> = {};
+/** Project‑specific memory – keyed by projectId */
+const PROJECT_MEMORY: Record<string, Record<string, any>> = {};
+/** Task‑specific memory – keyed by taskId */
+const TASK_MEMORY: Record<string, Record<string, any>> = {};
+
+/**
+ * Pre‑execution validation.
+ * Returns { allowed: boolean, errors: string[] }.
+ * RED status (duplicate / anomaly) blocks execution.
+ * Decay & forgetting are mandatory (zorunlu) – they are logged and cleaned.
+ */
+function preExecuteChecks(task: any, operation: string): { allowed: boolean; errors: string[] } {
+  const errors: string[] = [];
+
+  // ---- Duplicate check (RED) ----
+  if (task.task_id && TASK_MEMORY[task.task_id]) {
+    errors.push('RED – Duplicate task detected');
+  }
+
+  // ---- Anomaly check (RED) ----
+  const allowedFields = ['task_id', 'title', 'description', 'priority', 'assigned_to', 'due_date', 'status', 'evidence_provided'];
+  const extraFields = Object.keys(task).filter((k) => !allowedFields.includes(k));
+  if (extraFields.length) {
+    errors.push(`RED – Anomalous fields: ${extraFields.join(', ')}`);
+  }
+
+  // ---- Decay (zorunlu) ----
+  // If task has a created_at older than 30 days, mark as decayed.
+  if (task.created_at) {
+    const ageDays = (Date.now() - new Date(task.created_at).getTime()) / (1000 * 60 * 60 * 24);
+    if (ageDays > 30) {
+      console.warn(`[Decay] Task ${task.task_id ?? '<no id>'} is older than 30 days (age: ${Math.floor(ageDays)}d).`);
+      // Optionally flag or archive – here we just log.
+    }
+  }
+
+  // ---- Forgetting (zorunlu) ----
+  // If task not accessed for >60 days, remove from memory.
+  const mem = TASK_MEMORY[task.task_id];
+  if (mem && mem.lastAccess) {
+    const idleDays = (Date.now() - new Date(mem.lastAccess).getTime()) / (1000 * 60 * 60 * 24);
+    if (idleDays > 60) {
+      console.info(`[Forgetting] Removing stale task ${task.task_id} from TASK_MEMORY.`);
+      delete TASK_MEMORY[task.task_id];
+    }
+  }
+
+  // Store/refresh memory entry for current task
+  if (task.task_id) {
+    TASK_MEMORY[task.task_id] = { ...TASK_MEMORY[task.task_id], lastAccess: new Date().toISOString(), operation };
+  }
+
+  return { allowed: errors.length === 0, errors };
+}
+
+
 function generateTaskCode(): string {
   const now = new Date();
   const pad = (n: number) => n.toString().padStart(2, '0');
@@ -23,6 +84,15 @@ function generateTaskCode(): string {
 export async function handleTaskCreate(request: NextRequest): Promise<NextResponse> {
   try {
     const body = await request.json();
+    // -------------------------------------------------
+    // 1️⃣ Pre‑execution checks (duplicate, anomaly, decay, forgetting)
+    // -------------------------------------------------
+    const preCheck = preExecuteChecks(body, 'CREATE');
+    if (!preCheck.allowed) {
+      // RED – block execution
+      console.error('[TaskCreate] Pre‑check failed:', preCheck.errors.join(' | '));
+      return NextResponse.json({ success: false, error: 'Pre‑execution validation failed', details: preCheck.errors }, { status: 400 });
+    }
 
     const validation = validateInput(CreateTaskSchema, {
       title: body.title, description: body.description ?? null,
@@ -78,6 +148,15 @@ export async function handleTaskCreate(request: NextRequest): Promise<NextRespon
 export async function handleTaskUpdate(request: NextRequest): Promise<NextResponse> {
   try {
     const body = await request.json();
+    // -------------------------------------------------
+    // 1️⃣ Pre‑execution checks for UPDATE
+    // -------------------------------------------------
+    const preCheck = preExecuteChecks(body, 'UPDATE');
+    if (!preCheck.allowed) {
+      console.error('[TaskUpdate] Pre‑check failed:', preCheck.errors.join(' | '));
+      return NextResponse.json({ success: false, error: 'Pre‑execution validation failed', details: preCheck.errors }, { status: 400 });
+    }
+
     const taskId = body.task_id;
     if (!taskId || typeof taskId !== 'string') {
       return NextResponse.json({ success: false, error: 'task_id zorunlu alandır (UUID)' }, { status: 400 });
@@ -147,6 +226,15 @@ export async function handleTaskUpdate(request: NextRequest): Promise<NextRespon
 export async function handleTaskDelete(request: NextRequest): Promise<NextResponse> {
   try {
     const body = await request.json();
+    // -------------------------------------------------
+    // 1️⃣ Pre‑execution checks for DELETE
+    // -------------------------------------------------
+    const preCheck = preExecuteChecks(body, 'DELETE');
+    if (!preCheck.allowed) {
+      console.error('[TaskDelete] Pre‑check failed:', preCheck.errors.join(' | '));
+      return NextResponse.json({ success: false, error: 'Pre‑execution validation failed', details: preCheck.errors }, { status: 400 });
+    }
+
     const taskId = body.task_id;
     if (!taskId || typeof taskId !== 'string') {
       return NextResponse.json({ success: false, error: 'task_id zorunlu alandır (UUID)' }, { status: 400 });

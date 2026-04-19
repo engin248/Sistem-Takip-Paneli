@@ -1,0 +1,1 @@
+{"seq":1,"timestamp":"2026-04-19T13:03:21.391Z","agent_id":"AI_PROVIDER","action":"OLLAMA_SUCCESS","data":{"model":"qwen3.5:latest","sure_ms":19097,"cb_state":"KAPALI"},"prev_hash":"0000000000000000000000000000000000000000000000000000000000000000","hash":"e2d0dd82b6a73fe6f8e7009c4c99521c38c02e57efdeaf2b6b0b702ee2fec994","integrity":"OK"}

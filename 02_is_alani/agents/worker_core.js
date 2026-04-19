@@ -24,7 +24,7 @@
 'use strict';
 
 const crypto = require('crypto');
-
+const Validator = require('./Validator'); // Katman 2.5 — Bağımsız Doğrulama Servisi
 // ═══════════════════════════════════════════════════════════════
 // 1. AGENT_ID SİSTEMİ — Deterministik Kimlik Üretim Motoru
 // ═══════════════════════════════════════════════════════════════
@@ -935,18 +935,38 @@ class AgentWorker {
    */
   _kuralTabanliYanit(gorev) {
     const ts = new Date().toISOString();
+
+    // ═══════════════════════════════════════════════════════════
+    // 3 KATMANLI VALİDASYON — Bağımsız Validator Servisi Kullanımı
+    // ═══════════════════════════════════════════════════════════
+    const sonuc = Validator.validateTask(
+      gorev,
+      this.beceriler,
+      this.katman,
+      this.araçlar.length,
+      this.maliyet
+    );
+
     return [
       `[KURAL-YANIT] ${this.ad} (${this.katman})`,
-      `─────────────────────────────────`,
+      `═════════════════════════════════════`,
       `AGENT_ID  : ${this.agentId}`,
       `GÖREV     : ${gorev.slice(0, 200)}`,
-      `MOD       : Kural Tabanlı (AI kullanılmadı)`,
+      `MOD       : Kural Tabanlı — 3 Katmanlı Validasyon (Validator.js)`,
+      ``,
+      `── KATMAN 1: TEKNİK ──`,
+      ...sonuc.validasyon.teknik.map(s => `  ${s}`),
+      `── KATMAN 2: GÖREV ──`,
+      ...sonuc.validasyon.gorev.map(s => `  ${s}`),
+      `── KATMAN 3: KANIT ──`,
+      ...sonuc.validasyon.kanit.map(s => `  ${s}`),
+      ``,
+      `SKOR      : ${sonuc.skor}`,
+      `KARAR     : ${sonuc.karar}`,
       `BECERİLER : ${this.beceriler.slice(0, 5).join(', ')}`,
       `ARAÇLAR   : ${this.araçlar.join(', ')}`,
-      `DURUM     : Görev alındı ve değerlendirildi`,
       `MALİYET   : ${this.maliyet}`,
       `TARİH     : ${ts}`,
-      `GÖREV TAMAM: Deterministik değerlendirme tamamlandı`,
     ].join('\n');
   }
 

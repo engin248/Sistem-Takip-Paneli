@@ -1,0 +1,100 @@
+╔══════════════════════════════════════════════════════════╗
+║  STP CANLI DOĞRULAMA TESTİ v2.0                         ║
+║  Tarih: 2026-04-19T14:09:40.491Z              ║
+╚══════════════════════════════════════════════════════════╝
+
+════════════════════════════════════════════════════════════
+  TEST 1: bridge_server.js — DELTA ZIRHI
+════════════════════════════════════════════════════════════
+  Dosya: C:\Users\Esisya\Desktop\Sistem-Takip-Paneli\api\bridge_server.js
+  Boyut: 4868 byte | Satır: 140
+  ✅ [1a] delta undefined/null kontrolü kodu mevcut
+  ✅ [1b] MISSING_DELTA hata kodu tanımlı
+  → delta kontrolü: satır 106
+  → addSynonym çağrısı: satır 122
+  ✅ [1c] delta kontrolü addSynonym ÖNCE (satır sırası)
+  ✅ [1d] 400 response + timestamp içeriyor
+  ✅ [1e] Başarılı yanıtta delta alanı geri dönüyor
+  → loadEnv fonksiyon tanımı sayısı: 2
+  ⚠️  UYARI: loadEnv fonksiyonu ${loadEnvCount} kez tanımlanmış — JS son tanımı kullanır
+
+════════════════════════════════════════════════════════════
+  TEST 2: worker_core.js — 3 KATMANLI VALİDASYON
+════════════════════════════════════════════════════════════
+  Yüklenen ajan sayısı: 58
+  WorkerPool toplam: 58 ajan
+  ✅ [2a] WorkerPool 58 ajan ile başlatıldı
+  ✅ [2b] 3 katman başlığı mevcut (TEKNİK/GÖREV/KANIT)
+  → D-01 çıktısı:
+    │ [KURAL-YANIT] MÜHÜRDAR (DESTEK)
+    │ ═════════════════════════════════════
+    │ AGENT_ID  : D-01
+    │ GÖREV     : Audit log kaydı oluştur ve sha256 mühürle
+    │ MOD       : Kural Tabanlı — 3 Katmanlı Validasyon
+    │ 
+    │ ── KATMAN 1: TEKNİK ──
+    │   OK: Görev metni geçerli
+    │   OK: İçerik güvenli
+    │ ── KATMAN 2: GÖREV ──
+    │   OK: 3 beceri eşleşmesi bulundu
+    │   OK: Yetki sınırı uygun
+    │ ── KATMAN 3: KANIT ──
+    │   OK: 3 araç mevcut — kanıt üretilebilir
+    │   Maliyet sınıfı: SIFIR
+    │ 
+    │ SKOR      : 8
+    │ KARAR     : ONAYLANDI
+    │ BECERİLER : audit_log, sha256_muhur, arsivleme, kanit_uretimi, zaman_damgasi
+    │ ARAÇLAR   : dosyaOku, dosyaYaz, ragSorgula
+    │ MALİYET   : SIFIR
+    │ TARİH     : 2026-04-19T14:09:40.497Z
+  ✅ [2c] Injection saldırısı → REDDEDİLDİ
+  → Injection karar: REDDEDİLDİ
+  ✅ [2d] DESTEK ajanı kritik komut → yetki RED
+  → D-01 kritik komut karar: REDDEDİLDİ
+  ✅ [2e] A-03 (İCRACI-DB) SQL görevi → ONAYLANDI
+  → A-03 skor: 9
+  ✅ [2f] 2 karakterlik görev → RED (min 3 karakter)
+  ✅ [2g] Beceri eşleştirme motoru çalışıyor
+  → En iyi eşleşme: D-08 (HABERCİ) skor:8
+  ✅ [2h] execute() fonksiyonu async çalışıyor
+  → Job ID: A-03_mo5uegsz_25fd2db8
+  → Süre: 4272ms | Mod: HIBRIT
+
+════════════════════════════════════════════════════════════
+  TEST 3: ops_stats.js + page.tsx — UPTIME
+════════════════════════════════════════════════════════════
+  ✅ [3a] OpsStatsConnector sınıfı yüklendi
+  ✅ [3b] bosSnapshot tüm alanları içeriyor
+  → bosSnapshot alanları: tamamlanan, bekleyen, devam_eden, dogrulama, hata, reddedilen, iptal, toplam, basari_orani, ort_sure_ms, aktif_ajan, toplam_ajan, timestamp, kaynak
+  ✅ [3c] ops_stats.js hardcoded %99.97 YOK
+  ✅ [3d] ops_stats.js /api/queue polling
+  ✅ [3e] ops_stats.js /api/tasks polling
+  ✅ [3f] ops_stats.js /api/agents polling
+  ✅ [3g] subscribe callback hemen çağrılıyor
+  ✅ [3h] unsubscribe çalışıyor
+  ✅ [3i] page.tsx hardcoded uptime KALDIRILDI
+  ✅ [3j] page.tsx /api/health-check canlı polling
+  ✅ [3k] page.tsx 60sn polling interval
+
+════════════════════════════════════════════════════════════
+  TEST 4: komutZinciriService.ts — GÜVENLİK
+════════════════════════════════════════════════════════════
+  Dosya: C:\Users\Esisya\Desktop\Sistem-Takip-Paneli\02_is_alani\src\services\komutZinciriService.ts
+  Boyut: 4008 byte | Satır: 139
+  ✅ [4a] eval() aktif kodda BULUNMUYOR
+  → eval yorum referansı: 1 adet (belgeleme amaçlı)
+  ✅ [4b] node:module import mevcut
+  ✅ [4c] createRequire(import.meta.url) satır 30
+  ✅ [4d] graceful degradation + null safety korunuyor
+  ✅ [4e] IKomutZinciri interface tanımlı
+  ✅ [4f] Export: komutGonder, onayVer, bekleyenKomutlar, zincirDurumRaporu
+
+╔══════════════════════════════════════════════════════════╗
+║  SONUÇ                                                   ║
+╠══════════════════════════════════════════════════════════╣
+║  Geçen: 30/30 test                                        ║
+║  Başarısız: 0                                            ║
+║  Süre: 4285ms                                            ║
+║  Durum: ✅ TÜM TESTLER GEÇTİ                              ║
+╚══════════════════════════════════════════════════════════╝

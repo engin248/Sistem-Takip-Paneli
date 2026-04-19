@@ -276,8 +276,41 @@ export default function Dashboard() {
     setExpandedScreen((prev) => prev === screenId ? null : screenId);
   }, []);
 
+  // ── CANLI UPTIME HESABI ──────────────────────────────────
+  const [uptimeStr, setUptimeStr] = useState('—');
+  useEffect(() => {
+    let mounted = true;
+    async function fetchUptime() {
+      try {
+        const res = await fetch('/api/health-check');
+        if (!res.ok) { setUptimeStr('OFFLINE'); return; }
+        const data = await res.json();
+        // Sunucu başlangıç zamanı varsa hesapla
+        if (data?.started_at) {
+          const startMs = new Date(data.started_at).getTime();
+          const nowMs = Date.now();
+          const diffMs = nowMs - startMs;
+          const hours = Math.floor(diffMs / 3_600_000);
+          const mins = Math.floor((diffMs % 3_600_000) / 60_000);
+          if (mounted) setUptimeStr(`${hours}sa ${mins}dk`);
+        } else if (data?.uptime_seconds) {
+          const h = Math.floor(data.uptime_seconds / 3600);
+          const m = Math.floor((data.uptime_seconds % 3600) / 60);
+          if (mounted) setUptimeStr(`${h}sa ${m}dk`);
+        } else {
+          if (mounted) setUptimeStr(data?.status === 'healthy' ? 'AKTİF' : 'BİLİNMİYOR');
+        }
+      } catch {
+        if (mounted) setUptimeStr('OFFLINE');
+      }
+    }
+    fetchUptime();
+    const interval = setInterval(fetchUptime, 60_000); // Her 60sn güncelle
+    return () => { mounted = false; clearInterval(interval); };
+  }, []);
+
   const systemMetrics = {
-    uptime: '99.97%',
+    uptime: uptimeStr,
     activeNodes: HQ_SCREENS.length,
     totalNodes: HQ_SCREENS.length,
     taskCount: tasks.length,
