@@ -304,6 +304,7 @@ export default function AgentPanel() {
       </div>
         {/* ── HIZLI KONTROLLER: BOOT / DIAGNOSTICS ─────────────── */}
         <div className="glass-card border border-slate-700/30 p-3 flex items-center gap-2">
+          {process.env.NODE_ENV === 'development' && (
           <button
             id="boot-agents-btn"
             onClick={() => void runDevBootstrap()}
@@ -312,6 +313,7 @@ export default function AgentPanel() {
           >
             {bootLoading ? '⟳' : 'BOOT AGENTS'}
           </button>
+          )}
 
           <button
             id="diagnostics-btn"

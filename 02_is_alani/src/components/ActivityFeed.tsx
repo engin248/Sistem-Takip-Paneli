@@ -45,14 +45,19 @@ const STATUS_RENK = {
 
 export default function ActivityFeed() {
   const [jobs,     setJobs]     = useState<QueueJob[]>([]);
+  const [logs,     setLogs]     = useState<any[]>([]);
   const [stats,    setStats]    = useState<QueueStats | null>(null);
   const [loading,  setLoading]  = useState(true);
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const [error,    setError]    = useState<string | null>(null);
 
+  // LOG_LINE verileri (Hat-2)
+  const [hatLogs, setHatLogs] = useState<{id:string;agent_id:string;agent_name:string;katman:string;mesaj:string;tip:string;timestamp:string}[]>([]);
+
   const fetch_ = useCallback(async () => {
     try {
+      // Mevcut queue polling
       const res  = await fetchWithTimeout('/api/queue', undefined, 10_000);
       const data = await res.json() as { jobs: QueueJob[]; stats: QueueStats };
       if (data.jobs)  setJobs(data.jobs);
@@ -63,13 +68,39 @@ export default function ActivityFeed() {
         ? 'Bağlantı zaman aşımı (10s)'
         : 'Sunucu bağlantısı yok');
     }
+
+    // LOG_LINE polling (Hat-2 verileri)
+    try {
+      const hatRes = await fetchWithTimeout('/api/hat/feed', undefined, 5_000);
+      const hatData = await hatRes.json() as { logs: typeof hatLogs };
+      if (hatData.logs) setHatLogs(hatData.logs);
+    } catch { /* sessiz — hat feed yoksa mevcut akış devam */ }
+
     finally  { setLoading(false); }
   }, []);
 
   useEffect(() => {
     void fetch_();
     const iv = setInterval(() => void fetch_(), 5_000);
-    return () => clearInterval(iv);
+    // SSE for LOG_LINE
+    let es: EventSource | null = null;
+    try {
+      es = new EventSource('/api/stream/logs');
+      es.onmessage = (ev) => {
+        try {
+          const data = JSON.parse(ev.data);
+          setLogs(l => [data].concat(l).slice(0, 100));
+        } catch (e) {
+          setLogs(l => [ev.data].concat(l).slice(0, 100));
+        }
+      };
+    } catch (e) {
+      // ignore
+    }
+    return () => {
+      clearInterval(iv);
+      try { if (es) es.close(); } catch (e) {}
+    };
   }, [fetch_]);
 
   function ago(ts: string) {
@@ -200,6 +231,55 @@ export default function ActivityFeed() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* ── LOG_LINE AKIŞI (Hat-2) ─────────────────────────────── */}
+      {hatLogs.length > 0 && (
+        <div style={{ marginTop: 12 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8 }}>
+            <div style={{
+              width:8, height:8, borderRadius:'50%',
+              background:'#f59e0b', animation:'pulse 2s infinite',
+            }} />
+            <span style={{ color:'#f59e0b', fontSize:10, fontWeight:700, letterSpacing:'0.15em' }}>
+              HAT-2 LOG_LINE AKIŞI
+            </span>
+            <span style={{ color:'#475569', fontSize:9, fontFamily:'monospace' }}>
+              {hatLogs.length} kayıt
+            </span>
+          </div>
+          <div style={{ display:'flex', flexDirection:'column', gap:3 }}>
+            {hatLogs.slice(0, 20).map(log => {
+              const tipRenk: Record<string, string> = {
+                BASARI: '#4ade80', HATA: '#f87171', UYARI: '#f59e0b', BILGI: '#06b6d4',
+              };
+              const renk = tipRenk[log.tip] || '#94a3b8';
+              return (
+                <div key={log.id} style={{
+                  background:'#0a0a15', border:'1px solid #1e293b',
+                  borderLeft:`3px solid ${renk}`,
+                  borderRadius:6, padding:'6px 10px',
+                  display:'flex', alignItems:'center', gap:8,
+                }}>
+                  <span style={{
+                    background: renk + '20', color: renk,
+                    border:`1px solid ${renk}40`,
+                    padding:'1px 6px', borderRadius:8,
+                    fontSize:8, fontWeight:700, letterSpacing:'0.1em',
+                  }}>
+                    {log.katman}
+                  </span>
+                  <span style={{ color:'#94a3b8', fontSize:9, fontFamily:'monospace', flex:1 }}>
+                    {log.mesaj}
+                  </span>
+                  <span style={{ color:'#374151', fontSize:8, fontFamily:'monospace', flexShrink:0 }}>
+                    {new Date(log.timestamp).toLocaleTimeString('tr-TR')}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 

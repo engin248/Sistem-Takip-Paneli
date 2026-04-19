@@ -23,13 +23,38 @@ export default function PlanningPanel() {
 
   useEffect(() => { void fetchData(); }, [fetchData]);
 
+  const [hatStatus, setHatStatus] = useState<string | null>(null);
+
   const handleCreate = useCallback(async () => {
     if (!title.trim()) return;
     setLoading(true);
+    setHatStatus(null);
     try {
+      // 1. Plan oluştur (mevcut akış)
       const res = await fetch('/api/planning', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: title.trim(), description: desc, assignee }) });
       const data = await res.json();
       if (data?.success) {
+        // 2. RED_LINE_TASKS'a fırlat — manager.lpush('RED_LINE_TASKS', payload)
+        try {
+          const hatRes = await fetch('/api/hat/push', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              plan_id    : data.plan?.id,
+              title      : title.trim(),
+              description: desc,
+              assignee,
+              priority   : 'normal',
+            }),
+          });
+          const hatData = await hatRes.json();
+          if (hatData?.success) {
+            setHatStatus(`⚡ RED_LINE fırlatıldı: ${hatData.hat_id}`);
+          }
+        } catch {
+          setHatStatus('⚠️ RED_LINE bağlantısı kurulamadı');
+        }
+
         setTitle(''); setDesc(''); setAssignee(null);
         void fetchData();
       }
@@ -55,6 +80,11 @@ export default function PlanningPanel() {
           <button onClick={() => void handleCreate()} disabled={loading} className="px-3 py-2 bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded">{loading ? '⟳' : 'Plan Oluştur'}</button>
         </div>
         <textarea value={desc} onChange={e => setDesc(e.target.value)} placeholder="Açıklama (opsiyonel)" className="w-full bg-slate-950/80 border border-slate-700/40 rounded px-2 py-2 text-sm h-20" />
+        {hatStatus && (
+          <div className="mt-1 px-2 py-1 rounded text-[8px] font-mono bg-slate-900/50 border border-slate-700/20 text-cyan-400 animate-fade-in-up">
+            {hatStatus}
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

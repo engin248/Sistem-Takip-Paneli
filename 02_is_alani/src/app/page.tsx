@@ -13,7 +13,6 @@ import TaskCard from '@/components/TaskCard';
 import TaskBoard from '@/components/TaskBoard';
 import Stats from '@/components/Stats';
 import AuditLog from '@/components/AuditLog';
-import BoardPanel from '@/components/BoardPanel';
 import PlanningPanel from '@/components/PlanningPanel';
 import HealthDashboard from '@/components/HealthDashboard';
 import L2Panel from '@/components/L2Panel';
@@ -37,7 +36,7 @@ import JobMonitorPanel from '@/components/JobMonitorPanel';
 // Ekran 01: SİSTEM SAĞLİK       — HealthDashboard
 // Ekran 02: OPS İSTATİSTİK      — Stats
 // Ekran 03: GÖREV PANOSU       — TaskBoard (Kanban)
-// Ekran 04: YÖNETİM KURULU     — BoardPanel (Konsensüs)
+// Ekran 04: YÖNETİM KURULU     — PlanningPanel (Planlama & Atama)
 // Ekran 05: L2 DENETİM         — L2Panel (Özerk Doğrulama)
 // Ekran 06: G-8 ÖĞRENME        — SelfLearningPanel (Pattern)
 // Ekran 07: ALARM MERKEZİ      — AlarmPanel

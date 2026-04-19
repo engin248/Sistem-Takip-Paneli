@@ -179,12 +179,19 @@ export async function setWebhook(url: string): Promise<{
   }
 
   try {
+    // Webhook secret varsa Telegram'a gönder — her POST'da header ile doğrulama yapılır
+    const webhookSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
+    const payload: Record<string, unknown> = { url, drop_pending_updates: true };
+    if (webhookSecret) {
+      payload.secret_token = webhookSecret;
+    }
+
     const res = await fetch(
       `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook`,
       {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ url, drop_pending_updates: true }),
+        body:    JSON.stringify(payload),
         signal:  AbortSignal.timeout(10000),
       }
     );

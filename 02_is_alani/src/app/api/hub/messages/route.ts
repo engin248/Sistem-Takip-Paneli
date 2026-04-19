@@ -1,6 +1,12 @@
-// src/app/api/hub/messages/route.ts
+// ============================================================
+// HUB MESSAGES API — /api/hub/messages
+// ============================================================
+// R1 DÜZELTMESİ: In-memory → DB okuma geçişi.
+// getRecentMessagesAsync() ile DB'den okuma yapılır.
+// ============================================================
+
 import { NextResponse, type NextRequest } from 'next/server';
-import { getRecentMessages } from '@/lib/eventBus';
+import { getRecentMessagesAsync } from '@/lib/eventBus';
 import { logAudit } from '@/services/auditService';
 
 export const dynamic = 'force-dynamic';
@@ -17,7 +23,8 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const messages = getRecentMessages(limit);
+    // DB'den oku — tablo yoksa in-memory fallback
+    const messages = await getRecentMessagesAsync(limit);
 
     // Audit log işlemini izole et ve yanıtı bozmasını engelle
     try {

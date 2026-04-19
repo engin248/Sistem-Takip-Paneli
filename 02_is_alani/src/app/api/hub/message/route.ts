@@ -1,8 +1,13 @@
-// src/app/api/hub/message/route.ts
+// ============================================================
+// HUB MESSAGE API — /api/hub/message
+// ============================================================
+// R1 DÜZELTMESİ: DB persist artık eventBus.publishMessage()
+// içinde yapılıyor. Route sadece publish + audit yapıyor.
+// ============================================================
+
 import { NextResponse, type NextRequest } from 'next/server';
 import { publishMessage } from '@/lib/eventBus';
 import { logAudit } from '@/services/auditService';
-import { supabase } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,16 +15,9 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     if (!body?.text) return NextResponse.json({ success: false, message: 'text required' }, { status: 400 });
+    
+    // publishMessage() artık kendi içinde DB persist yapıyor
     const msg = publishMessage({ source: body.source, target: body.target, text: String(body.text) });
-
-    // Persist to DB hub_messages (best-effort)
-    void (async () => {
-      try {
-        await supabase.from('hub_messages').insert([{ message_id: msg.id, source: msg.source || null, target: msg.target || null, text: msg.text, timestamp: msg.ts }]);
-      } catch {
-        // ignore
-      }
-    })();
 
     // Audit log işlemini izole et
     try {

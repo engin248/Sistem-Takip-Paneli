@@ -77,6 +77,9 @@ export default function LiveMetrics() {
   const [isPulse, setIsPulse] = useState(false);
   const [lastUpdate, setLastUpdate] = useState('');
 
+  // DATA_LINE verileri (Hat-3)
+  const [hatStats, setHatStats] = useState<{red_line_push:number;log_line_toplam:number;data_line_toplam:number} | null>(null);
+
   const fetchMetrics = useCallback(async () => {
     try {
       const [agentRes, queueRes] = await Promise.all([
@@ -104,12 +107,63 @@ export default function LiveMetrics() {
       setIsPulse(p => !p);
       setLastUpdate(new Date().toLocaleTimeString('tr-TR'));
     } catch { /* sessiz */ }
+
+    // DATA_LINE polling (Hat-3 verileri)
+    try {
+      const hatRes = await fetchWithTimeout('/api/hat/data', undefined, 5_000);
+      const hatData = await hatRes.json() as { stats: typeof hatStats };
+      if (hatData.stats) setHatStats(hatData.stats);
+    } catch { /* sessiz */ }
   }, []);
 
   useEffect(() => {
     void fetchMetrics();
     const iv = setInterval(() => void fetchMetrics(), 5_000);
-    return () => clearInterval(iv);
+    // SSE for DATA_LINE
+    let es: EventSource | null = null;
+    try {
+      es = new EventSource('/api/stream/data');
+      es.onmessage = (ev) => {
+        try {
+          const parsed = JSON.parse(ev.data);
+          setHatStats(parsed?.istatistikler ?? parsed);
+
+          // If parsed has columns/rows (from report_parser), try to extract known metrics
+          if (parsed && Array.isArray(parsed.columns) && Array.isArray(parsed.rows) && parsed.rows.length > 0) {
+            const cols: string[] = parsed.columns;
+            const row = parsed.rows[0];
+            const idx = (name: string) => cols.indexOf(name);
+            const tryVal = (names: string[]) => {
+              for (const n of names) {
+                const i = idx(n);
+                if (i >= 0 && row[i] != null && !isNaN(Number(row[i]))) return Number(row[i]);
+              }
+              return null;
+            };
+
+            const tamam = tryVal(['metrics.completed', 'completed', 'tamamlandi', 'completed_count']);
+            const hata  = tryVal(['metrics.pending', 'pending', 'hata', 'errors']);
+            const aktif = tryVal(['active_agents', 'aktifAjan', 'aktif']);
+
+            setMetrics(prev => prev.map(m => {
+              if (m.label === 'TAMAMLANAN' && tamam != null) return { ...m, val: tamam };
+              if (m.label === 'HATA' && hata != null) return { ...m, val: hata };
+              if (m.label === 'AKTİF AJAN' && aktif != null) return { ...m, val: aktif };
+              return m;
+            }));
+          }
+        } catch (e) {
+          // ignore parse errors
+        }
+      };
+    } catch (e) {
+      // ignore
+    }
+
+    return () => {
+      clearInterval(iv);
+      try { if (es) es.close(); } catch (e) {}
+    };
   }, [fetchMetrics]);
 
   return (
@@ -167,6 +221,34 @@ export default function LiveMetrics() {
           </div>
         ))}
       </div>
+
+      {/* ── DATA_LINE RAPORLARI (Hat-3) ─────────────────────── */}
+      {hatStats && (hatStats.red_line_push > 0 || hatStats.log_line_toplam > 0) && (
+        <div style={{
+          padding:'10px 14px', borderRadius:8,
+          background:'#0a0a15', border:'1px solid #f59e0b30',
+        }}>
+          <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8 }}>
+            <div style={{ width:6, height:6, borderRadius:'50%', background:'#f59e0b', animation:'pulse 2s infinite' }} />
+            <span style={{ color:'#f59e0b', fontSize:9, fontWeight:700, letterSpacing:'0.15em' }}>HAT RAPORLARI (DATA_LINE)</span>
+          </div>
+          <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
+            {[
+              { label:'RED_LINE', val:hatStats.red_line_push, col:'#ef4444' },
+              { label:'LOG_LINE', val:hatStats.log_line_toplam, col:'#f59e0b' },
+              { label:'DATA_LINE', val:hatStats.data_line_toplam, col:'#06b6d4' },
+            ].map(s => (
+              <div key={s.label} style={{
+                background:'#0f172a', border:`1px solid ${s.col}30`,
+                borderRadius:8, padding:'6px 14px', textAlign:'center', minWidth:70,
+              }}>
+                <div style={{ color:s.col, fontSize:16, fontWeight:900, fontFamily:'monospace' }}>{s.val}</div>
+                <div style={{ color:'#475569', fontSize:7, letterSpacing:'0.15em' }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* CANLI PULSE GÖSTERGESİ */}
       <div style={{
