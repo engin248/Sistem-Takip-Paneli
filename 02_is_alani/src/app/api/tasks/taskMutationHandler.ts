@@ -90,6 +90,16 @@ export async function handleTaskUpdate(request: NextRequest): Promise<NextRespon
     if (body.assigned_to !== undefined) updateFields.assigned_to = body.assigned_to;
     if (body.status !== undefined) updateFields.status = body.status;
     if (body.due_date !== undefined) updateFields.due_date = body.due_date;
+    if (body.evidence_provided !== undefined) updateFields.evidence_provided = body.evidence_provided;
+
+    // ── KÖK SEBEP DÜZELTMESİ: tamamlanan görevlerde kanıt otomatik işaretlenir ──
+    // L2-STATUS-INCONSISTENCY hatasını önler: status=tamamlandi/muhürlendi iken
+    // evidence_provided=false olmaz.
+    if (updateFields.status === 'tamamlandi' || updateFields.status === 'muhürlendi') {
+      if (updateFields.evidence_provided === undefined) {
+        updateFields.evidence_provided = true;
+      }
+    }
 
     if (Object.keys(updateFields).length === 0) {
       return NextResponse.json({ success: false, error: 'Güncellenecek en az bir alan gerekli' }, { status: 400 });

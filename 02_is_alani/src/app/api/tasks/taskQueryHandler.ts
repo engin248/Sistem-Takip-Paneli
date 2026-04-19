@@ -26,7 +26,7 @@ export async function handleTaskQuery(request: NextRequest): Promise<NextRespons
 
         let query = supabase
           .from('tasks')
-          .select('id, task_code, title, description, status, priority, assigned_to, assigned_by, due_date, created_at, updated_at')
+          .select('id, task_code, title, description, status, priority, assigned_to, assigned_by, due_date, evidence_provided, created_at, updated_at')
           .eq('is_archived', false)
           .order('created_at', { ascending: false })
           .limit(limit);
@@ -80,7 +80,7 @@ export async function handleTaskQuery(request: NextRequest): Promise<NextRespons
         if (!action) {
           const { data, error } = await supabase
             .from('tasks')
-            .select('id, task_code, title, status, priority, assigned_to, created_at')
+            .select('id, task_code, title, status, priority, assigned_to, evidence_provided, created_at')
             .eq('is_archived', false)
             .order('created_at', { ascending: false })
             .limit(50);

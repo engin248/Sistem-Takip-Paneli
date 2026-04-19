@@ -370,6 +370,335 @@ const YETENEK_MATRISI = {
     max_iterasyon: 2,
     maliyet_sinifi: 'ORTA',
   },
+
+  // ── DESTEK KADROSU (D-01 → D-28) ─────────────────────────
+  // Tümü lokal, sıfır maliyet, kural tabanlı
+  'D-01': {
+    ad: 'MÜHÜRDAR', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['audit_log', 'sha256_muhur', 'arsivleme', 'kanit_uretimi', 'zaman_damgasi'],
+    araçlar: ['dosyaOku', 'dosyaYaz', 'ragSorgula'],
+    max_iterasyon: 3, maliyet_sinifi: 'SIFIR',
+  },
+  'D-02': {
+    ad: 'OTOMASYON', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['ci_cd', 'deployment', 'git_islemleri', 'vercel_deploy', 'github_actions'],
+    araçlar: ['dosyaOku', 'dosyaYaz', 'dizinListele', 'apiCagir'],
+    max_iterasyon: 3, maliyet_sinifi: 'SIFIR',
+  },
+  'D-03': {
+    ad: 'ARGE', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['trend_analizi', 'beceri_haritasi', 'pazar_arastirmasi', 'kaynak_tarama'],
+    araçlar: ['dosyaOku', 'ragSorgula', 'webAra'],
+    max_iterasyon: 3, maliyet_sinifi: 'SIFIR',
+  },
+  'D-04': {
+    ad: 'KÖPRÜ', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['dis_sistem_entegrasyon', 'api_koprusu', 'veri_senkronizasyon', 'skm_baglanti'],
+    araçlar: ['apiCagir', 'dosyaOku', 'dosyaYaz', 'ragSorgula'],
+    max_iterasyon: 3, maliyet_sinifi: 'SIFIR',
+  },
+  'D-05': {
+    ad: 'NÖBETÇİ', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['alarm_monitoring', 'anomali_tespiti', 'esik_kontrolu', 'sistem_izleme', 'uptime'],
+    araçlar: ['apiCagir', 'dosyaOku', 'ragSorgula'],
+    max_iterasyon: 3, maliyet_sinifi: 'SIFIR',
+  },
+  'D-06': {
+    ad: 'DÖKÜMANTER', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['readme', 'api_docs', 'sema_diyagram', 'changelog', 'teknik_dokuman'],
+    araçlar: ['dosyaOku', 'dosyaYaz', 'dizinListele', 'ragSorgula'],
+    max_iterasyon: 3, maliyet_sinifi: 'SIFIR',
+  },
+  'D-07': {
+    ad: 'HAFIZA', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['uzun_sureli_baglam', 'onceki_kararlar', 'pattern_arsivi', 'bilgi_bankasi'],
+    araçlar: ['dosyaOku', 'dosyaYaz', 'ragSorgula'],
+    max_iterasyon: 2, maliyet_sinifi: 'SIFIR',
+  },
+  'D-08': {
+    ad: 'HABERCİ', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['telegram_bildirim', 'email', 'webhook_bildirim', 'bildirim_orkestrasyon'],
+    araçlar: ['apiCagir', 'dosyaOku', 'ragSorgula'],
+    max_iterasyon: 3, maliyet_sinifi: 'SIFIR',
+  },
+  'D-09': {
+    ad: 'ANALİST', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['istatistik', 'kpi_takibi', 'trend_grafik', 'karar_destek', 'metrik_analizi'],
+    araçlar: ['dosyaOku', 'apiCagir', 'ragSorgula'],
+    max_iterasyon: 3, maliyet_sinifi: 'SIFIR',
+  },
+  'D-10': {
+    ad: 'PLANLAYICI', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['sprint_planlama', 'milestone', 'gorev_agaci', 'bagimlilik_haritasi'],
+    araçlar: ['dosyaOku', 'dosyaYaz', 'ragSorgula'],
+    max_iterasyon: 3, maliyet_sinifi: 'SIFIR',
+  },
+  'D-11': {
+    ad: 'ÇEVİRMEN', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['i18n', 'tr_en_ceviri', 'rtl_uyumu', 'lokalizasyon'],
+    araçlar: ['dosyaOku', 'dosyaYaz', 'ragSorgula'],
+    max_iterasyon: 2, maliyet_sinifi: 'SIFIR',
+  },
+  'D-12': {
+    ad: 'YEDEKÇİ', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['otomatik_yedek', 'felaket_kurtarma', 'rollback', 'snapshot'],
+    araçlar: ['dosyaOku', 'dosyaYaz', 'dizinListele', 'ragSorgula'],
+    max_iterasyon: 3, maliyet_sinifi: 'SIFIR',
+  },
+  'D-13': {
+    ad: 'ÖNBELLEK', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['redis_cache', 'in_memory_cache', 'ttl_stratejisi', 'invalidasyon'],
+    araçlar: ['apiCagir', 'dosyaOku', 'ragSorgula'],
+    max_iterasyon: 2, maliyet_sinifi: 'SIFIR',
+  },
+  'D-14': {
+    ad: 'OPTİMİZÖR', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['algoritma_iyilestirme', 'db_sorgu_optimizasyon', 'bundle_kucultme', 'performans'],
+    araçlar: ['dosyaOku', 'dosyaYaz', 'ragSorgula'],
+    max_iterasyon: 3, maliyet_sinifi: 'SIFIR',
+  },
+  'D-15': {
+    ad: 'DEDEKTİF', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['hata_ayiklama', 'kok_neden_analizi', 'stack_trace', 'log_analizi', 'reproduksiyon'],
+    araçlar: ['dosyaOku', 'dizinListele', 'ragSorgula'],
+    max_iterasyon: 4, maliyet_sinifi: 'SIFIR',
+  },
+  'D-16': {
+    ad: 'KORDİNATÖR', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['gorev_dagitimi', 'is_kuyrugu', 'kapasite_yonetimi', 'ajan_koordinasyon'],
+    araçlar: ['apiCagir', 'dosyaOku', 'ragSorgula'],
+    max_iterasyon: 3, maliyet_sinifi: 'SIFIR',
+  },
+  'D-17': {
+    ad: 'SİNYAL', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['pub_sub', 'event_bus', 'gercek_zamanli_bildirim', 'sse_websocket'],
+    araçlar: ['apiCagir', 'dosyaOku', 'ragSorgula'],
+    max_iterasyon: 3, maliyet_sinifi: 'SIFIR',
+  },
+  'D-18': {
+    ad: 'KURAL-MOTOR', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['is_kurallari', 'politika_uygulama', 'uyum_denetimi', 'kural_motoru'],
+    araçlar: ['dosyaOku', 'dosyaYaz', 'ragSorgula'],
+    max_iterasyon: 3, maliyet_sinifi: 'SIFIR',
+  },
+  'D-19': {
+    ad: 'RAPORCU', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['otomatik_rapor', 'pdf_csv_json_export', 'periyodik_ozet', 'rapor_sablonu'],
+    araçlar: ['dosyaOku', 'dosyaYaz', 'ragSorgula'],
+    max_iterasyon: 3, maliyet_sinifi: 'SIFIR',
+  },
+  'D-20': {
+    ad: 'FORMATÖR', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['kod_stili', 'naming_convention', 'sema_standardizasyon', 'lint'],
+    araçlar: ['dosyaOku', 'dosyaYaz', 'dizinListele', 'ragSorgula'],
+    max_iterasyon: 2, maliyet_sinifi: 'SIFIR',
+  },
+  'D-21': {
+    ad: 'TETİKÇİ', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['cron_jobs', 'zamanli_gorev', 'bekleme_yonetimi', 'tetikleyici'],
+    araçlar: ['apiCagir', 'dosyaOku', 'ragSorgula'],
+    max_iterasyon: 3, maliyet_sinifi: 'SIFIR',
+  },
+  'D-22': {
+    ad: 'ARABULUCU', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['versiyon_cakismasi', 'merge_conflict', 'anlasmazlik_yonetimi'],
+    araçlar: ['dosyaOku', 'dosyaYaz', 'ragSorgula'],
+    max_iterasyon: 2, maliyet_sinifi: 'SIFIR',
+  },
+  'D-23': {
+    ad: 'MÜHENDİS', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['mimari_tasarim', 'teknik_borc_yonetimi', 'refactoring', 'sistem_muhendisligi'],
+    araçlar: ['dosyaOku', 'dosyaYaz', 'dizinListele', 'ragSorgula'],
+    max_iterasyon: 3, maliyet_sinifi: 'SIFIR',
+  },
+  'D-24': {
+    ad: 'KEŞFEDEN', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['kutuphane_arastirma', 'alternatif_cozum', 'poc_uretme', 'teknoloji_kesfi'],
+    araçlar: ['dosyaOku', 'ragSorgula', 'webAra'],
+    max_iterasyon: 3, maliyet_sinifi: 'SIFIR',
+  },
+  'D-25': {
+    ad: 'SORGULAYICI', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['veri_sorgulama', 'filtreleme', 'arama_indeksi', 'fulltext_search'],
+    araçlar: ['apiCagir', 'dosyaOku', 'ragSorgula'],
+    max_iterasyon: 3, maliyet_sinifi: 'SIFIR',
+  },
+  'D-26': {
+    ad: 'UYUMCU', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['kvkk', 'gdpr', 'erisilebilirlik', 'yasal_gereksinimler', 'mevzuat'],
+    araçlar: ['dosyaOku', 'ragSorgula'],
+    max_iterasyon: 2, maliyet_sinifi: 'SIFIR',
+  },
+  'D-27': {
+    ad: 'ÖLÇER', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['sistem_metrikleri', 'uptime', 'sla_takibi', 'kapasite_plani'],
+    araçlar: ['apiCagir', 'dosyaOku', 'ragSorgula'],
+    max_iterasyon: 3, maliyet_sinifi: 'SIFIR',
+  },
+  'D-28': {
+    ad: 'ÖĞRETMEN', katman: 'DESTEK',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['egitim_materyali', 'onboarding', 'best_practice', 'bilgi_transferi'],
+    araçlar: ['dosyaOku', 'dosyaYaz', 'ragSorgula'],
+    max_iterasyon: 2, maliyet_sinifi: 'SIFIR',
+  },
+
+  // ── ÖZEL EKİPLER ────────────────────────────────────────
+  'ANTI-01': {
+    ad: 'ANTI-A1', katman: 'OZEL',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['aritmetik_islem', 'hesaplama', 'veri_dogrulama'],
+    araçlar: ['dosyaOku', 'ragSorgula'],
+    max_iterasyon: 2, maliyet_sinifi: 'SIFIR',
+  },
+  'ANTI-02': {
+    ad: 'ANTI-A2', katman: 'OZEL',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['aritmetik_islem', 'hesaplama', 'veri_dogrulama'],
+    araçlar: ['dosyaOku', 'ragSorgula'],
+    max_iterasyon: 2, maliyet_sinifi: 'SIFIR',
+  },
+  'IVDE-01': {
+    ad: 'IVDE-C1', katman: 'OZEL',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['codex_islem', 'kod_uretimi', 'sema_dogrulama'],
+    araçlar: ['dosyaOku', 'dosyaYaz', 'ragSorgula'],
+    max_iterasyon: 2, maliyet_sinifi: 'SIFIR',
+  },
+  'IVDE-02': {
+    ad: 'IVDE-C2', katman: 'OZEL',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['codex_islem', 'kod_uretimi', 'sema_dogrulama'],
+    araçlar: ['dosyaOku', 'dosyaYaz', 'ragSorgula'],
+    max_iterasyon: 2, maliyet_sinifi: 'SIFIR',
+  },
+  'CNTRL-01': {
+    ad: 'KONTROL-1', katman: 'KONTROL',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['sistem_denetimi', 'izleme', 'uygunluk_kontrolu', 'mudahale_yasak'],
+    araçlar: ['dosyaOku', 'ragSorgula'],
+    max_iterasyon: 2, maliyet_sinifi: 'SIFIR',
+  },
+  'CNTRL-02': {
+    ad: 'KONTROL-2', katman: 'KONTROL',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['sistem_denetimi', 'izleme', 'uygunluk_kontrolu', 'mudahale_yasak'],
+    araçlar: ['dosyaOku', 'ragSorgula'],
+    max_iterasyon: 2, maliyet_sinifi: 'SIFIR',
+  },
+  'CNTRL-03': {
+    ad: 'KONTROL-3', katman: 'KONTROL',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['sistem_denetimi', 'izleme', 'uygunluk_kontrolu', 'mudahale_yasak'],
+    araçlar: ['dosyaOku', 'ragSorgula'],
+    max_iterasyon: 2, maliyet_sinifi: 'SIFIR',
+  },
+  'CNTRL-04': {
+    ad: 'KONTROL-4', katman: 'KONTROL',
+    yetenekler: [YETENEK_TIPLERI.KURAL],
+    scraping: false, ai: false, kural_tabanli: true,
+    ai_provider: 'local',
+    beceriler: ['sistem_denetimi', 'izleme', 'uygunluk_kontrolu', 'mudahale_yasak'],
+    araçlar: ['dosyaOku', 'ragSorgula'],
+    max_iterasyon: 2, maliyet_sinifi: 'SIFIR',
+  },
 };
 
 
@@ -430,6 +759,43 @@ function eslestir(gorev) {
   sonuclar.sort((a, b) => b.skor - a.skor);
   return sonuclar;
 }
+
+
+// ═══════════════════════════════════════════════════════════════
+// 3.5 AI PROVIDER SEÇİM TABLOSU
+// ═══════════════════════════════════════════════════════════════
+// Tespit edilen lokal AI kaynakları:
+//   ✅ Ollama   → localhost:11434 (llama3 8B, qwen3.5 9.7B, llama3.2:1b)
+//   ✅ Claude Code → Terminal CLI (@anthropic-ai/claude-code 2.1.114)
+//   ❌ LM Studio → kapalı
+//   ❌ LocalAI   → kapalı
+//
+// Strateji: Karar ajanları → qwen3.5 (güçlü), Kod ajanları → llama3,
+//           Kritik hakemler → claude_code, Geri kalan → kural tabanlı
+
+const AI_PROVIDER_SECIMI = {
+  // ── KOMUTA — strateji/karar: güçlü model ────────────────
+  'K-1': { provider: 'ollama', model: 'qwen3.5:latest' },  // KOMUTAN → stratejik karar
+  'K-2': { provider: 'ollama', model: 'qwen3.5:latest' },  // KURMAY → iş planı
+  'K-3': { provider: 'ollama', model: 'llama3:latest' },    // İSTİHBARAT → analiz
+
+  // ── L1 İCRA — kod yazanlar: dengeli model ───────────────
+  'A-01': { provider: 'ollama', model: 'llama3:latest' },   // FE → React/CSS
+  'A-02': { provider: 'ollama', model: 'llama3:latest' },   // BE → API/TS
+  'A-03': { provider: 'ollama', model: 'llama3:latest' },   // DB → SQL
+  'A-07': { provider: 'ollama', model: 'llama3:latest' },   // AI → prompt eng.
+
+  // ── L2 DENETİM — inceleme: dengeli model ────────────────
+  'B-01': { provider: 'ollama', model: 'llama3:latest' },   // KOD denetçi
+  'B-02': { provider: 'ollama', model: 'llama3:latest' },   // DOĞRULAMA
+
+  // ── L3 HAKEM — nihai karar: en güçlü ────────────────────
+  'C-01': { provider: 'claude_code', model: null },          // HAKEM-1 → Claude
+  'C-02': { provider: 'claude_code', model: null },          // HAKEM-2 → Claude
+
+  // ── VARSAYILAN ──────────────────────────────────────────
+  _varsayilan: { provider: 'ollama', model: 'llama3.2:1b' }, // Hafif/hızlı fallback
+};
 
 
 // ═══════════════════════════════════════════════════════════════
@@ -510,14 +876,14 @@ class AgentWorker {
         mod = 'KURAL';
         sonuc = this._kuralTabanliYanit(gorev);
       } else if (this.ai && !this.kural_tabanli) {
-        // Saf AI
+        // Saf AI → Ollama veya Claude Code
         mod = 'AI';
-        sonuc = this._aiPlaceholder(gorev);
+        sonuc = await this._aiCagri(gorev);
       } else {
         // Hibrit — önce AI, fallback kurala
         mod = 'HIBRIT';
         try {
-          sonuc = this._aiPlaceholder(gorev);
+          sonuc = await this._aiCagri(gorev);
         } catch {
           sonuc = this._kuralTabanliYanit(gorev);
           mod = 'HIBRIT→KURAL';
@@ -589,21 +955,138 @@ class AgentWorker {
    * @param {string} gorev
    * @returns {string}
    */
-  _aiPlaceholder(gorev) {
+  async _aiCagri(gorev) {
     const ts = new Date().toISOString();
-    return [
-      `[AI-HAZIR] ${this.ad} (${this.katman})`,
-      `─────────────────────────────────`,
-      `AGENT_ID  : ${this.agentId}`,
-      `GÖREV     : ${gorev.slice(0, 200)}`,
-      `MOD       : AI (${this.ai_provider})`,
-      `PROVIDER  : ${this.ai_provider}`,
-      `MAX_İTER  : ${this.max_iterasyon}`,
-      `DURUM     : AI çağrısı hazır — agentWorker.ts üzerinden çalıştırılacak`,
-      `MALİYET   : ${this.maliyet}`,
-      `TARİH     : ${ts}`,
-      `GÖREV TAMAM: AI modu hazır`,
-    ].join('\n');
+
+    // ── Provider seçimi ──────────────────────────────────
+    const provSec = AI_PROVIDER_SECIMI[this.agentId] || AI_PROVIDER_SECIMI._varsayilan;
+    const provider = provSec.provider;
+    const model = provSec.model;
+
+    try {
+      if (provider === 'ollama') {
+        return await this._ollamaCagri(gorev, model);
+      } else if (provider === 'claude_code') {
+        return await this._claudeCodeCagri(gorev);
+      } else {
+        // Bilinmeyen provider → kural tabanlı fallback
+        return this._kuralTabanliYanit(gorev);
+      }
+    } catch (err) {
+      // AI başarısız → kural tabanlı fallback (hiç crash yok)
+      return [
+        `[AI-FALLBACK] ${this.ad} (${this.katman})`,
+        `─────────────────────────────────`,
+        `AGENT_ID  : ${this.agentId}`,
+        `PROVIDER  : ${provider} (HATA → kural fallback)`,
+        `HATA      : ${err.message || String(err)}`,
+        `GÖREV     : ${gorev.slice(0, 200)}`,
+        `DURUM     : AI başarısız, kural tabanlı çalıştı`,
+        `TARİH     : ${ts}`,
+        `GÖREV TAMAM: Fallback ile tamamlandı`,
+      ].join('\n');
+    }
+  }
+
+  /**
+   * Ollama lokal LLM çağrısı — localhost:11434
+   * Maliyet: ₺0 | Tamamen lokal
+   * @param {string} gorev
+   * @param {string} model
+   * @returns {Promise<string>}
+   */
+  async _ollamaCagri(gorev, model = 'llama3') {
+    const http = require('http');
+    const OLLAMA_URL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
+
+    const sistemPrompt = `Sen ${this.ad} (${this.agentId}) ajanısın. Katman: ${this.katman}. ` +
+      `Becerilerin: ${this.beceriler.join(', ')}. ` +
+      `Görevini kısa, net ve Türkçe yanıtla. Sadece sonuç ver.`;
+
+    const payload = JSON.stringify({
+      model,
+      prompt: `${sistemPrompt}\n\nGÖREV: ${gorev}`,
+      stream: false,
+      options: { temperature: 0.3, num_predict: 512 },
+    });
+
+    return new Promise((resolve, reject) => {
+      const url = new URL(`${OLLAMA_URL}/api/generate`);
+      const req = http.request({
+        hostname: url.hostname,
+        port: url.port,
+        path: url.pathname,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 60000,
+      }, (res) => {
+        let body = '';
+        res.on('data', (chunk) => { body += chunk; });
+        res.on('end', () => {
+          try {
+            const data = JSON.parse(body);
+            resolve([
+              `[AI-OLLAMA] ${this.ad} (${this.katman})`,
+              `─────────────────────────────────`,
+              `AGENT_ID  : ${this.agentId}`,
+              `MODEL     : ${model}`,
+              `GÖREV     : ${gorev.slice(0, 200)}`,
+              `─── YANIT ───`,
+              data.response || '[boş yanıt]',
+              `─────────────`,
+              `SÜRE      : ${data.total_duration ? Math.round(data.total_duration / 1e6) + 'ms' : '?'}`,
+              `TOKEN     : ${data.eval_count || '?'}`,
+              `MALİYET   : SIFIR (lokal)`,
+              `TARİH     : ${new Date().toISOString()}`,
+            ].join('\n'));
+          } catch (e) {
+            reject(new Error(`Ollama JSON parse hatası: ${e.message}`));
+          }
+        });
+      });
+
+      req.on('error', (e) => reject(new Error(`Ollama bağlantı hatası: ${e.message}`)));
+      req.on('timeout', () => { req.destroy(); reject(new Error('Ollama timeout (60s)')); });
+      req.write(payload);
+      req.end();
+    });
+  }
+
+  /**
+   * Claude Code terminal AI çağrısı — lokal CLI
+   * Maliyet: Claude Code abonelik (mevcut)
+   * @param {string} gorev
+   * @returns {Promise<string>}
+   */
+  async _claudeCodeCagri(gorev) {
+    const { execSync } = require('child_process');
+    const ts = new Date().toISOString();
+
+    try {
+      // Claude Code'a kısa print modunda sor
+      const cmd = `claude -p "${gorev.replace(/"/g, '\\"').slice(0, 500)}"`;
+      const sonuc = execSync(cmd, {
+        timeout: 120000,
+        encoding: 'utf-8',
+        maxBuffer: 1024 * 1024,
+        windowsHide: true,
+      }).trim();
+
+      return [
+        `[AI-CLAUDE] ${this.ad} (${this.katman})`,
+        `─────────────────────────────────`,
+        `AGENT_ID  : ${this.agentId}`,
+        `PROVIDER  : Claude Code (terminal)`,
+        `GÖREV     : ${gorev.slice(0, 200)}`,
+        `─── YANIT ───`,
+        sonuc.slice(0, 2000),
+        `─────────────`,
+        `MALİYET   : SIFIR (mevcut abonelik)`,
+        `TARİH     : ${ts}`,
+      ].join('\n');
+    } catch (err) {
+      throw new Error(`Claude Code hatası: ${err.message || String(err)}`);
+    }
   }
 
   /**
@@ -708,10 +1191,13 @@ class WorkerPool {
       toplam_hata:       workers.reduce((a, w) => a + w._hata, 0),
       sifir_maliyet:     workers.filter(w => w.maliyet === 'SIFIR').length,
       katman_dagilimi: {
-        KOMUTA: workers.filter(w => w.katman === 'KOMUTA').length,
-        L1:     workers.filter(w => w.katman === 'L1').length,
-        L2:     workers.filter(w => w.katman === 'L2').length,
-        L3:     workers.filter(w => w.katman === 'L3').length,
+        KOMUTA:  workers.filter(w => w.katman === 'KOMUTA').length,
+        L1:      workers.filter(w => w.katman === 'L1').length,
+        L2:      workers.filter(w => w.katman === 'L2').length,
+        L3:      workers.filter(w => w.katman === 'L3').length,
+        DESTEK:  workers.filter(w => w.katman === 'DESTEK').length,
+        OZEL:    workers.filter(w => w.katman === 'OZEL').length,
+        KONTROL: workers.filter(w => w.katman === 'KONTROL').length,
       },
     };
   }
@@ -731,6 +1217,9 @@ module.exports = {
   // Yetenek matrisi
   YETENEK_TIPLERI,
   YETENEK_MATRISI,
+
+  // AI Provider
+  AI_PROVIDER_SECIMI,
 
   // Beceri eşleştirme
   eslestir,

@@ -82,6 +82,9 @@ export const UpdateTaskSchema = z.object({
     .string()
     .nullable()
     .optional(),
+  evidence_provided: z
+    .boolean()
+    .optional(),
 });
 
 // ─── GÖREV DURUM GÜNCELLEME ŞEMASI ──────────────────────────
