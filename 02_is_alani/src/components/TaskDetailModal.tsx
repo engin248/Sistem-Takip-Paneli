@@ -70,9 +70,19 @@ export default function TaskDetailModal({ task, onClose }: TaskDetailModalProps)
         return;
       }
 
+      // API Security: Fetch current session and pass the token
+      const { supabase } = await import('@/lib/supabase');
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const res = await fetch('/api/tasks', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ task_id: task.id, ...updates }),
       });
 

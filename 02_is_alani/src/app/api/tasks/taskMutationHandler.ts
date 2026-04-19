@@ -11,66 +11,46 @@ import { ERR, processError } from '@/lib/errorCore';
 import { logAudit } from '@/services/auditService';
 import { sendTelegramNotification, formatTaskNotification, isTelegramNotificationAvailable } from '@/services/telegramNotifier';
 
-// -------------------------------------------------
-// Memory layers (in‑memory placeholders – replace with persistent store if needed)
-// -------------------------------------------------
-/** Global memory – shared across all tasks/projects */
-const GLOBAL_MEMORY: Record<string, any> = {};
-/** Project‑specific memory – keyed by projectId */
-const PROJECT_MEMORY: Record<string, Record<string, any>> = {};
-/** Task‑specific memory – keyed by taskId */
-const TASK_MEMORY: Record<string, Record<string, any>> = {};
-
 /**
  * Pre‑execution validation.
  * Returns { allowed: boolean, errors: string[] }.
- * RED status (duplicate / anomaly) blocks execution.
- * Decay & forgetting are mandatory (zorunlu) – they are logged and cleaned.
+ * RED status blocks execution.
  */
 function preExecuteChecks(task: any, operation: string): { allowed: boolean; errors: string[] } {
   const errors: string[] = [];
 
-  // ---- Duplicate check (RED) ----
-  if (task.task_id && TASK_MEMORY[task.task_id]) {
-    errors.push('RED – Duplicate task detected');
-  }
-
   // ---- Anomaly check (RED) ----
-  const allowedFields = ['task_id', 'title', 'description', 'priority', 'assigned_to', 'due_date', 'status', 'evidence_provided'];
+  const allowedFields = ['task_id', 'title', 'description', 'priority', 'assigned_to', 'due_date', 'status', 'evidence_provided', 'operator_name'];
   const extraFields = Object.keys(task).filter((k) => !allowedFields.includes(k));
   if (extraFields.length) {
     errors.push(`RED – Anomalous fields: ${extraFields.join(', ')}`);
   }
 
-  // ---- Decay (zorunlu) ----
-  // If task has a created_at older than 30 days, mark as decayed.
-  if (task.created_at) {
-    const ageDays = (Date.now() - new Date(task.created_at).getTime()) / (1000 * 60 * 60 * 24);
-    if (ageDays > 30) {
-      console.warn(`[Decay] Task ${task.task_id ?? '<no id>'} is older than 30 days (age: ${Math.floor(ageDays)}d).`);
-      // Optionally flag or archive – here we just log.
-    }
-  }
+  // Decay & Forgetting (Stateful memory) is moved to DB level/CRON logic to prevent OOM and Stateless pollution
 
-  // ---- Forgetting (zorunlu) ----
-  // If task not accessed for >60 days, remove from memory.
-  const mem = TASK_MEMORY[task.task_id];
-  if (mem && mem.lastAccess) {
-    const idleDays = (Date.now() - new Date(mem.lastAccess).getTime()) / (1000 * 60 * 60 * 24);
-    if (idleDays > 60) {
-      console.info(`[Forgetting] Removing stale task ${task.task_id} from TASK_MEMORY.`);
-      delete TASK_MEMORY[task.task_id];
-    }
-  }
-
-  // Store/refresh memory entry for current task
-  if (task.task_id) {
-    TASK_MEMORY[task.task_id] = { ...TASK_MEMORY[task.task_id], lastAccess: new Date().toISOString(), operation };
-  }
 
   return { allowed: errors.length === 0, errors };
 }
 
+/**
+ * Ensures strict server-side authentication using Bearer Token via Supabase Auth
+ */
+async function verifyApiAuth(request: NextRequest): Promise<{ user: any; error?: string }> {
+  try {
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return { user: null, error: 'Unauthorized: Bearer token is missing' };
+    }
+    const token = authHeader.replace('Bearer ', '').trim();
+    const { data: authData, error: authErr } = await supabase.auth.getUser(token);
+    if (authErr || !authData.user) {
+      return { user: null, error: `Unauthorized: ${authErr?.message || 'Invalid token'}` };
+    }
+    return { user: authData.user };
+  } catch (error) {
+    return { user: null, error: 'Internal Auth Validation Error' };
+  }
+}
 
 function generateTaskCode(): string {
   const now = new Date();
@@ -83,6 +63,12 @@ function generateTaskCode(): string {
 // ─── POST: Görev oluştur ────────────────────────────────────
 export async function handleTaskCreate(request: NextRequest): Promise<NextResponse> {
   try {
+    const authResult = await verifyApiAuth(request);
+    if (authResult.error) {
+      processError(ERR.PERMISSION_DENIED, new Error(authResult.error), { kaynak: 'taskMutationHandler.ts', islem: 'POST' }, 'WARNING');
+      return NextResponse.json({ success: false, error: authResult.error }, { status: 401 });
+    }
+
     const body = await request.json();
     // -------------------------------------------------
     // 1️⃣ Pre‑execution checks (duplicate, anomaly, decay, forgetting)
@@ -147,6 +133,12 @@ export async function handleTaskCreate(request: NextRequest): Promise<NextRespon
 // ─── PUT: Görev güncelle ────────────────────────────────────
 export async function handleTaskUpdate(request: NextRequest): Promise<NextResponse> {
   try {
+    const authResult = await verifyApiAuth(request);
+    if (authResult.error) {
+      processError(ERR.PERMISSION_DENIED, new Error(authResult.error), { kaynak: 'taskMutationHandler.ts', islem: 'PUT' }, 'WARNING');
+      return NextResponse.json({ success: false, error: authResult.error }, { status: 401 });
+    }
+
     const body = await request.json();
     // -------------------------------------------------
     // 1️⃣ Pre‑execution checks for UPDATE
@@ -171,15 +163,10 @@ export async function handleTaskUpdate(request: NextRequest): Promise<NextRespon
     if (body.due_date !== undefined) updateFields.due_date = body.due_date;
     if (body.evidence_provided !== undefined) updateFields.evidence_provided = body.evidence_provided;
 
-    // ── KÖK SEBEP DÜZELTMESİ: tamamlanan görevlerde kanıt otomatik işaretlenir ──
-    // L2-STATUS-INCONSISTENCY hatasını önler: status=tamamlandi/muhürlendi iken
-    // evidence_provided=false olmaz.
-    if (updateFields.status === 'tamamlandi' || updateFields.status === 'muhürlendi') {
-      if (updateFields.evidence_provided === undefined) {
-        updateFields.evidence_provided = true;
-      }
-    }
-
+    // ── KÖK SEBEP DÜZELTMESİ İPTAL EDİLDİ ──
+    // Otonom sistemi yanıltan "tamamlanan görevlerde kanıt otomatik işaretlenir" by-pass'ı kaldırıldı.
+    // L2 Validator artık bu kurala sıkı bağımlı olacak.
+    
     if (Object.keys(updateFields).length === 0) {
       return NextResponse.json({ success: false, error: 'Güncellenecek en az bir alan gerekli' }, { status: 400 });
     }
@@ -189,9 +176,18 @@ export async function handleTaskUpdate(request: NextRequest): Promise<NextRespon
       return NextResponse.json({ success: false, error: validation.errors?.[0] ?? 'Validasyon hatası', errors: validation.errors }, { status: 400 });
     }
 
-    const { data: existingTask, error: fetchErr } = await supabase.from('tasks').select('id, title, priority, status, assigned_to').eq('id', taskId).single();
+    const { data: existingTask, error: fetchErr } = await supabase.from('tasks').select('id, title, priority, status, assigned_to, evidence_provided').eq('id', taskId).single();
     if (fetchErr || !existingTask) {
       return NextResponse.json({ success: false, error: `Görev bulunamadı: ${taskId}` }, { status: 404 });
+    }
+
+    // ── KESİN KANIT İLKESİ (STRICT ENFORCEMENT) ──
+    const nextStatus = updateFields.status || existingTask.status;
+    const isEvidenced = updateFields.evidence_provided !== undefined ? updateFields.evidence_provided : existingTask.evidence_provided;
+
+    if ((nextStatus === 'tamamlandi' || nextStatus === 'muhürlendi') && !isEvidenced) {
+      processError(ERR.SYSTEM_GENERAL, new Error('Tamamlanan görevde kanıt eksikliği by-pass girişimi'), { task_id: taskId }, 'WARNING');
+      return NextResponse.json({ success: false, error: 'Kanıt (evidence_provided) olmadan görev "tamamlandı" statüsüne alınamaz. Otonom reddi.' }, { status: 400 });
     }
 
     const updatePayload = { ...validation.data, updated_at: new Date().toISOString() };
@@ -225,6 +221,12 @@ export async function handleTaskUpdate(request: NextRequest): Promise<NextRespon
 // ─── DELETE: Görev sil ──────────────────────────────────────
 export async function handleTaskDelete(request: NextRequest): Promise<NextResponse> {
   try {
+    const authResult = await verifyApiAuth(request);
+    if (authResult.error) {
+      processError(ERR.PERMISSION_DENIED, new Error(authResult.error), { kaynak: 'taskMutationHandler.ts', islem: 'DELETE' }, 'WARNING');
+      return NextResponse.json({ success: false, error: authResult.error }, { status: 401 });
+    }
+
     const body = await request.json();
     // -------------------------------------------------
     // 1️⃣ Pre‑execution checks for DELETE

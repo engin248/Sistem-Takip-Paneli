@@ -137,20 +137,16 @@ async function checkErrorDensity(): Promise<ValidationFinding[]> {
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
     // audit_logs ŞEMASI: log_id, task_id, action_code, details(JSONB), operator_id, timestamp
-    // error_code → details JSONB içinde. Supabase JS client ile JSONB filtreleme
-    // desteklenmediğinden, zaman aralığındaki logları çekip JS'te filtreliyoruz.
-    const { data: logs, error } = await supabase
+    // audit_logs ŞEMASI: log_id, task_id, action_code, details(JSONB), operator_id, timestamp
+    // OOM riskini önlemek için sorgu doğrudan veritabanına iletilir. count: 'exact', head: true 
+    // ile veritabanından yalnızca toplam sayı döner, veriler RAM'e çekilmez.
+    const { count: errorCount, error } = await supabase
       .from('audit_logs')
-      .select('details')
-      .gte('timestamp', oneHourAgo);
+      .select('log_id', { count: 'exact', head: true })
+      .gte('timestamp', oneHourAgo)
+      .not('details->>error_code', 'is', null);
 
-    if (!error && logs) {
-      // details JSONB içindeki error_code alanı dolu olanları say
-      const errorCount = logs.filter(log => {
-        const details = (log.details || {}) as Record<string, unknown>;
-        return details.error_code != null;
-      }).length;
-
+    if (!error && typeof errorCount === 'number') {
       if (errorCount > 10) {
         findings.push({
           type: 'WARNING',

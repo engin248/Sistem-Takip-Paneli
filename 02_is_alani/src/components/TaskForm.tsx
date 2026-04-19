@@ -138,10 +138,19 @@ export default function TaskForm() {
         return;
       }
 
+      // API Security: Fetch current session and pass the token
+      const { supabase } = await import('@/lib/supabase');
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       // API Route'a POST — tüm server-side işlemler orada
       const response = await fetch('/api/tasks', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           title: title.trim(),
           description: description.trim() || null,

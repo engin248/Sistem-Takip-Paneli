@@ -38,6 +38,11 @@ const nextConfig: NextConfig = {
     ],
   },
 
+  // Otonom (legacy Node.JS) modüllerini API üretim çıktısına ekle (K-1 Kör Nokta Çözümü)
+  outputFileTracingIncludes: {
+    '/api/**/*': ['./modules/**/*'],
+  },
+
   // ── Görsel Kaynakları ────────────────────────────────────
   images: {
     remotePatterns: [
