@@ -1,21 +1,21 @@
-import { supabase } from '@/lib/supabase';
+﻿import { supabase } from '@/lib/supabase';
 import { ERR, processError, type ErrorCode } from '@/lib/errorCore';
 
 // ============================================================
-// AUDIT SERVICE — audit_logs tablosuna kayıt ekleme
+// AUDIT SERVICE â€” audit_logs tablosuna kayÄ±t ekleme
 // ============================================================
-// DB ŞEMASI (canlı tablo — 6 alan):
+// DB ÅEMASI (canlÄ± tablo â€” 6 alan):
 //   log_id    SERIAL PK
 //   task_id   UUID (nullable)
-//   action_code VARCHAR — İşlem kodu (TASK_CREATED, TASK_UPDATED, vb.)
-//   details   JSONB — Tüm detaylar burada
+//   action_code VARCHAR â€” Ä°ÅŸlem kodu (TASK_CREATED, TASK_UPDATED, vb.)
+//   details   JSONB â€” TÃ¼m detaylar burada
 //   operator_id VARCHAR (nullable)
 //   timestamp TIMESTAMPTZ DEFAULT NOW()
 //
-// Hata Kodları: ERR-STP001-006 (yazma), ERR-STP001-007 (okuma)
+// Hata KodlarÄ±: ERR-STP001-006 (yazma), ERR-STP001-007 (okuma)
 // ============================================================
 
-// operation_type → action_code dönüşüm haritası
+// operation_type â†’ action_code dÃ¶nÃ¼ÅŸÃ¼m haritasÄ±
 export type AuditOperationType =
   | 'CREATE'
   | 'UPDATE'
@@ -31,9 +31,9 @@ export type AuditErrorSeverity = 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL' | 'FA
 export type AuditStatus = 'basarili' | 'basarisiz' | 'beklemede' | 'iptal';
 
 // ============================================================
-// ADAPTÖR: Kod beklentilerini DB şemasına dönüştürür
-// Kod tarafı geniş interface kullanmaya devam eder,
-// DB'ye yazarken 6 alanlı şemaya sıkıştırılır.
+// ADAPTÃ–R: Kod beklentilerini DB ÅŸemasÄ±na dÃ¶nÃ¼ÅŸtÃ¼rÃ¼r
+// Kod tarafÄ± geniÅŸ interface kullanmaya devam eder,
+// DB'ye yazarken 6 alanlÄ± ÅŸemaya sÄ±kÄ±ÅŸtÄ±rÄ±lÄ±r.
 // ============================================================
 interface AuditLogEntry {
   // Zorunlu
@@ -59,7 +59,7 @@ interface AuditLogEntry {
   metadata?: Record<string, unknown>;
 }
 
-// log_code üretici — LOG-YYYYMMDD-HHMMSS-RAND formatında
+// log_code Ã¼retici â€” LOG-YYYYMMDD-HHMMSS-RAND formatÄ±nda
 function generateLogCode(): string {
   const now = new Date();
   const pad = (n: number) => n.toString().padStart(2, '0');
@@ -70,13 +70,13 @@ function generateLogCode(): string {
 }
 
 /**
- * AuditLogEntry → DB şemasına (6 alan) dönüştürücü
- * Tüm ek bilgiler details JSONB alanına sıkıştırılır.
+ * AuditLogEntry â†’ DB ÅŸemasÄ±na (6 alan) dÃ¶nÃ¼ÅŸtÃ¼rÃ¼cÃ¼
+ * TÃ¼m ek bilgiler details JSONB alanÄ±na sÄ±kÄ±ÅŸtÄ±rÄ±lÄ±r.
  */
 function toDbRow(entry: AuditLogEntry) {
   const logCode = generateLogCode();
-  // metadata.action_code varsa onu kullan (örn: AGENT_COUNTER_UPDATE),
-  // yoksa operation_type + rand formatında oto-üret.
+  // metadata.action_code varsa onu kullan (Ã¶rn: AGENT_COUNTER_UPDATE),
+  // yoksa operation_type + rand formatÄ±nda oto-Ã¼ret.
   const metaActionCode = entry.metadata?.action_code;
   const actionCode = typeof metaActionCode === 'string' && metaActionCode.length > 0
     ? metaActionCode
@@ -109,7 +109,7 @@ function toDbRow(entry: AuditLogEntry) {
 }
 
 /**
- * DB'den gelen satırı → frontend beklentisine dönüştürür
+ * DB'den gelen satÄ±rÄ± â†’ frontend beklentisine dÃ¶nÃ¼ÅŸtÃ¼rÃ¼r
  */
 interface AuditLogRow {
   id: string;
@@ -142,10 +142,58 @@ function fromDbRow(row: Record<string, unknown>): AuditLogRow {
   };
 }
 
-// Ana kayıt fonksiyonu
+// SİSTEM_KASASI FÄ°ZÄ°KSEL TUTANAK VE KRÄ°PTO MÃœHÃœR (KURAL 44, 45, 106 REVÄ°ZE: MD OPTÄ°MÄ°ZASYONU)
+function writeVaultAudit(dbRow: any) {
+  if (typeof window !== 'undefined') return; // Sadece backendde fiziksel diske yazar
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const crypto = require('crypto');
+
+    // Sistem Takip Paneli Proje (Workspace) iÃ§i gÃ¼venli klasÃ¶r atamasÄ±
+    const AUDIT_DIR = path.join(process.cwd(), 'SISTEM_KASASI_AUDITS');
+    if (!fs.existsSync(AUDIT_DIR)) {
+      fs.mkdirSync(AUDIT_DIR, { recursive: true });
+    }
+
+    const logCode = dbRow.details?.log_code || `LOG-${Date.now()}`;
+    const payloadInfo = JSON.stringify(dbRow, null, 2);
+    
+    // Kriptografik Damgalama (SHA-256) (Kural 106)
+    const hash = crypto.createHash('sha256').update(payloadInfo).digest('hex');
+
+    const baseName = `${logCode}_${hash.substring(0,8)}`;
+    const mdPath = path.join(AUDIT_DIR, `${baseName}.md`);
+
+    const isFail = dbRow.details?.status === 'basarisiz' || dbRow.details?.error_code;
+    const statusEmoji = isFail ? 'âŒ' : 'âœ…';
+
+    const mdContent = `# ğŸ›¡ï¸ SİSTEM TAKİP PANELİ (NÄ°ZAM) KESÄ°N KANIT TUTANAÄI\n\n` +
+                      `**Tarih:** \`${new Date().toISOString()}\`\n\n` +
+                      `**Log ID:** \`${logCode}\`\n\n` +
+                      `**Ä°ÅŸlem (Action):** \`${dbRow.action_code}\`\n\n` +
+                      `**OperatÃ¶r:** \`${dbRow.operator_id}\`\n\n` +
+                      `**SonuÃ§:** ${statusEmoji} **${(dbRow.details?.status || 'BÄ°LÄ°NMÄ°YOR').toUpperCase()}**\n\n` +
+                      `## ğŸ” Kriptografik MÃ¼hÃ¼r (SHA-256)\n> \`${hash}\`\n\n*Bu kayÄ±t otonom sistem tarafÄ±ndan deÄŸiÅŸtirilemez (Immutable) olarak mÃ¼hÃ¼rlenmiÅŸtir.*\n\n` +
+                      `## ğŸ“‚ Ä°ÅŸlem DetayÄ± (Payload)\n\`\`\`json\n${payloadInfo}\n\`\`\`\n`;
+
+    // flag: 'wx' (Write eXclusive) => Dosya varsa hata ver. Kural 46 ve 53: Ãœzerine Yazma YasaÄŸÄ±.
+    fs.writeFileSync(mdPath, mdContent, { encoding: 'utf-8', flag: 'wx' });
+  } catch (err: any) {
+    if (err && err.code === 'EEXIST') {
+      return; // "Ãœzerine Yazma YasaÄŸÄ±" baÅŸarÄ±yla Ã§alÄ±ÅŸtÄ±.
+    }
+    console.error('[SİSTEM_KASASI (SISTEM_KASASI_AUDITS) GÃœVENLÄ°K Ä°HLALÄ° VEYA YAZMA HATASI]:', err);
+  }
+}
+
+// Ana kayÄ±t fonksiyonu
 export const logAudit = async (entry: Omit<AuditLogEntry, 'log_code'>): Promise<{ success: boolean; error?: string }> => {
   try {
     const dbRow = toDbRow(entry as AuditLogEntry);
+
+    // KURAL 27 (KanÄ±t yoksa iÅŸlem yok): KanÄ±t olmadan buluta gitmez! FÄ°ZÄ°KSEL MÃœHÃœRLE!
+    writeVaultAudit(dbRow);
 
     const { error } = await supabase
       .from('audit_logs')
@@ -165,14 +213,14 @@ export const logAudit = async (entry: Omit<AuditLogEntry, 'log_code'>): Promise<
     processError(ERR.UNIDENTIFIED_COLLAPSE, err, {
       tablo: 'audit_logs',
       islem: 'INSERT',
-      context: 'logAudit catch bloğu'
+      context: 'logAudit catch bloÄŸu'
     }, 'FATAL');
     const message = err instanceof Error ? err.message : String(err);
     return { success: false, error: message };
   }
 };
 
-// Kısayol: Hata kaydı — UID ile benzersiz kimlik atanır
+// KÄ±sayol: Hata kaydÄ± â€” UID ile benzersiz kimlik atanÄ±r
 export const logAuditError = async (
   errorCode: string,
   description: string,
@@ -193,7 +241,7 @@ export const logAuditError = async (
   return { ...result, uid };
 };
 
-// Audit loglarını getir (En yeni 5 kayıt)
+// Audit loglarÄ±nÄ± getir (En yeni 5 kayÄ±t)
 export const fetchAuditLogs = async () => {
   try {
     const { data, error } = await supabase
@@ -210,14 +258,15 @@ export const fetchAuditLogs = async () => {
       return [];
     }
 
-    // DB formatını frontend beklentisine dönüştür
+    // DB formatÄ±nÄ± frontend beklentisine dÃ¶nÃ¼ÅŸtÃ¼r
     return (data || []).map(fromDbRow);
   } catch (err) {
     processError(ERR.UNIDENTIFIED_COLLAPSE, err, {
       tablo: 'audit_logs',
       islem: 'SELECT',
-      context: 'fetchAuditLogs catch bloğu'
+      context: 'fetchAuditLogs catch bloÄŸu'
     }, 'FATAL');
     return [];
   }
 };
+

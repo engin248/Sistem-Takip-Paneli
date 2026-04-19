@@ -58,6 +58,28 @@ export async function runHermAIAnalysis(
     const confidence = Math.max(0, Math.min(1, raw.confidence ?? 0.5));
     const entropy    = calcEntropy(confidence);
 
+    // ═══ SINIR / ZIRH 1: EKSİK İŞ VE HALÜSİNASYON (TODO/NULL) İNFAZI ═══
+    // Sebep / Sonuç analizi metinlerinde "todo", "null", "bilinmiyor" veya çok kısa metinler dönerse YAPAY ZEKA ONAYLANMAZ!
+    const FORBIDDEN_TOKENS = ['todo', 'fixme', 'yapılacak', 'undefined', 'null', 'bilinmiyor', 'boş'];
+    const stringFields = [raw.reasoning, raw.methodology, raw.risks, raw.refutation].filter(Boolean);
+    
+    for (const text of stringFields) {
+        if (typeof text === 'string') {
+            const lower = text.toLowerCase();
+            const hasForbidden = FORBIDDEN_TOKENS.some(token => lower.includes(token));
+            if (hasForbidden || text.length < 5) {
+                processError(ERR.AI_ANALYSIS, new Error('HermAI Halüsinasyon Kalkanı: Eksik Veri'), {
+                    kaynak: 'analysisEngine.ts',
+                    islem: 'AST_SANITY_CHECK',
+                    denied_text: text.substring(0, 50)
+                }, 'WARNING');
+                
+                // Halüsinasyon tespit edildiğinde AI fantezi yapmıştır, güvenilir değildir, CATCH BLOĞUNA/FALLBACK'e At!
+                throw new Error("ERR-STP023: AI Sebep-Sonuç analizinde Yasaklı Kelime Veya Baştan Savma Cümle Bulundu!");
+            }
+        }
+    }
+
     const analysis: HermAIAnalysis = {
       reasoning:    raw.reasoning    || '',
       methodology:  raw.methodology  || '',

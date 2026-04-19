@@ -27,49 +27,51 @@ import ShieldPanel from '@/components/ShieldPanel';
 import ScreenErrorBoundary from '@/components/ScreenErrorBoundary';
 import ActivityFeed from '@/components/ActivityFeed';
 import LiveMetrics from '@/components/LiveMetrics';
-import NizamnamePaneli from '@/components/NizamnamePaneli';
+import SistemKurallariPaneli from '@/components/SistemKurallariPaneli';
 import JobMonitorPanel from '@/components/JobMonitorPanel';
+import G0ApprovalPanel from '@/components/G0ApprovalPanel';
 
 // ============================================================
-// KARARGAH PANİLİ — 16 EKRANLI FÜTÜRİSTİK KOMUTA MERKEZİ
+// KARARGAH PANÄ°LÄ° â€” 16 EKRANLI FÃœTÃœRÄ°STÄ°K KOMUTA MERKEZÄ°
 // ============================================================
-// Ekran 01: SİSTEM SAĞLİK       — HealthDashboard
-// Ekran 02: OPS İSTATİSTİK      — Stats
-// Ekran 03: GÖREV PANOSU       — TaskBoard (Kanban)
-// Ekran 04: YÖNETİM KURULU     — PlanningPanel (Planlama & Atama)
-// Ekran 05: L2 DENETİM         — L2Panel (Özerk Doğrulama)
-// Ekran 06: G-8 ÖĞRENME        — SelfLearningPanel (Pattern)
-// Ekran 07: ALARM MERKEZİ      — AlarmPanel
-// Ekran 08: TELEGRAM KÖPRÜSÜ   — TelegramSender
-// Ekran 09: DENETİM GÜNLÜĞÜ    — AuditLog
-// Ekran 10: AJAN KADROSU       — AgentPanel
-// Ekran 11: BİLGİ TABANI       — KnowledgeBasePanel (RAG)
-// Ekran 12: AKTİVİTE AKIŞI     — ActivityFeed (Ajan Canlı Akış)
-// Ekran 13: CANLI METRİKLER    — LiveMetrics (Radial Gauge)
-// Ekran 14: SİSTEM KALKAN      — ShieldPanel (Circuit Breaker + Audit Zinciri)
+// Ekran 01: SÄ°STEM SAÄžLÄ°K       â€” HealthDashboard
+// Ekran 02: OPS Ä°STATÄ°STÄ°K      â€” Stats
+// Ekran 03: GÃ–REV PANOSU       â€” TaskBoard (Kanban)
+// Ekran 04: YÃ–NETÄ°M KURULU     â€” PlanningPanel (Planlama & Atama)
+// Ekran 05: L2 DENETÄ°M         â€” L2Panel (Ã–zerk DoÄŸrulama)
+// Ekran 06: G-8 Ã–ÄžRENME        â€” SelfLearningPanel (Pattern)
+// Ekran 07: ALARM MERKEZÄ°      â€” AlarmPanel
+// Ekran 08: TELEGRAM KÃ–PRÃœSÃœ   â€” TelegramSender
+// Ekran 09: DENETÄ°M GÃœNLÃœÄžÃœ    â€” AuditLog
+// Ekran 10: AJAN KADROSU       â€” AgentPanel
+// Ekran 11: BÄ°LGÄ° TABANI       â€” KnowledgeBasePanel (RAG)
+// Ekran 12: AKTÄ°VÄ°TE AKIÅžI     â€” ActivityFeed (Ajan CanlÄ± AkÄ±ÅŸ)
+// Ekran 13: CANLI METRÄ°KLER    â€” LiveMetrics (Radial Gauge)
+// Ekran 14: SÄ°STEM KALKAN      â€” ShieldPanel (Circuit Breaker + Audit Zinciri)
 // ============================================================
 
-// ── EKRAN META VERİSİ ────────────────────────────────────────
+// â”€â”€ EKRAN META VERÄ°SÄ° â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const HQ_SCREENS = [
-  { id: 'SCR-01', label: 'SİSTEM SAĞLIK', icon: '◈', color: 'cyan', status: 'AKTİF' },
-  { id: 'SCR-02', label: 'OPS İSTATİSTİK', icon: '◇', color: 'blue', status: 'AKTİF' },
-  { id: 'SCR-03', label: 'GÖREV PANOSU', icon: '▣', color: 'purple', status: 'AKTİF' },
-  { id: 'SCR-04', label: 'YÖNETİM KURULU', icon: '◎', color: 'amber', status: 'AKTİF' },
-  { id: 'SCR-05', label: 'L2 DENETİM', icon: '⬡', color: 'green', status: 'AKTİF' },
-  { id: 'SCR-06', label: 'G-8 ÖĞRENME', icon: '◉', color: 'purple', status: 'AKTİF' },
-  { id: 'SCR-07', label: 'ALARM MERKEZİ', icon: '△', color: 'red', status: 'AKTİF' },
-  { id: 'SCR-08', label: 'TELEGRAM KÖPRÜSÜ', icon: '◆', color: 'blue', status: 'AKTİF' },
-  { id: 'SCR-09', label: 'DENETİM GÜNLÜĞÜ', icon: '▤', color: 'cyan',   status: 'AKTİF' },
-  { id: 'SCR-10', label: 'AJAN KADROSU',    icon: '◉', color: 'amber',  status: 'AKTİF' },
-  { id: 'SCR-11', label: 'BİLGİ TABANI',    icon: '▦', color: 'purple', status: 'AKTİF' },
-  { id: 'SCR-12', label: 'AKTİVİTE AKIŞI',  icon: '◈', color: 'cyan',   status: 'AKTİF' },
-  { id: 'SCR-13', label: 'CANLI METRİKLER', icon: '◇', color: 'blue',   status: 'AKTİF' },
-  { id: 'SCR-14', label: 'SİSTEM KALKAN',   icon: '🛡️', color: 'red',    status: 'AKTİF' },
-  { id: 'SCR-15', label: 'NİZAMNAME',        icon: '📙', color: 'purple', status: 'AKTİF' },
-  { id: 'SCR-16', label: 'JOB MONITOR',      icon: '📋', color: 'indigo', status: 'AKTİF' },
+  { id: 'SCR-00', label: 'G-0 ONAY AÄžI', icon: 'ğŸ›¡ï¸ ', color: 'amber', status: 'DÄ°KKAT' },
+  { id: 'SCR-01', label: 'SÄ°STEM SAÄžLIK', icon: 'â—ˆ', color: 'cyan', status: 'AKTÄ°F' },
+  { id: 'SCR-02', label: 'OPS Ä°STATÄ°STÄ°K', icon: 'â—‡', color: 'blue', status: 'AKTÄ°F' },
+  { id: 'SCR-03', label: 'GÃ–REV PANOSU', icon: 'â–£', color: 'purple', status: 'AKTÄ°F' },
+  { id: 'SCR-04', label: 'YÃ–NETÄ°M KURULU', icon: 'â—Ž', color: 'amber', status: 'AKTÄ°F' },
+  { id: 'SCR-05', label: 'L2 DENETÄ°M', icon: 'â¬¡', color: 'green', status: 'AKTÄ°F' },
+  { id: 'SCR-06', label: 'G-8 Ã–ÄžRENME', icon: 'â—‰', color: 'purple', status: 'AKTÄ°F' },
+  { id: 'SCR-07', label: 'ALARM MERKEZÄ°', icon: 'â–³', color: 'red', status: 'AKTÄ°F' },
+  { id: 'SCR-08', label: 'TELEGRAM KÃ–PRÃœSÃœ', icon: 'â—†', color: 'blue', status: 'AKTÄ°F' },
+  { id: 'SCR-09', label: 'DENETÄ°M GÃœNLÃœÄžÃœ', icon: 'â–¤', color: 'cyan',   status: 'AKTÄ°F' },
+  { id: 'SCR-10', label: 'AJAN KADROSU',    icon: 'â—‰', color: 'amber',  status: 'AKTÄ°F' },
+  { id: 'SCR-11', label: 'BÄ°LGÄ° TABANI',    icon: 'â–¦', color: 'purple', status: 'AKTÄ°F' },
+  { id: 'SCR-12', label: 'AKTÄ°VÄ°TE AKIÅžI',  icon: 'â—ˆ', color: 'cyan',   status: 'AKTÄ°F' },
+  { id: 'SCR-13', label: 'CANLI METRÄ°KLER', icon: 'â—‡', color: 'blue',   status: 'AKTÄ°F' },
+  { id: 'SCR-14', label: 'SÄ°STEM KALKAN',   icon: 'ğŸ›¡ï¸ ', color: 'red',    status: 'AKTÄ°F' },
+  { id: 'SCR-15', label: 'NÄ°ZAMNAME',        icon: 'ğŸ“™', color: 'purple', status: 'AKTÄ°F' },
+  { id: 'SCR-16', label: 'JOB MONITOR',      icon: 'ğŸ“‹', color: 'indigo', status: 'AKTÄ°F' },
 ] as const;
 
-// ── ZAMAN FORMATLAYICI ───────────────────────────────────────
+// â”€â”€ ZAMAN FORMATLAYICI â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function useSystemClock() {
   const [time, setTime] = useState(new Date());
   useEffect(() => {
@@ -79,7 +81,7 @@ function useSystemClock() {
   return time;
 }
 
-// ── EKRAN WRAPPER BİLEŞENİ ──────────────────────────────────
+// â”€â”€ EKRAN WRAPPER BÄ°LEÅžENÄ° â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function HQScreen({
   screen,
   children,
@@ -118,7 +120,7 @@ function HQScreen({
       `}
       id={`hq-screen-${screen.id}`}
     >
-      {/* ── EKRAN HEADER ──────────────────────────────────────── */}
+      {/* â”€â”€ EKRAN HEADER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="screen-header cursor-pointer" onClick={onClick} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && onClick()}>
         <div className="flex items-center gap-2.5">
           <span className={`text-lg ${c.text}`}>{screen.icon}</span>
@@ -136,7 +138,7 @@ function HQScreen({
             {screen.status}
           </span>
           <div className={`status-dot ${c.dot}`} />
-          {/* ── DARALT/GENİŞLET BUTONU ────────────── */}
+          {/* â”€â”€ DARALT/GENÄ°ÅžLET BUTONU â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <button
             onClick={(e) => { e.stopPropagation(); onToggleCollapse(); }}
             className={`ml-1 w-6 h-6 flex items-center justify-center rounded-md border transition-all text-[10px] font-bold
@@ -144,14 +146,14 @@ function HQScreen({
                 ? 'border-slate-600 text-slate-400 hover:text-cyan-400 hover:border-cyan-500/30 bg-slate-800/50'
                 : 'border-slate-600 text-slate-400 hover:text-amber-400 hover:border-amber-500/30 bg-slate-800/50'
               }`}
-            title={isCollapsed ? 'Genişlet' : 'Daralt'}
+            title={isCollapsed ? 'GeniÅŸlet' : 'Daralt'}
           >
-            {isCollapsed ? '▼' : '▲'}
+            {isCollapsed ? 'â–¼' : 'â–²'}
           </button>
         </div>
       </div>
 
-      {/* ── EKRAN İÇERİK ─────────────────────────────────────── */}
+      {/* â”€â”€ EKRAN Ä°Ã‡ERÄ°K â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {!isCollapsed && (
         <div className={`p-4 ${isExpanded ? '' : 'max-h-[400px] overflow-y-auto'} animate-fade-in-up`}>
           <ScreenErrorBoundary screenId={screen.id}>
@@ -163,14 +165,14 @@ function HQScreen({
   );
 }
 
-// ── SİSTEM ÇEKİRDEĞİ (VİDACILAR) ─────────────────────────────
+// â”€â”€ SÄ°STEM Ã‡EKÄ°RDEÄžÄ° (VÄ°DACILAR) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function SystemCore() {
   return (
     <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-10">
       <div className="relative w-[600px] h-[600px] flex items-center justify-center">
-        {/* Büyük Dişli */}
+        {/* BÃ¼yÃ¼k DiÅŸli */}
         <div className="absolute w-full h-full border-[20px] border-dashed border-cyan-500/20 rounded-full animate-gear" />
-        {/* Ters Dişli */}
+        {/* Ters DiÅŸli */}
         <div className="absolute w-3/4 h-3/4 border-[15px] border-dotted border-blue-500/20 rounded-full animate-gear-slow" />
         {/* Vidalar / Screws */}
         {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => (
@@ -182,19 +184,19 @@ function SystemCore() {
               animationDelay: `${deg * 5}ms`
             }}
           >
-            ⚙️
+            âš™ï¸ 
           </div>
         ))}
-        {/* Merkez Işıma */}
+        {/* Merkez IÅŸÄ±ma */}
         <div className="w-32 h-32 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" />
       </div>
     </div>
   );
 }
 
-// ══════════════════════════════════════════════════════════════
-// ANA DASHBOARD BİLEŞENİ
-// ══════════════════════════════════════════════════════════════
+// â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• 
+// ANA DASHBOARD BÄ°LEÅžENÄ°
+// â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• 
 export default function Dashboard() {
   const { tasks, error, setError } = useTaskStore();
   const { lang, dir } = useLanguageStore();
@@ -207,7 +209,7 @@ export default function Dashboard() {
   const [collapsedScreens, setCollapsedScreens] = useState<Set<string>>(new Set());
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  // ── PANEL DARALT/GENİŞLET ───────────────────────────────────
+  // â”€â”€ PANEL DARALT/GENÄ°ÅžLET â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const toggleCollapse = useCallback((screenId: string) => {
     setCollapsedScreens(prev => {
       const next = new Set(prev);
@@ -217,20 +219,20 @@ export default function Dashboard() {
     });
   }, []);
 
-  // ── SIDEBAR SCROLL ──────────────────────────────────────────
+  // â”€â”€ SIDEBAR SCROLL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const scrollToScreen = useCallback((screenId: string) => {
     const el = document.getElementById(`hq-screen-${screenId}`);
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     setActiveScreen(screenId);
   }, []);
 
-  // ── FETCH + SUBSCRIBE ─────────────────────────────────────
+  // â”€â”€ FETCH + SUBSCRIBE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     try {
       fetchTasksFromDB();
     } catch (error) {
       processError(ERR.TASK_FETCH, error, { kaynak: 'Dashboard.useEffect', islem: 'INIT_FETCH' });
-      setError(`${ERR.TASK_FETCH}: Görev listesi yüklenemedi`);
+      setError(`${ERR.TASK_FETCH}: GÃ¶rev listesi yÃ¼klenemedi`);
     }
 
     let channel: ReturnType<typeof subscribeToTasks> | null = null;
@@ -257,12 +259,12 @@ export default function Dashboard() {
     };
   }, [setError]);
 
-  // ── EXPORT ─────────────────────────────────────────────────
+  // â”€â”€ EXPORT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleExport = useCallback(async () => {
     setIsExporting(true);
     try {
       await exportSystemData();
-      toast.success('Sistem başarıyla mühürlendi (JSON)');
+      toast.success('Sistem baÅŸarÄ±yla mÃ¼hÃ¼rlendi (JSON)');
     } catch (error) {
       await handleError(ERR.SYSTEM_EXPORT, error, { kaynak: 'Dashboard.handleExport', islem: 'EXPORT' });
     } finally {
@@ -270,14 +272,14 @@ export default function Dashboard() {
     }
   }, []);
 
-  // ── EKRAN TOGGLE ──────────────────────────────────────────
+  // â”€â”€ EKRAN TOGGLE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleScreenClick = useCallback((screenId: string) => {
     setActiveScreen(screenId);
     setExpandedScreen((prev) => prev === screenId ? null : screenId);
   }, []);
 
-  // ── CANLI UPTIME HESABI ──────────────────────────────────
-  const [uptimeStr, setUptimeStr] = useState('—');
+  // â”€â”€ CANLI UPTIME HESABI â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const [uptimeStr, setUptimeStr] = useState('â€”');
   useEffect(() => {
     let mounted = true;
     async function fetchUptime() {
@@ -285,7 +287,7 @@ export default function Dashboard() {
         const res = await fetch('/api/health-check');
         if (!res.ok) { setUptimeStr('OFFLINE'); return; }
         const data = await res.json();
-        // Sunucu başlangıç zamanı varsa hesapla
+        // Sunucu baÅŸlangÄ±Ã§ zamanÄ± varsa hesapla
         if (data?.started_at) {
           const startMs = new Date(data.started_at).getTime();
           const nowMs = Date.now();
@@ -298,14 +300,14 @@ export default function Dashboard() {
           const m = Math.floor((data.uptime_seconds % 3600) / 60);
           if (mounted) setUptimeStr(`${h}sa ${m}dk`);
         } else {
-          if (mounted) setUptimeStr(data?.status === 'healthy' ? 'AKTİF' : 'BİLİNMİYOR');
+          if (mounted) setUptimeStr(data?.status === 'healthy' ? 'AKTÄ°F' : 'BÄ°LÄ°NMÄ°YOR');
         }
       } catch {
         if (mounted) setUptimeStr('OFFLINE');
       }
     }
     fetchUptime();
-    const interval = setInterval(fetchUptime, 60_000); // Her 60sn güncelle
+    const interval = setInterval(fetchUptime, 60_000); // Her 60sn gÃ¼ncelle
     return () => { mounted = false; clearInterval(interval); };
   }, []);
 
@@ -319,12 +321,12 @@ export default function Dashboard() {
 
   return (
     <div className="flex min-h-[calc(100vh-57px)]">
-      {/* ── SİSTEM ARKAPLAN DİNAMİĞİ (VİDACILAR) ── */}
+      {/* â”€â”€ SÄ°STEM ARKAPLAN DÄ°NAMÄ°ÄžÄ° (VÄ°DACILAR) â”€â”€ */}
       {!isLocked && <SystemCore />}
       
-      {/* ══════════════════════════════════════════════════════ */}
-      {/* SOL SIDEBAR — EKRAN NAVİGASYON                        */}
-      {/* ══════════════════════════════════════════════════════ */}
+      {/* â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â•  */}
+      {/* SOL SIDEBAR â€” EKRAN NAVÄ°GASYON                        */}
+      {/* â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â•  */}
       {!isLocked && (
         <aside className={`hidden lg:flex flex-col transition-all duration-300 sticky top-[57px] h-[calc(100vh-57px)] z-30
           ${sidebarOpen ? 'w-52' : 'w-12'}
@@ -334,9 +336,9 @@ export default function Dashboard() {
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="p-2 text-slate-500 hover:text-cyan-400 transition-colors border-b border-slate-700/30 flex items-center justify-center"
-              title={sidebarOpen ? 'Daralt' : 'Genişlet'}
+              title={sidebarOpen ? 'Daralt' : 'GeniÅŸlet'}
             >
-              <span className="text-xs font-mono">{sidebarOpen ? '◂' : '▸'}</span>
+              <span className="text-xs font-mono">{sidebarOpen ? 'â—‚' : 'â–¸'}</span>
             </button>
             {/* Ekran listesi */}
             <div className="flex-1 overflow-y-auto py-1 scrollbar-thin">
@@ -374,20 +376,20 @@ export default function Dashboard() {
                 );
               })}
             </div>
-            {/* Sidebar alt — tüm panelleri daralt/genişlet */}
+            {/* Sidebar alt â€” tÃ¼m panelleri daralt/geniÅŸlet */}
             {sidebarOpen && (
               <div className="p-2 border-t border-slate-700/30 flex gap-1">
                 <button
                   onClick={() => setCollapsedScreens(new Set(HQ_SCREENS.map(s => s.id)))}
                   className="flex-1 text-[7px] font-bold text-slate-500 hover:text-amber-400 py-1 rounded hover:bg-slate-800/50 transition-all uppercase tracking-wider"
                 >
-                  TÜMÜNÜ DARALT
+                  TÃœMÃœNÃœ DARALT
                 </button>
                 <button
                   onClick={() => setCollapsedScreens(new Set())}
                   className="flex-1 text-[7px] font-bold text-slate-500 hover:text-cyan-400 py-1 rounded hover:bg-slate-800/50 transition-all uppercase tracking-wider"
                 >
-                  TÜMÜNÜ AÇ
+                  TÃœMÃœNÃœ AÃ‡
                 </button>
               </div>
             )}
@@ -398,31 +400,31 @@ export default function Dashboard() {
       <div className="flex-1 flex flex-col min-w-0">
       <main className="flex-1 p-4 lg:p-6 max-w-[1920px] mx-auto w-full">
 
-        {/* ══════════════════════════════════════════════════════ */}
-        {/* ÜST BAR: KARARGAH BAŞLIK + KONTROLLER                 */}
-        {/* ══════════════════════════════════════════════════════ */}
+        {/* â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â•  */}
+        {/* ÃœST BAR: KARARGAH BAÅžLIK + KONTROLLER                 */}
+        {/* â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â•  */}
         <header className="mb-4 animate-fade-in-up">
-          {/* ── TEK SATIRLIK KOMUTA BARI ───────────────────────── */}
+          {/* â”€â”€ TEK SATIRLIK KOMUTA BARI â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <div className={`flex flex-wrap items-center gap-3 ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
-            {/* Sol: Başlık */}
+            {/* Sol: BaÅŸlÄ±k */}
             <div className="flex items-center gap-2 mr-2">
               <h1 className="text-xl lg:text-2xl font-black tracking-tight text-white whitespace-nowrap">
                 <span className="text-slate-300">{tr.dashboardTitle}</span>
               </h1>
             </div>
 
-            {/* Orta: Durum Mühürleri */}
+            {/* Orta: Durum MÃ¼hÃ¼rleri */}
             <div className="flex items-center gap-2 flex-wrap">
               <div className="glass-card neon-glow-green px-3 py-1.5 flex items-center gap-2 border border-green-500/30">
                 <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
                 <span className="text-[9px] font-black tracking-[0.15em] uppercase text-green-400">
-                  BAĞIMSIZLIK ONAYLANDI
+                  BAÄžIMSIZLIK ONAYLANDI
                 </span>
               </div>
               <div className="glass-card neon-glow-green px-3 py-1.5 flex items-center gap-2 border border-green-500/30">
                 <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
                 <span className="text-[9px] font-black tracking-[0.15em] uppercase text-green-400">
-                  SİSTEM YEREL
+                  SÄ°STEM YEREL
                 </span>
               </div>
               <div className="glass-card px-3 py-1.5 flex items-center gap-2 border border-cyan-500/20">
@@ -433,16 +435,16 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Alt bilgi: Ekran / Görev sayıları */}
+            {/* Alt bilgi: Ekran / GÃ¶rev sayÄ±larÄ± */}
             <p className="text-[9px] font-mono text-slate-500 tracking-wider hidden lg:block">
               {systemMetrics.activeNodes}/{systemMetrics.totalNodes} EKRAN
-              <span className="text-slate-600 mx-1">•</span>
-              {systemMetrics.taskCount} GÖREV
-              <span className="text-slate-600 mx-1">•</span>
-              {systemMetrics.criticalAlerts} KRİTİK
+              <span className="text-slate-600 mx-1">â€¢</span>
+              {systemMetrics.taskCount} GÃ–REV
+              <span className="text-slate-600 mx-1">â€¢</span>
+              {systemMetrics.criticalAlerts} KRÄ°TÄ°K
             </p>
 
-            {/* Sağ: Tarih + Butonlar */}
+            {/* SaÄŸ: Tarih + Butonlar */}
             <div className={`flex items-center gap-2 ml-auto ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
               <div className="glass-card px-3 py-1.5 flex items-center gap-2 border border-slate-500/20">
                 <span className="text-[9px] font-mono text-slate-400 tracking-wider" suppressHydrationWarning>
@@ -478,9 +480,9 @@ export default function Dashboard() {
           </div>
         </header>
 
-        {/* ══════════════════════════════════════════════════════ */}
+        {/* â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â•  */}
         {/* HATA BANNER                                           */}
-        {/* ══════════════════════════════════════════════════════ */}
+        {/* â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â•  */}
         {error && (
           <div className="mb-4 glass-card neon-glow-red border border-red-500/30 p-4 flex justify-between items-center animate-fade-in-up">
             <div className="flex items-center gap-3">
@@ -488,23 +490,23 @@ export default function Dashboard() {
               <span className="text-[10px] font-black uppercase tracking-[0.15em] text-red-400">{tr.systemError}</span>
               <span className="text-xs font-mono text-red-300">{error}</span>
             </div>
-            <button onClick={() => setError(null)} className="text-red-400 hover:text-red-300 font-bold text-lg transition-colors">×</button>
+            <button onClick={() => setError(null)} className="text-red-400 hover:text-red-300 font-bold text-lg transition-colors">Ã—</button>
           </div>
         )}
 
-        {/* ══════════════════════════════════════════════════════ */}
+        {/* â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â•  */}
         {/* 9 EKRANLI KARARGAH GRID                               */}
-        {/* ══════════════════════════════════════════════════════ */}
+        {/* â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â•  */}
         {isLocked ? (
-          /* ── KİLİTLİ DURUM: 9 Ekran Haritası (minimap) ─────── */
+          /* â”€â”€ KÄ°LÄ°TLÄ° DURUM: 9 Ekran HaritasÄ± (minimap) â”€â”€â”€â”€â”€â”€â”€ */
           <section className="animate-fade-in-up">
-            {/* Mini Ekran Grid — Kilit Modunda Tüm Ekranların Özeti */}
+            {/* Mini Ekran Grid â€” Kilit Modunda TÃ¼m EkranlarÄ±n Ã–zeti */}
             <div className="glass-card p-6 mb-6 border border-slate-700/30">
               <div className="screen-header">
                 <div className="flex items-center gap-2.5">
-                  <span className="text-lg neon-text-cyan">◈</span>
+                  <span className="text-lg neon-text-cyan">â—ˆ</span>
                   <span className="text-[10px] font-black tracking-[0.2em] uppercase text-cyan-400">
-                    KARARGAH EKRAN HARİTASI
+                    KARARGAH EKRAN HARÄ°TASI
                   </span>
                 </div>
                 <span className="screen-header-tag bg-slate-500/10 text-slate-400 border border-slate-500/30">
@@ -552,13 +554,13 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* 21 Kriterli Görev Kutusu */}
+            {/* 21 Kriterli GÃ¶rev Kutusu */}
             <div className="glass-card p-6 mb-6 border border-slate-700/30">
               <div className="screen-header">
                 <div className="flex items-center gap-2.5">
-                  <span className="text-lg text-amber-400">📋</span>
+                  <span className="text-lg text-amber-400">ğŸ“‹</span>
                   <span className="text-[10px] font-black tracking-[0.2em] uppercase text-amber-400">
-                    21 KRİTERLİ GÖREV PROTOKOLÜ
+                    21 KRÄ°TERLÄ° GÃ–REV PROTOKOLÃœ
                   </span>
                 </div>
                 <span className="screen-header-tag bg-amber-500/10 text-amber-400 border border-amber-500/30">
@@ -582,10 +584,10 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Kilit Uyarısı */}
+            {/* Kilit UyarÄ±sÄ± */}
             <div className="glass-card p-12 border border-slate-700/20 flex flex-col items-center justify-center">
               <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4 neon-glow-red">
-                <span className="text-3xl">🔒</span>
+                <span className="text-3xl">ğŸ”’</span>
               </div>
               <p className="text-slate-400 font-black tracking-[0.2em] uppercase text-sm mb-1">
                 {tr.systemRestricted}
@@ -594,14 +596,26 @@ export default function Dashboard() {
             </div>
           </section>
         ) : (
-          /* ═══════════════════════════════════════════════════ */
-          /* AKTİF MOD: 9 EKRANLI KARARGAH GRID                 */
-          /* ═══════════════════════════════════════════════════ */
+          /* â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â•  */
+          /* AKTÄ°F MOD: 9+ EKRANLI KARARGAH GRID                 */
+          /* â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â• â•  */
           <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-fade-in-up">
 
-            {/* ── EKRAN 01: SİSTEM SAĞLIK ─────────────────────── */}
+            {/* â”€â”€ EKRAN 00: G-0 ONAY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <HQScreen
               screen={HQ_SCREENS[0]!}
+              isActive={activeScreen === 'SCR-00'}
+              onClick={() => handleScreenClick('SCR-00')}
+              isExpanded={expandedScreen === 'SCR-00'}
+              isCollapsed={collapsedScreens.has('SCR-00')}
+              onToggleCollapse={() => toggleCollapse('SCR-00')}
+            >
+              <G0ApprovalPanel />
+            </HQScreen>
+
+            {/* â”€â”€ EKRAN 01: SÄ°STEM SAÄžLIK â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+            <HQScreen
+              screen={HQ_SCREENS[1]!}
               isActive={activeScreen === 'SCR-01'}
               onClick={() => handleScreenClick('SCR-01')}
               isExpanded={expandedScreen === 'SCR-01'}
@@ -611,9 +625,9 @@ export default function Dashboard() {
               <HealthDashboard />
             </HQScreen>
 
-            {/* ── EKRAN 02: OPERASYON İSTATİSTİK ──────────────── */}
+            {/* â”€â”€ EKRAN 02: OPERASYON Ä°STATÄ°STÄ°K â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <HQScreen
-              screen={HQ_SCREENS[1]!}
+              screen={HQ_SCREENS[2]!}
               isActive={activeScreen === 'SCR-02'}
               onClick={() => handleScreenClick('SCR-02')}
               isExpanded={expandedScreen === 'SCR-02'}
@@ -623,9 +637,9 @@ export default function Dashboard() {
               <Stats />
             </HQScreen>
 
-            {/* ── EKRAN 03: GÖREV PANOSU ──────────────────────── */}
+            {/* â”€â”€ EKRAN 03: GÃ–REV PANOSU â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <HQScreen
-              screen={HQ_SCREENS[2]!}
+              screen={HQ_SCREENS[3]!}
               isActive={activeScreen === 'SCR-03'}
               onClick={() => handleScreenClick('SCR-03')}
               isExpanded={expandedScreen === 'SCR-03'}
@@ -654,9 +668,9 @@ export default function Dashboard() {
               </div>
             </HQScreen>
 
-            {/* ── EKRAN 04: YÖNETİM KURULU ────────────────────── */}
+            {/* â”€â”€ EKRAN 04: YÃ–NETÄ°M KURULU â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <HQScreen
-              screen={HQ_SCREENS[3]!}
+              screen={HQ_SCREENS[4]!}
               isActive={activeScreen === 'SCR-04'}
               onClick={() => handleScreenClick('SCR-04')}
               isExpanded={expandedScreen === 'SCR-04'}
@@ -666,9 +680,9 @@ export default function Dashboard() {
               <PlanningPanel />
             </HQScreen>
 
-            {/* ── EKRAN 05: L2 DENETİM ────────────────────────── */}
+            {/* â”€â”€ EKRAN 05: L2 DENETÄ°M â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <HQScreen
-              screen={HQ_SCREENS[4]!}
+              screen={HQ_SCREENS[5]!}
               isActive={activeScreen === 'SCR-05'}
               onClick={() => handleScreenClick('SCR-05')}
               isExpanded={expandedScreen === 'SCR-05'}
@@ -678,9 +692,9 @@ export default function Dashboard() {
               <L2Panel />
             </HQScreen>
 
-            {/* ── EKRAN 06: G-8 ÖĞRENME ───────────────────────── */}
+            {/* â”€â”€ EKRAN 06: G-8 Ã–ÄžRENME â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <HQScreen
-              screen={HQ_SCREENS[5]!}
+              screen={HQ_SCREENS[6]!}
               isActive={activeScreen === 'SCR-06'}
               onClick={() => handleScreenClick('SCR-06')}
               isExpanded={expandedScreen === 'SCR-06'}
@@ -690,9 +704,9 @@ export default function Dashboard() {
               <SelfLearningPanel />
             </HQScreen>
 
-            {/* ── EKRAN 07: ALARM MERKEZİ ─────────────────────── */}
+            {/* â”€â”€ EKRAN 07: ALARM MERKEZÄ° â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <HQScreen
-              screen={HQ_SCREENS[6]!}
+              screen={HQ_SCREENS[7]!}
               isActive={activeScreen === 'SCR-07'}
               onClick={() => handleScreenClick('SCR-07')}
               isExpanded={expandedScreen === 'SCR-07'}
@@ -702,9 +716,9 @@ export default function Dashboard() {
               <AlarmPanel />
             </HQScreen>
 
-            {/* ── EKRAN 08: TELEGRAM KÖPRÜSÜ ──────────────────── */}
+            {/* â”€â”€ EKRAN 08: TELEGRAM KÃ–PRÃœSÃœ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <HQScreen
-              screen={HQ_SCREENS[7]!}
+              screen={HQ_SCREENS[8]!}
               isActive={activeScreen === 'SCR-08'}
               onClick={() => handleScreenClick('SCR-08')}
               isExpanded={expandedScreen === 'SCR-08'}
@@ -714,9 +728,9 @@ export default function Dashboard() {
               <TelegramSender />
             </HQScreen>
 
-            {/* ── EKRAN 09: DENETİM GÜNLÜĞÜ ──────────────────── */}
+            {/* â”€â”€ EKRAN 09: DENETÄ°M GÃœNLÃœÄžÃœ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <HQScreen
-              screen={HQ_SCREENS[8]!}
+              screen={HQ_SCREENS[9]!}
               isActive={activeScreen === 'SCR-09'}
               onClick={() => handleScreenClick('SCR-09')}
               isExpanded={expandedScreen === 'SCR-09'}
@@ -726,9 +740,9 @@ export default function Dashboard() {
               <AuditLog />
             </HQScreen>
 
-            {/* ── EKRAN 10: AJAN KADROSU ───────────────────────── */}
+            {/* â”€â”€ EKRAN 10: AJAN KADROSU â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <HQScreen
-              screen={HQ_SCREENS[9]!}
+              screen={HQ_SCREENS[10]!}
               isActive={activeScreen === 'SCR-10'}
               onClick={() => handleScreenClick('SCR-10')}
               isExpanded={expandedScreen === 'SCR-10'}
@@ -738,9 +752,9 @@ export default function Dashboard() {
               <AgentPanel />
             </HQScreen>
 
-            {/* ── EKRAN 11: BİLGİ TABANI ───────────────────────── */}
+            {/* â”€â”€ EKRAN 11: BÄ°LGÄ° TABANI â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <HQScreen
-              screen={HQ_SCREENS[10]!}
+              screen={HQ_SCREENS[11]!}
               isActive={activeScreen === 'SCR-11'}
               onClick={() => handleScreenClick('SCR-11')}
               isExpanded={expandedScreen === 'SCR-11'}
@@ -750,9 +764,9 @@ export default function Dashboard() {
               <KnowledgeBasePanel />
             </HQScreen>
 
-            {/* ── EKRAN 12: AKTİVİTE AKIŞI ─────────────────────── */}
+            {/* â”€â”€ EKRAN 12: AKTÄ°VÄ°TE AKIÅžI â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <HQScreen
-              screen={HQ_SCREENS[11]!}
+              screen={HQ_SCREENS[12]!}
               isActive={activeScreen === 'SCR-12'}
               onClick={() => handleScreenClick('SCR-12')}
               isExpanded={expandedScreen === 'SCR-12'}
@@ -762,9 +776,9 @@ export default function Dashboard() {
               <ActivityFeed />
             </HQScreen>
 
-            {/* ── EKRAN 13: CANLI METRİKLER ────────────────────── */}
+            {/* â”€â”€ EKRAN 13: CANLI METRÄ°KLER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <HQScreen
-              screen={HQ_SCREENS[12]!}
+              screen={HQ_SCREENS[13]!}
               isActive={activeScreen === 'SCR-13'}
               onClick={() => handleScreenClick('SCR-13')}
               isExpanded={expandedScreen === 'SCR-13'}
@@ -774,9 +788,9 @@ export default function Dashboard() {
               <LiveMetrics />
             </HQScreen>
 
-            {/* ── EKRAN 14: SİSTEM KALKAN ──────────────────────── */}
+            {/* â”€â”€ EKRAN 14: SÄ°STEM KALKAN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <HQScreen
-              screen={HQ_SCREENS[13]!}
+              screen={HQ_SCREENS[14]!}
               isActive={activeScreen === 'SCR-14'}
               onClick={() => handleScreenClick('SCR-14')}
               isExpanded={expandedScreen === 'SCR-14'}
@@ -786,19 +800,19 @@ export default function Dashboard() {
               <ShieldPanel />
             </HQScreen>
 
-            {/* ── EKRAN 15: NİZAMNAME ──────────────────────────── */}
+            {/* â”€â”€ EKRAN 15: NÄ°ZAMNAME â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <HQScreen
-              screen={HQ_SCREENS[14]!}
+              screen={HQ_SCREENS[15]!}
               isActive={activeScreen === 'SCR-15'}
               onClick={() => handleScreenClick('SCR-15')}
               isExpanded={expandedScreen === 'SCR-15'}
               isCollapsed={collapsedScreens.has('SCR-15')}
               onToggleCollapse={() => toggleCollapse('SCR-15')}
             >
-              <NizamnamePaneli />
+              <SistemKurallariPaneli />
             </HQScreen>
 
-            {/* ── EKRAN 16: JOB MONITOR ────────────────────────── */}
+            {/* â”€â”€ EKRAN 16: JOB MONITOR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <HQScreen
               screen={HQ_SCREENS[15]!}
               isActive={activeScreen === 'SCR-16'}
@@ -814,7 +828,7 @@ export default function Dashboard() {
         )}
       </main>
 
-      {/* ── ALT: KARARGAH DURUM ÇUBUĞU ──────────────────────── */}
+      {/* â”€â”€ ALT: KARARGAH DURUM Ã‡UBUÄU â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <footer className="sticky bottom-0 z-40 glass-card border-t border-cyan-500/10 shadow-[0_-4px_30px_rgba(6,182,212,0.05)]">
         <div className="max-w-[1920px] mx-auto px-4 py-2 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -828,12 +842,12 @@ export default function Dashboard() {
             </span>
             <span className="text-[9px] font-mono text-slate-600">|</span>
             <span className="text-[9px] font-mono text-slate-500">
-              {tasks.length} GÖREV
+              {tasks.length} GÃ–REV
             </span>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-[9px] font-mono text-slate-500 tracking-wider">
-              SİSTEM TAKİP PANELİ
+              SÄ°STEM TAKÄ°P PANELÄ°
             </span>
             <span className="text-[9px] font-mono neon-text-cyan font-bold">
               v2.0
@@ -845,3 +859,4 @@ export default function Dashboard() {
     </div>
   );
 }
+

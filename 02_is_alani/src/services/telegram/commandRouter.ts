@@ -47,7 +47,8 @@ async function createTaskFromTelegram(
   chatId: number,
   aiReasoning: string,
   aiConfidence: number,
-  aiSource: 'local' | 'ai'
+  aiSource: 'local' | 'ai',
+  aiPlan?: any
 ): Promise<{ success: boolean; taskCode: string; error?: string }> {
   const { isValid } = validateSupabaseConnection();
   if (!isValid) {
@@ -82,7 +83,8 @@ async function createTaskFromTelegram(
             oncelik: priority,
             gerekce: aiReasoning,
             guven: aiConfidence,
-            motor: aiSource
+            motor: aiSource,
+            cift_onay_plani: aiPlan
           }
         }
       }])
@@ -174,10 +176,21 @@ export async function handleTaskMessage(ctx: Context, text: string, source: 'tex
     `🔄 Analiz başlıyor...`,
   ].join('\n'));
 
-  // ── FAZ 2: AI ÖNCELİK ANALİZİ ───────────────────────────
+  // ── FAZ 2: MERKEZ PLANLAMA DEPARTMANI (52 ADIMLIK ASENKRON PROTOKOL) ──
+  const { CentralPlanningDepartment } = await import('@/core/planning_department/PlanningDepartment');
+  let planMuhuru = 'SENATO_BEKLENIYOR';
+  try {
+    // AWAIT KALDIRILDI! Sistem Telegram yanıt döngüsünü tıkamamak için asenkron ateşe geçer.
+    CentralPlanningDepartment.triggerAsyncPlanning(text, 'TELEGRAM_INTAKE');
+    await sendReply(ctx, '⏳ <b>Göreviniz Planlama Senatosuna iletildi.</b>(52 Adımlık analiz arka planda devam ediyor...)');
+  } catch (error: any) {
+    await sendReply(ctx, `❌ <b>Planlama Senatosu İletim Hatası:</b>\n<i>${error.message}</i>`);
+  }
+
+  // ── FAZ 3: AI ÖNCELİK ANALİZİ (Geri Düşme Mekanizması / Legacy) ──
   const analysis = await analyzeTaskPriority(text, null, { useAI: true, timeoutMs: 15000 });
 
-  // ── FAZ 3: HERMAİ 92 KRİTER + PROOF (AI sonrası tam analiz) ──
+  // ── FAZ 4: HERMAİ 92 KRİTER + PROOF (AI sonrası tam analiz) ──
   const fullIntent: IntentAnalysis = {
     why: `${analysis.reasoning} için bu görev analiz edildi ve işlemek amacıyla sıraya alındı.`,
     how: `Görev oluşturma sonucu tamamlanacak — öncelik: ${analysis.priority}, güven: %${Math.round(analysis.confidence * 100)}. Çıktı: Supabase görev tablosuna kaydedilecek.`,
@@ -235,7 +248,8 @@ export async function handleTaskMessage(ctx: Context, text: string, source: 'tex
   // ── FAZ 4: GÖREV OLUŞTUR ─────────────────────────────────
   const result = await createTaskFromTelegram(
     text, analysis.priority, source, senderName, chatId,
-    analysis.reasoning, analysis.confidence, analysis.source
+    analysis.reasoning, analysis.confidence, analysis.source,
+    undefined
   );
 
   if (result.success) {

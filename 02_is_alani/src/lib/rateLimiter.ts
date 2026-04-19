@@ -1,9 +1,9 @@
-// src/lib/rateLimiter.ts
+﻿// src/lib/rateLimiter.ts
 // ============================================================
-// BOT RATE LIMITER — In-Memory, Sunucu-Taraflı
+// BOT RATE LIMITER â€” In-Memory, Sunucu-TaraflÄ±
 // ============================================================
-// Her chat_id için: 10 saniyede 5 istek limit
-// Aşılırsa: cooldown mesajı + istek işlenmez
+// Her chat_id iÃ§in: 10 saniyede 5 istek limit
+// AÅŸÄ±lÄ±rsa: cooldown mesajÄ± + istek iÅŸlenmez
 // ============================================================
 
 interface RateEntry {
@@ -15,16 +15,16 @@ interface RateEntry {
 const store = new Map<string, RateEntry>();
 
 const WINDOW_MS  = 10_000; // 10 saniye
-const MAX_CALLS  = 5;      // pencere başına max istek
-const PURGE_INTERVAL = 60_000; // 60 saniyede bir temizle
+const MAX_CALLS  = 5;      // pencere baÅŸÄ±na max istek
+const CLEANUP_INTERVAL = 60_000; // 60 saniyede bir temizle
 
-// Eski kayıtları temizle (memleak önleme)
+// Eski kayÄ±tlarÄ± temizle (memleak Ã¶nleme)
 setInterval(() => {
   const now = Date.now();
   for (const [key, entry] of store.entries()) {
     if (entry.resetAt < now) store.delete(key);
   }
-}, PURGE_INTERVAL);
+}, CLEANUP_INTERVAL);
 
 export interface RateLimitResult {
   allowed  : boolean;
@@ -38,7 +38,7 @@ export function checkRateLimit(chatId: number | string): RateLimitResult {
 
   let entry = store.get(key);
 
-  // Pencere dolmuşsa sıfırla
+  // Pencere dolmuÅŸsa sÄ±fÄ±rla
   if (!entry || entry.resetAt < now) {
     entry = { count: 0, resetAt: now + WINDOW_MS, warned: false };
     store.set(key, entry);
@@ -54,3 +54,4 @@ export function checkRateLimit(chatId: number | string): RateLimitResult {
 
   return { allowed: true, remaining, resetIn };
 }
+

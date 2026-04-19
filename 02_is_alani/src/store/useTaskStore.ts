@@ -9,6 +9,7 @@ import { devtools, subscribeWithSelector } from 'zustand/middleware';
 
 // Status enum — SQL CHECK (satır 27-34) ile birebir eşleşir
 export type TaskStatus =
+  | 'onay_bekliyor'   // Otonom onay bekleme (Sıfır inisiyatif KILIDI)
   | 'beklemede'       // Henüz başlanmadı
   | 'devam_ediyor'    // İşlem sürüyor
   | 'dogrulama'       // Doğrulama aşamasında

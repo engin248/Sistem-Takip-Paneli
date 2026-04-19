@@ -77,7 +77,14 @@ export const ERR = {
   AGENT_CLONE:           'ERR-STP001-048',
   AGENT_CAPACITY:        'ERR-STP001-049',
 
-  // ── HERMAİ / PROOF MOTORU (050–065) ────────────────────────
+  // ── OTONOM MİMARİ & SHADOW DENETİM (070–079) ─────────────────
+  OTONOM_SANITY_REJECT:  'ERR-STP001-070',
+  OTONOM_SHADOW_REJECT:  'ERR-STP001-071',
+  OTONOM_FSM_VIOLATION:  'ERR-STP001-072',
+  OTONOM_BUDGET_REJECT:  'ERR-STP001-073',
+  OTONOM_CONTRACT_FAIL:  'ERR-STP001-074',
+
+  // ── HERMAİ / PROOF MOTORU (080–099) ────────────────────────
   INPUT_MISSING:         'ERR-STP001-050',
   INTENT_MALFORMED:      'ERR-STP001-051',
   HERMAI_FAIL:           'ERR-STP001-052',
@@ -144,6 +151,12 @@ export const ERR_DESCRIPTIONS: Record<ErrorCode, string> = {
   'ERR-STP001-047': 'Ajan güncelleme hatası',
   'ERR-STP001-048': 'Ajan klonlama hatası',
   'ERR-STP001-049': 'Kapasite boşluğu giderme başarısız',
+  'ERR-STP001-070': 'Otonom Görev Yaratımı Reddedildi (Zehirli Intent)',
+  'ERR-STP001-071': 'Gölge Denetçi Birimleri Çaprazlamakta Hata Buldu',
+  'ERR-STP001-072': 'Durum Makinesi: FSM Deterministik Fizik İhlali',
+  'ERR-STP001-073': 'Simülasyon Birimi: CPU veya Veritabanı Risk Limit Aşımı',
+  'ERR-STP001-074': 'Olasılıkçı Ajan Görev Sözleşmesi Hazırlanamadı',
+
   // ── HERMAİ / PROOF MOTORU ───────────────────────────────────
   'ERR-STP001-050': 'Girdi eksik veya boş — işlem durdu',
   'ERR-STP001-051': 'Niyet analizi bozuk — HermAI çıktısı geçersiz',

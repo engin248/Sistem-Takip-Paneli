@@ -22,8 +22,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, message: 'Görev metni en az 5 karakter' }, { status: 400 });
   }
 
-  // Planla
-  const plan = goreviPlanla(gorev.trim());
+  // Otonom AI Planlama Mesh Çalıştırılıyor
+  const plan = await goreviPlanla(gorev.trim());
 
   // Sadece plan istendi mi?
   if (!icra) {

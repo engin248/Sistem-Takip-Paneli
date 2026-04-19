@@ -204,3 +204,33 @@ export async function orkestrat(gorev: string, zorunlu_ajan_id?: string): Promis
     worker_result  : workerResult,
   };
 }
+
+// ── CENTRAL DISPATCHER (İCRACI HAVUZ YÖNETİCİSİ) ────────────────
+export class CentralDispatcher {
+  /**
+   * Merkez Planlama Departmanından (15 Modüllük Çelik Çekirdek) çıkan 
+   * Mühürlü Sözleşmeyi (Task Contract) alır, adımlarını parçalar ve 
+   * uygun ajanlara orkestratör üzerinden gönderir.
+   */
+  static async dispatchContract(contract: any): Promise<void> {
+    const planId = contract.plan_id;
+    const adimlar = contract.karar?.temel_adimlar || []; // A_HIZLI veya B_GUVENLI yolunun adımları
+
+    if (!Array.isArray(adimlar) || adimlar.length === 0) {
+       console.warn(`[Dispatcher] Görev (${planId}) için atılacak adım bulunamadı.`);
+       return;
+    }
+
+    console.log(`[Dispatcher] Plan (${planId}) yürürlüğe girdi. Toplam ${adimlar.length} asker (ajan) sahaya iniyor...`);
+
+    for (let i = 0; i < adimlar.length; i++) {
+      const adim = adimlar[i];
+      const gorevKapsami = `[MÜHÜRLÜ PLAN: ${planId} | GÖREV: ${i+1}/${adimlar.length}] Sistem Hedefi: ${adim}`;
+      
+      // Asker (Ajan) seçimi ve cepheye sürüm işlemi
+      await orkestrat(gorevKapsami);
+    }
+    
+    console.log(`[Dispatcher] Plan (${planId}) kapsamındaki tüm askeri birimler görevlerini tamamladı.`);
+  }
+}

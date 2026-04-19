@@ -17,7 +17,7 @@ export interface Database {
           description: string | null;
           assigned_to: string;
           assigned_by: string;
-          status: 'beklemede' | 'devam_ediyor' | 'dogrulama' | 'tamamlandi' | 'reddedildi' | 'iptal';
+          status: 'onay_bekliyor' | 'beklemede' | 'devam_ediyor' | 'dogrulama' | 'tamamlandi' | 'reddedildi' | 'iptal';
           priority: 'kritik' | 'yuksek' | 'normal' | 'dusuk';
           evidence_required: boolean;
           evidence_provided: boolean;

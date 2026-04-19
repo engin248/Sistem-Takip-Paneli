@@ -137,7 +137,7 @@ export async function executePipeline(
             if (!g2Existing || g2Existing.status === 'PENDING') {
                 // İş planı oluştur
                 const { goreviPlanla } = await import('./taskDecomposer');
-                const planResult = goreviPlanla(rawInput);
+                const planResult = await goreviPlanla(rawInput);
 
                 const plan: GatePlan = {
                     steps: planResult.alt_gorevler.map((ag: { sira: number; gorev: string; ajan_kodu: string }) => ({

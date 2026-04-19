@@ -1,5 +1,5 @@
 // ============================================================
-// BRIDGE SERVICE — DIŞ SİSTEM KÖPRÜSÜ (MİZANET)
+// BRIDGE SERVICE — DIŞ SİSTEM KÖPRÜSÜ (SİSTEM TAKİP PANELİ)
 // ============================================================
 // STP'nin dış hedef sistemleri (cauptlsn... vb) izlemesi ve 
 // durumunu takip etmesi için köprü servisi.
@@ -354,7 +354,7 @@ export async function getSystemSummary(): Promise<ExternalSystemSummary> {
     operation_type: 'READ',
     action_description: `Bridge Dış Sistem özet: ${summary.istatistikler.logSayisi} log, ${summary.istatistikler.acikUyari} uyarı, ${bridge.latencyMs}ms`,
     metadata: {
-      action_code: 'BRIDGE_MIZANET_SUMMARY',
+      action_code: 'BRIDGE_Sistem Takip Paneli_SUMMARY',
       latency_ms: bridge.latencyMs,
       log_count: summary.istatistikler.logSayisi,
       uyari_count: summary.istatistikler.acikUyari,

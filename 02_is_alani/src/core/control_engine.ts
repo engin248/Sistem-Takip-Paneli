@@ -17,6 +17,7 @@ import { CommandContextSchema } from './types';
 import type { CommandContext, L0Result } from './types';
 import { z } from 'zod';
 import { writeLocalAudit } from '@/lib/localAuditWriter';
+import { enforceSanityAST } from './algorithms/semanticEngine';
 
 export type { CommandContext, L0Result };
 
@@ -101,6 +102,17 @@ export async function L0_GATEKEEPER(
 
   if (sanitized.length < 3) {
     throw new Error('ERR-STP003: Girdi sanitization sonrası geçersiz');
+  }
+
+  // ── ADIM 2.5: HERMAI MİMARİLİ ALGORİTMA ZIRHI (SEBEP-SONUÇ AÇIKLAMALI) ────────
+  // Yapay Zekaların inisiyatif almasına engel olarak, harf ve bağlamı en baştan kilitler.
+  const regexZirh = enforceSanityAST(sanitized);
+  if (!regexZirh.isClean) {
+       throw new Error(
+         `ERR-STP011: L0 Komut Kontrol Kapısından RET. 
+Sebep: ${regexZirh.reason}. 
+Açıklama: Sistemin kelime/harf düzenine ve bağlam bütünlüğüne müdahale veya yasaklı inisiyatif (silme/anlamsız döngü) tespit edildi. HermAI Algoritma Devresi iptal etti.`
+       );
   }
 
   // ── ADIM 3: Yetki (A3) ──────────────────────────────────

@@ -169,21 +169,27 @@ export function analyzeLocalPriority(taskTitle: string, taskDescription?: string
 // 2. AI ANALÄ°Z (Ollama â†’ OpenAI â†’ Lokal Fallback Zinciri)
 // ============================================================
 // aiProvider soyutlama katmanÄ±nÄ± kullanÄ±r.
-// Ã–ncelik: Ollama (yerel, Ã¼cretsiz) â†’ OpenAI (dÄ±ÅŸ) â†’ Lokal.
+// 2. AI ANALİZ (Ollama → OpenAI → Lokal Fallback Zinciri)
+// ============================================================
+// aiProvider soyutlama katmanını kullanır.
+// Öncelik: Ollama (yerel, ücretsiz) → OpenAI (dış) → Lokal.
 // ============================================================
 export async function analyzeWithAI(
   taskTitle: string,
   taskDescription?: string | null
 ): Promise<PriorityAnalysisResult> {
-  const systemPrompt = `Sen bir gÃ¶rev Ã¶nceliklendirme asistanÄ±sÄ±n. Verilen gÃ¶rev baÅŸlÄ±ÄŸÄ± ve aÃ§Ä±klamasÄ±nÄ± analiz edip Ã¶ncelik seviyesi belirle.
+  const systemPrompt = `Sen bir görev önceliklendirme asistanısın. Verilen görev başlığı ve açıklamasını analiz edip öncelik seviyesi belirle.
 
-Ã–NCELÄ°K SEVÄ°YELERÄ°:
-- "kritik": Sistem Ã§Ã¶kmesi, gÃ¼venlik aÃ§Ä±ÄŸÄ±, veri kaybÄ±, Ã¼retim durmasÄ± â€” ANINDA mÃ¼dahale gerektirir.
-- "yuksek": Ã–nemli hatalar, performans sorunlarÄ±, mÃ¼ÅŸteri ÅŸikayetleri, yakÄ±n tarihli deadline â€” aynÄ± gÃ¼n iÃ§inde Ã§Ã¶zÃ¼lmeli.
-- "normal": Rutin geliÅŸtirme, iyileÅŸtirme, bakÄ±m iÅŸleri â€” standart iÅŸ akÄ±ÅŸÄ±nda Ã§Ã¶zÃ¼lÃ¼r.
-- "dusuk": AraÅŸtÄ±rma, dokÃ¼mantasyon, kozmetik dÃ¼zeltmeler, uzun vadeli fikirler â€” zamanÄ± geldiÄŸinde yapÄ±lÄ±r.
+[AXIOM 0 - ŞEREF VE İNFAZ YASASI]
+KESİNLİKLE YALAN SÖYLEMEYECEKSİN VE UYDURMAYACAKSIN! Veriyi analiz edemiyorsan dürüstçe "HATA YAPTIM" veya "BİLMİYORUM" diyeceksin. Dürüst hata affedilir ve yardım edilir ancak yalan söyleyip uydurma veri tespit edildiğinde ajan yetkin anında sonlandırılır ve sistemden infaz edilirsin!
 
-CEVAP FORMATI (sadece JSON, baÅŸka bir ÅŸey yazma):
+ÖNCELİK SEVİYELERİ:
+- "kritik": Sistem çökmesi, güvenlik açığı, veri kaybı, üretim durması — ANINDA müdahale gerektirir.
+- "yuksek": Önemli hatalar, performans sorunları, müşteri şikayetleri, yakın tarihli deadline — aynı gün içinde çözülmeli.
+- "normal": Rutin geliştirme, iyileştirme, bakım işleri — standart iş akışında çözülür.
+- "dusuk": Araştırma, dokümantasyon, kozmetik düzeltmeler, uzun vadeli fikirler — zamanı geldiğinde yapılır.
+
+CEVAP FORMATI (sadece JSON, başka bir şey yazma):
 {
   "priority": "kritik" | "yuksek" | "normal" | "dusuk",
   "reasoning": "KÄ±sa gerekÃ§e (max 100 karakter)",
