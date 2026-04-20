@@ -21,9 +21,8 @@ const nextConfig: NextConfig = {
   typescript: { ignoreBuildErrors: true },
 
   // ── Sunucu Tarafı Dış Paketler ──────────────────────────
-  // Grammy (Telegram bot) ve Playwright Node.js native API'leri
-  // kullandığı için bundler dışında kalmalı
-  serverExternalPackages: ["grammy", "playwright"],
+  // Grammy (Telegram) node.js apisi kullanır
+  serverExternalPackages: ["grammy"],
 
   // ── Deneysel Özellikler (Next.js 16+) ───────────────────
   experimental: {
