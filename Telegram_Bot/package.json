@@ -1,0 +1,14 @@
+{
+  "name": "stp-telegram-bot",
+  "version": "1.0.0",
+  "description": "Sistem Takip Paneli — Bağımsız Telegram Bot",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@supabase/supabase-js": "^2.49.0",
+    "grammy": "^1.25.0"
+  }
+}

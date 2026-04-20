@@ -1,0 +1,24 @@
+[2026-04-20T05:14:21.340Z] [INFO] ══════════════════════════════════════════════
+[2026-04-20T05:14:21.342Z] [INFO]   STP TELEGRAM BOT — Bağımsız Modül v1       
+[2026-04-20T05:14:21.342Z] [INFO]   Supabase + Ollama + Görev Yönetimi          
+[2026-04-20T05:14:21.343Z] [INFO] ══════════════════════════════════════════════
+[2026-04-20T05:14:21.608Z] [INFO] ✅ Telegram bot başlatıldı (POLLING modu).
+[2026-04-20T05:18:24.575Z] [INFO] ══════════════════════════════════════════════
+[2026-04-20T05:18:24.586Z] [INFO]   STP TELEGRAM BOT — Bağımsız Modül v1       
+[2026-04-20T05:18:24.586Z] [INFO]   Supabase + Ollama + Görev Yönetimi          
+[2026-04-20T05:18:24.586Z] [INFO] ══════════════════════════════════════════════
+[2026-04-20T05:18:24.808Z] [INFO] ✅ Telegram bot başlatıldı (POLLING modu).
+[2026-04-20T05:22:58.820Z] [INFO] ✅ Gemini AI bağlandı (gemini-2.0-flash).
+[2026-04-20T05:22:58.845Z] [INFO] ══════════════════════════════════════════════
+[2026-04-20T05:22:58.845Z] [INFO]   STP TELEGRAM BOT — Bağımsız Modül v2       
+[2026-04-20T05:22:58.845Z] [INFO]   Supabase + Gemini AI + Görev Yönetimi       
+[2026-04-20T05:22:58.846Z] [INFO] ══════════════════════════════════════════════
+[2026-04-20T05:22:59.069Z] [INFO] ✅ Telegram bot başlatıldı (POLLING modu).
+[2026-04-20T05:23:21.589Z] [INFO] GÖREV OLUŞTURULDU: TSK-20260420-PW5H — Selam dostum
+[2026-04-20T05:25:48.089Z] [INFO] ✅ Gemini AI bağlandı (gemini-2.0-flash).
+[2026-04-20T05:25:48.110Z] [INFO] ══════════════════════════════════════════════
+[2026-04-20T05:25:48.111Z] [INFO]   STP TELEGRAM BOT — Bağımsız Modül v2       
+[2026-04-20T05:25:48.111Z] [INFO]   Supabase + Gemini AI + Görev Yönetimi       
+[2026-04-20T05:25:48.111Z] [INFO] ══════════════════════════════════════════════
+[2026-04-20T05:25:48.362Z] [INFO] ✅ Telegram bot başlatıldı (POLLING modu).
+[2026-04-20T05:26:12.937Z] [INFO] GÖREV OLUŞTURULDU: TSK-20260420-O9MS — Nasıl gidiyor

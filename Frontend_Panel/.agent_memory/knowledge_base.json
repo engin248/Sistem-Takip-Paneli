@@ -1,0 +1,51 @@
+[
+  {
+    "id": "MEM-1776643961926-PAOP",
+    "timestamp": "2026-04-20T00:12:41.926Z",
+    "planId": "PLN-1776643946319",
+    "hedef": "Bilinmiyor",
+    "basarili_mi": false,
+    "temel_adimlar": []
+  },
+  {
+    "id": "MEM-1776644416566-4P27",
+    "timestamp": "2026-04-20T00:20:16.566Z",
+    "planId": "PLN-1776644396651",
+    "hedef": "Bilinmiyor",
+    "basarili_mi": false,
+    "temel_adimlar": []
+  },
+  {
+    "id": "MEM-1776644504726-VEAZ",
+    "timestamp": "2026-04-20T00:21:44.726Z",
+    "planId": "PLN-1776644489259",
+    "hedef": "Bilinmiyor",
+    "basarili_mi": false,
+    "temel_adimlar": [
+      "Görevi standart işleyişe göre yap",
+      "Kriterleri doğrula"
+    ]
+  },
+  {
+    "id": "MEM-1776644562242-CWIU",
+    "timestamp": "2026-04-20T00:22:42.242Z",
+    "planId": "PLN-1776644546767",
+    "hedef": "Bilinmiyor",
+    "basarili_mi": false,
+    "temel_adimlar": [
+      "Görevi standart işleyişe göre yap",
+      "Kriterleri doğrula"
+    ]
+  },
+  {
+    "id": "MEM-1776646512562-E39B",
+    "timestamp": "2026-04-20T00:55:12.562Z",
+    "planId": "PLN-1776646489906",
+    "hedef": "Bilinmiyor",
+    "basarili_mi": false,
+    "temel_adimlar": [
+      "Görevi standart işleyişe göre yap",
+      "Kriterleri doğrula"
+    ]
+  }
+]

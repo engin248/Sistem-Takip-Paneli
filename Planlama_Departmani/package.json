@@ -1,0 +1,13 @@
+{
+  "name": "stp-ai-ajanlar",
+  "version": "1.0.0",
+  "description": "Sistem Takip Paneli — Bağımsız AI Ajan Motoru",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.0",
+    "@supabase/supabase-js": "^2.49.0"
+  }
+}
