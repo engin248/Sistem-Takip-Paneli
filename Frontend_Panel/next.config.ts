@@ -16,8 +16,7 @@ const nextConfig: NextConfig = {
     removeConsole: process.env.NODE_ENV === "production"
       ? { exclude: ["error", "warn"] }
       : false,
-  },
-  eslint: { ignoreDuringBuilds: true },
+},
   typescript: { ignoreBuildErrors: true },
 
   // ── Sunucu Tarafı Dış Paketler ──────────────────────────
@@ -37,11 +36,6 @@ const nextConfig: NextConfig = {
       "zod",
       "sonner",
     ],
-  },
-
-  // Otonom (legacy Node.JS) modüllerini API üretim çıktısına ekle (K-1 Kör Nokta Çözümü)
-  outputFileTracingIncludes: {
-    '/api/**/*': ['./modules/**/*'],
   },
 
   // ── Görsel Kaynakları ────────────────────────────────────
