@@ -116,9 +116,9 @@ export async function GET() {
     });
 
     // ── GENEL DURUM HESAPLAMA ──────────────────────────────────────
-    // Kritik: STP DB + Ollama. Dış sistem opsiyonel → degraded
-    const kritikSistemler = systems.filter(s => s.name.includes('STP') || s.name.includes('Ollama'));
-    const opsiyonelSistemler = systems.filter(s => !s.name.includes('STP') && !s.name.includes('Ollama'));
+    // Kritik: Sadece STP DB. Ollama (Yerel) Vercelde her zaman ulaşılamaz olabilir, opsiyoneldir.
+    const kritikSistemler = systems.filter(s => s.name.includes('STP'));
+    const opsiyonelSistemler = systems.filter(s => !s.name.includes('STP'));
     const kritikDown = kritikSistemler.some(s => s.status === 'down');
     const opsiyonelDown = opsiyonelSistemler.some(s => s.status === 'down');
     const hasDegraded = systems.some(s => s.status === 'degraded' || s.status === 'unknown');
