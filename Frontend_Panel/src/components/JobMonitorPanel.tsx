@@ -71,9 +71,22 @@ export default function JobMonitorPanel() {
       const data = await res.json() as { success: boolean; jobs: QueueJob[]; stats: QueueStats };
       if (data.success) { setJobs(data.jobs); setStats(data.stats); setError(null); }
     } catch (err) {
-      setError(err instanceof DOMException && err.name === 'AbortError'
+      const errMsg = err instanceof DOMException && err.name === 'AbortError'
         ? 'Bağlantı zaman aşımı (10s)'
-        : 'Sunucu bağlantısı yok');
+        : 'Sunucu bağlantısı yok';
+      setError(errMsg);
+      
+      // ALARM TETİKLE
+      fetch('/api/alarms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          modul: 'JOB_MONITOR',
+          baslik: 'Kuyruk Bağlantı Hatası',
+          aciklama: errMsg,
+          seviye: 'CRITICAL'
+        })
+      }).catch(console.error);
     } finally { setLoading(false); }
   }, []);
 
@@ -110,7 +123,7 @@ export default function JobMonitorPanel() {
         <div className="flex items-center gap-2">
           <span className="text-xl">📋</span>
           <div>
-            <div className="text-[10px] font-black tracking-[0.2em] uppercase text-indigo-400">İŞ KUYRUĞU TAKİBİ</div>
+            <div className="text-[10px] font-black tracking-[0.2em] uppercase text-indigo-400">JOB MONITOR</div>
             <div className="text-[8px] font-mono text-slate-500">5sn oto-yenileme • tick:{tick}</div>
           </div>
         </div>

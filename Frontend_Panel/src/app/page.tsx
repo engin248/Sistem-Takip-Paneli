@@ -68,7 +68,7 @@ const HQ_SCREENS = [
   { id: 'SCR-13', label: 'CANLI METRİKLER',     icon: '◇',   color: 'blue',   status: 'AKTİF' },
   { id: 'SCR-14', label: 'SİSTEM KALKAN',        icon: '🛡️ ', color: 'red',    status: 'AKTİF' },
   { id: 'SCR-15', label: 'SİSTEM KURALLARI',      icon: '📙',  color: 'purple', status: 'AKTİF' },
-  { id: 'SCR-16', label: 'İŞ KUYRUĞU TAKİBİ',      icon: '📋',  color: 'indigo', status: 'AKTİF' },
+  { id: 'SCR-16', label: 'JOB MONITOR',        icon: '📋',  color: 'indigo', status: 'AKTİF' },
 ] as const;
 
 // ── ZAMAN FORMATLAYICI ───────────────────────────────────────

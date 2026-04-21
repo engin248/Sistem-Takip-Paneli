@@ -2,20 +2,20 @@ import { supabase } from '@/lib/supabase';
 import { ERR, processError, type ErrorCode } from '@/lib/errorCore';
 
 // ============================================================
-// AUDIT SERVICE — audit_logs tablosuna kayýt ekleme
+// AUDIT SERVICE â€” audit_logs tablosuna kayÄ±t ekleme
 // ============================================================
-// DB ÅžEMASI (canlý tablo — 6 alan):
+// DB Ã…ï¿½EMASI (canlÄ± tablo â€” 6 alan):
 //   log_id    SERIAL PK
 //   task_id   UUID (nullable)
-//   action_code VARCHAR — ÝÞlem kodu (TASK_CREATED, TASK_UPDATED, vb.)
-//   details   JSONB — Tüm detaylar burada
+//   action_code VARCHAR â€” Ä°Åžlem kodu (TASK_CREATED, TASK_UPDATED, vb.)
+//   details   JSONB â€” TÃ¼m detaylar burada
 //   operator_id VARCHAR (nullable)
 //   timestamp TIMESTAMPTZ DEFAULT NOW()
 //
-// Hata Kodlarý: ERR-Sistem Takip Paneli001-006 (yazma), ERR-Sistem Takip Paneli001-007 (okuma)
+// Hata KodlarÄ±: ERR-Sistem Takip Paneli001-006 (yazma), ERR-Sistem Takip Paneli001-007 (okuma)
 // ============================================================
 
-// operation_type › action_code dönüÞüm haritasý
+// operation_type â€º action_code dÃ¶nÃ¼ÅžÃ¼m haritasÄ±
 export type AuditOperationType =
   | 'CREATE'
   | 'UPDATE'
@@ -31,9 +31,9 @@ export type AuditErrorSeverity = 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL' | 'FA
 export type AuditStatus = 'basarili' | 'basarisiz' | 'beklemede' | 'iptal';
 
 // ============================================================
-// ADAPTÖR: Kod beklentilerini DB Þemasýna dönüÞtürür
-// Kod tarafý geniþ interface kullanmaya devam eder,
-// DB'ye yazarken 6 alanlý Þemaya sýkýþtýrýlýr.
+// ADAPTÃ–R: Kod beklentilerini DB ÅžemasÄ±na dÃ¶nÃ¼ÅžtÃ¼rÃ¼r
+// Kod tarafÄ± geniÅŸ interface kullanmaya devam eder,
+// DB'ye yazarken 6 alanlÄ± Åžemaya sÄ±kÄ±ÅŸtÄ±rÄ±lÄ±r.
 // ============================================================
 interface AuditLogEntry {
   // Zorunlu
@@ -59,7 +59,7 @@ interface AuditLogEntry {
   metadata?: Record<string, unknown>;
 }
 
-// log_code üretici — LOG-YYYYMMDD-HHMMSS-RAND formatýnda
+// log_code Ã¼retici â€” LOG-YYYYMMDD-HHMMSS-RAND formatÄ±nda
 function generateLogCode(): string {
   const now = new Date();
   const pad = (n: number) => n.toString().padStart(2, '0');
@@ -70,13 +70,13 @@ function generateLogCode(): string {
 }
 
 /**
- * AuditLogEntry › DB Þemasýna (6 alan) dönüÞtürücü
- * Tüm ek bilgiler details JSONB alanýna sýkýþtýrýlýr.
+ * AuditLogEntry â€º DB ÅžemasÄ±na (6 alan) dÃ¶nÃ¼ÅžtÃ¼rÃ¼cÃ¼
+ * TÃ¼m ek bilgiler details JSONB alanÄ±na sÄ±kÄ±ÅŸtÄ±rÄ±lÄ±r.
  */
 function toDbRow(entry: AuditLogEntry) {
   const logCode = generateLogCode();
-  // metadata.action_code varsa onu kullan (örn: AGENT_COUNTER_UPDATE),
-  // yoksa operation_type + rand formatýnda oto-üret.
+  // metadata.action_code varsa onu kullan (Ã¶rn: AGENT_COUNTER_UPDATE),
+  // yoksa operation_type + rand formatÄ±nda oto-Ã¼ret.
   const metaActionCode = entry.metadata?.action_code;
   const actionCode = typeof metaActionCode === 'string' && metaActionCode.length > 0
     ? metaActionCode
@@ -109,7 +109,7 @@ function toDbRow(entry: AuditLogEntry) {
 }
 
 /**
- * DB'den gelen satýrý › frontend beklentisine dönüÞtürür
+ * DB'den gelen satÄ±rÄ± â€º frontend beklentisine dÃ¶nÃ¼ÅžtÃ¼rÃ¼r
  */
 interface AuditLogRow {
   id: string;
@@ -142,7 +142,7 @@ function fromDbRow(row: Record<string, unknown>): AuditLogRow {
   };
 }
 
-// SÝSTEM_KASASI FÝZÝKSEL TUTANAK VE KRÝPTO MÜHÜR (KURAL 44, 45, 106 REVÝZE: MD OPTÝMÝZASYONU)
+// SÄ°STEM_KASASI FÄ°ZÄ°KSEL TUTANAK VE KRÄ°PTO MÃœHÃœR (KURAL 44, 45, 106 REVÄ°ZE: MD OPTÄ°MÄ°ZASYONU)
 function writeVaultAudit(dbRow: any) {
   if (typeof window !== 'undefined') return; // Sadece backendde fiziksel diske yazar
   try {
@@ -150,7 +150,7 @@ function writeVaultAudit(dbRow: any) {
     const path = require('path');
     const crypto = require('crypto');
 
-    // Sistem Takip Paneli Proje (Workspace) içi güvenli klasör atamasý
+    // Sistem Takip Paneli Proje (Workspace) iÃ§i gÃ¼venli klasÃ¶r atamasÄ±
     const AUDIT_DIR = path.join(process.cwd(), 'SISTEM_KASASI_AUDITS');
     if (!fs.existsSync(AUDIT_DIR)) {
       fs.mkdirSync(AUDIT_DIR, { recursive: true });
@@ -166,33 +166,33 @@ function writeVaultAudit(dbRow: any) {
     const mdPath = path.join(AUDIT_DIR, `${baseName}.md`);
 
     const isFail = dbRow.details?.status === 'basarisiz' || dbRow.details?.error_code;
-    const statusEmoji = isFail ? 'âŒ' : 'âœ…';
+    const statusEmoji = isFail ? 'Ã¢ï¿½Å’' : 'Ã¢Å“â€¦';
 
-    const mdContent = `# ðŸ›¡ï¸ SÝSTEM TAKÝP PANELÝ (Sistem Takip Paneli) KESÝN KANIT TUTANAÄžI\n\n` +
+    const mdContent = `# ÄŸÅ¸â€ºÂ¡Ã¯Â¸ï¿½ SÄ°STEM TAKÄ°P PANELÄ° (Sistem Takip Paneli) KESÄ°N KANIT TUTANAÃ„ï¿½I\n\n` +
                       `**Tarih:** \`${new Date().toISOString()}\`\n\n` +
                       `**Log ID:** \`${logCode}\`\n\n` +
-                      `**ÝÞlem (Action):** \`${dbRow.action_code}\`\n\n` +
-                      `**Operatör:** \`${dbRow.operator_id}\`\n\n` +
-                      `**Sonuç:** ${statusEmoji} **${(dbRow.details?.status || 'BÝLÝNMÝYOR').toUpperCase()}**\n\n` +
-                      `## ðŸ” Kriptografik Mühür (SHA-256)\n> \`${hash}\`\n\n*Bu kayýt otonom sistem tarafýndan deðiþtirilemez (Immutable) olarak mühürlenmiÞtir.*\n\n` +
-                      `## ðŸ“‚ ÝÞlem Detayý (Payload)\n\`\`\`json\n${payloadInfo}\n\`\`\`\n`;
+                      `**Ä°Åžlem (Action):** \`${dbRow.action_code}\`\n\n` +
+                      `**OperatÃ¶r:** \`${dbRow.operator_id}\`\n\n` +
+                      `**SonuÃ§:** ${statusEmoji} **${(dbRow.details?.status || 'BÄ°LÄ°NMÄ°YOR').toUpperCase()}**\n\n` +
+                      `## ÄŸÅ¸â€ï¿½ Kriptografik MÃ¼hÃ¼r (SHA-256)\n> \`${hash}\`\n\n*Bu kayÄ±t otonom sistem tarafÄ±ndan deÄŸiÅŸtirilemez (Immutable) olarak mÃ¼hÃ¼rlenmiÅžtir.*\n\n` +
+                      `## ÄŸÅ¸â€œâ€š Ä°Åžlem DetayÄ± (Payload)\n\`\`\`json\n${payloadInfo}\n\`\`\`\n`;
 
-    // flag: 'wx' (Write eXclusive) => Dosya varsa hata ver. Kural 46 ve 53: Üzerine Yazma Yasaðý.
+    // flag: 'wx' (Write eXclusive) => Dosya varsa hata ver. Kural 46 ve 53: Ãœzerine Yazma YasaÄŸÄ±.
     fs.writeFileSync(mdPath, mdContent, { encoding: 'utf-8', flag: 'wx' });
   } catch (err: any) {
     if (err && err.code === 'EEXIST') {
-      return; // "Üzerine Yazma Yasaðý" baþarýyla çalýþtý.
+      return; // "Ãœzerine Yazma YasaÄŸÄ±" baÅŸarÄ±yla Ã§alÄ±ÅŸtÄ±.
     }
-    console.error('[SÝSTEM_KASASI (SISTEM_KASASI_AUDITS) GÜVENLÝK ÝHLALÝ VEYA YAZMA HATASI]:', err);
+    console.error('[SÄ°STEM_KASASI (SISTEM_KASASI_AUDITS) GÃœVENLÄ°K Ä°HLALÄ° VEYA YAZMA HATASI]:', err);
   }
 }
 
-// Ana kayýt fonksiyonu
+// Ana kayÄ±t fonksiyonu
 export const logAudit = async (entry: Omit<AuditLogEntry, 'log_code'>): Promise<{ success: boolean; error?: string }> => {
   try {
     const dbRow = toDbRow(entry as AuditLogEntry);
 
-    // KURAL 27 (Kanýt yoksa iþlem yok): Kanýt olmadan buluta gitmez! FÝZÝKSEL MÜHÜRLE!
+    // KURAL 27 (KanÄ±t yoksa iÅŸlem yok): KanÄ±t olmadan buluta gitmez! FÄ°ZÄ°KSEL MÃœHÃœRLE!
     writeVaultAudit(dbRow);
 
     const { error } = await supabase
@@ -213,14 +213,14 @@ export const logAudit = async (entry: Omit<AuditLogEntry, 'log_code'>): Promise<
     processError(ERR.UNIDENTIFIED_COLLAPSE, err, {
       tablo: 'audit_logs',
       islem: 'INSERT',
-      context: 'logAudit catch bloðu'
+      context: 'logAudit catch bloÄŸu'
     }, 'FATAL');
     const message = err instanceof Error ? err.message : String(err);
     return { success: false, error: message };
   }
 };
 
-// Kýsayol: Hata kaydý — UID ile benzersiz kimlik atanýr
+// KÄ±sayol: Hata kaydÄ± â€” UID ile benzersiz kimlik atanÄ±r
 export const logAuditError = async (
   errorCode: string,
   description: string,
@@ -241,7 +241,7 @@ export const logAuditError = async (
   return { ...result, uid };
 };
 
-// Audit loglarýný getir (En yeni 5 kayýt)
+// Audit loglarÄ±nÄ± getir (En yeni 5 kayÄ±t)
 export const fetchAuditLogs = async () => {
   try {
     const { data, error } = await supabase
@@ -258,13 +258,13 @@ export const fetchAuditLogs = async () => {
       return [];
     }
 
-    // DB formatýný frontend beklentisine dönüÞtür
+    // DB formatÄ±nÄ± frontend beklentisine dÃ¶nÃ¼ÅžtÃ¼r
     return (data || []).map(fromDbRow);
   } catch (err) {
     processError(ERR.UNIDENTIFIED_COLLAPSE, err, {
       tablo: 'audit_logs',
       islem: 'SELECT',
-      context: 'fetchAuditLogs catch bloðu'
+      context: 'fetchAuditLogs catch bloÄŸu'
     }, 'FATAL');
     return [];
   }

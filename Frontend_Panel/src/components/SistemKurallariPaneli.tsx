@@ -107,10 +107,10 @@ export default function SİSTEM_KURALLARIPaneli() {
       {/* ── Başlık + İstatistik ─────────────────────────────── */}
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 28 }}>⚖️</span>
+          <span style={{ fontSize: 24 }}>⚖️</span>
           <div>
-            <div style={{ fontSize: 15, fontWeight: 900, letterSpacing: '0.15em', color: '#a78bfa' }}>SİSTEM KURALLARI</div>
-            <div style={{ fontSize: 11, fontFamily: 'monospace', color: '#64748b' }}>Her koşulda doğru olanı yapmak</div>
+            <div style={{ fontSize: 15, fontWeight: 900, letterSpacing: '0.15em', color: '#a78bfa' }}>KURAL SETLERİ VE İHLAL METRİKLERİ</div>
+            <div style={{ fontSize: 11, fontFamily: 'monospace', color: '#64748b' }}>Sıfır İnisiyatif — Her koşulda doğru olanı yapmak</div>
           </div>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
