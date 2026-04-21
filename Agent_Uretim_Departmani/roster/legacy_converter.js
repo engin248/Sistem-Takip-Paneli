@@ -1,0 +1,85 @@
+// ============================================================
+// ESKİ KADRO → YENİ KADRO ENTEGRATÖRÜ
+// ============================================================
+// 39 eski ajanı MilitaryAgent formatına çevirip takımlarına ekler.
+// Eski ajanlar silinmez — yeni takımın ek üyeleri olarak katılır.
+// ============================================================
+
+const { ESKI_YENI_ESLESTIRME } = require('./legacy_bridge.js');
+const { DISIPLIN, RUTBELER } = require('./types.js');
+
+/**
+ * 39 eski ajanı MilitaryAgent formatına çevirir.
+ * @returns {Array} - MilitaryAgent formatında eski ajan listesi
+ */
+function eskiKadroyuDonustur() {
+  const donusturulenler = [];
+
+  for (const [eskiId, bilgi] of Object.entries(ESKI_YENI_ESLESTIRME)) {
+    donusturulenler.push({
+      id: eskiId,
+      kod_adi: bilgi.eski_isim,
+      takim_kodu: bilgi.yeni_takim,
+      uzmanlik_alani: bilgi.yeni_takim_adi,
+      gorev_tanimi: `[ESKİ KADRO] ${bilgi.sebep}`,
+      rutbe: 'UZMAN',
+      asama: 'ENTEGRE',
+      beceriler: _beceriCikar(eskiId, bilgi),
+      kapsam_siniri: [],
+      disiplin: DISIPLIN,
+      durum: 'aktif',
+      kaynak: 'legacy_bridge',
+    });
+  }
+
+  return donusturulenler;
+}
+
+// Eski ajanların becerilerini ID'den çıkar
+function _beceriCikar(eskiId, bilgi) {
+  const BECERI_MAP = {
+    'K-1': ['karar_verme', 'onay_red', 'strateji', 'gorev_atama', 'kriz_yonetimi'],
+    'K-2': ['planlama', 'kaynak_tahsis', 'risk_analizi', 'koordinasyon'],
+    'K-3': ['durum_analizi', 'tehdit_tespiti', 'anomali_tespiti', 'rapor'],
+    'K-4': ['guvenlik_denetim', 'erisim_kontrolu', 'rls_dogrulama', 'ihlal_tespiti'],
+    'A-01': ['react', 'nextjs', 'typescript', 'tailwind', 'component_tasarim'],
+    'A-02': ['api_route', 'rest', 'middleware', 'typescript', 'servis_katmani'],
+    'A-03': ['supabase', 'postgresql', 'migration', 'rls', 'sql'],
+    'A-04': ['telegram_bot', 'webhook', 'komut_yonetimi', 'bildirim'],
+    'A-05': ['vitest', 'unit_test', 'integration_test', 'mock', 'coverage'],
+    'A-06': ['guvenlik_acigi', 'rls_politikasi', 'jwt', 'rate_limiting'],
+    'A-07': ['ollama', 'prompt_tasarim', 'ai_entegrasyon', 'model_secimi'],
+    'A-08': ['veri_donusum', 'agregasyon', 'format_donusum', 'raporlama'],
+    'A-09': ['next_config', 'vercel', 'env_yonetimi', 'build_optimizasyon'],
+    'A-10': ['workflow', 'cron', 'pipeline', 'event_driven', 'zamanlama'],
+    'B-01': ['kod_inceleme', 'tip_guvenligi', 'hata_yakalama', 'performans_denetim'],
+    'B-02': ['fonksiyonel_dogrulama', 'test_sonuclari', 'kanit_toplama'],
+    'B-03': ['owasp', 'xss', 'injection', 'kvkk', 'guvenlik_denetim'],
+    'B-04': ['response_time', 'bundle_size', 'sorgu_sayisi', 'memory'],
+    'B-05': ['veri_butunlugu', 'null_kontrol', 'tip_tutarliligi', 'duplicate'],
+    'B-06': ['erisilebilirlik', 'mobil_uyum', 'hata_mesajlari', 'loading_state'],
+    'C-01': ['celinski_analiz', 'kanit_degerlendirme', 'nihai_karar'],
+    'C-02': ['mimari_degerlendirme', 'teknik_borc', 'uzun_vadeli_etki'],
+    'D-01': ['sha256', 'audit_zincir', 'butunluk_dogrulama', 'muhur'],
+    'D-02': ['cron', 'webhook', 'event_trigger', 'batch_islem'],
+    'D-09': ['veri_analiz', 'trend_tespiti', 'kpi_hesaplama', 'tahminleme'],
+    'D-10': ['proje_planlama', 'timeline', 'onceliklendirme', 'kaynak_tahsis'],
+    'ANTI-01': ['aritmetik', 'saglama', 'dogruluk_kontrolu'],
+    'ANTI-02': ['aritmetik', 'saglama', 'dogruluk_kontrolu'],
+    'IVDE-01': ['codex_motor', 'hassas_hesaplama', 'deterministik'],
+    'IVDE-02': ['codex_motor', 'hassas_hesaplama', 'deterministik'],
+    'CNTRL-01': ['sonuc_dogrulama', 'mantik_hatasi', 'kabul_red'],
+    'CNTRL-02': ['sonuc_dogrulama', 'mantik_hatasi', 'kabul_red'],
+    'CNTRL-03': ['sonuc_dogrulama', 'mantik_hatasi', 'kabul_red'],
+    'CNTRL-04': ['sonuc_dogrulama', 'mantik_hatasi', 'kabul_red'],
+    'L-1': ['debugging', 'sozdizimi', 'mantik_hatasi', 'bug_tespiti'],
+    'L-2': ['nizam_kontrol', 'kural_uyumu', 'denetim_raporu'],
+    'L-3': ['sizma_testi', 'zero_day', 'risk_denetimi'],
+    'L-4': ['token_optimizasyon', 'hizlandirma', 'kaynak_optimizasyon'],
+    'G-8': ['loglama', 'dokumantasyon', 'muhurleme', 'arsiv'],
+  };
+
+  return BECERI_MAP[eskiId] || [bilgi.sebep.split(',')[0].trim().toLowerCase().replace(/\s+/g, '_')];
+}
+
+module.exports = { eskiKadroyuDonustur };

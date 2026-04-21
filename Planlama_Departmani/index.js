@@ -1,21 +1,19 @@
 // ============================================================
-// AI AJANLAR — Bağımsız Ajan Motoru v1
+// AI AJANLAR — 160 Birim Askeri Kadro Motoru v2
 // ============================================================
 // PROJESİ: Sistem Takip Paneli (STP)
 // DURUM:   BAĞIMSIZ MODÜL — Frontend_Panel'den ayrı çalışır.
 //
 // NE YAPAR:
 //   1. Supabase'den "beklemede" görevleri çeker
-//   2. Gemini AI ile görevi analiz eder
-//   3. Görev planı oluşturur
+//   2. AI ile görevi analiz edip doğru TAKIMA yönlendirir
+//   3. Atanan ajan uzmanlığıyla görev planı oluşturur
 //   4. Sonucu veritabanına yazar
 //   5. Her şeyi loglar
 //
-// AJAN KADROSU:
-//   K-1  : Stratejist — Görev planlaması
-//   A-01 : İcracı — Kod ve dosya işlemleri
-//   A-03 : Veritabanı — DB sorguları
-//   L-2  : Denetçi — Kalite kontrol
+// AJAN KADROSU: 32 Takım × 5 Ajan = 160 Birim
+//   Her ajan SADECE kendi uzmanlık alanında çalışır.
+//   Kurul/tartışma yok — görev gelir, atanır, yapılır.
 //
 // Çalıştır: npm start  (veya: node index.js)
 // ============================================================
@@ -26,6 +24,8 @@ const fs   = require('fs');
 const path = require('path');
 const { promptEnjeksiyon, kuralKontrol, yanitDenetim, ihlalLog } = require('../shared/sistemKurallari');
 const AI = require('../shared/aiOrchestrator');
+const { TAM_KADRO, takimBul, ajanBul, TAKIM_KODLARI } = require('../Agent_Uretim_Departmani/roster/index.js');
+const MDS = require('../Agent_Uretim_Departmani/roster/discipline.js');
 
 // ── .env YÜKLE ──────────────────────────────────────────────
 function loadEnv() {
@@ -64,76 +64,86 @@ function log(msg, level = 'INFO') {
   fs.appendFileSync(LOG_FILE, line + '\n', 'utf-8');
 }
 
-// ── AJAN KADROSU (15 GÖREV MOTORU) ────────────────────────
-const AJANLAR = {
-  // Strateji ve Analiz (K Serisi)
-  'K-1':  { isim: 'Stratejist',       rol: 'Görev analizi, projelendirme ve önceliklendirme.' },
-  'K-2':  { isim: 'Analist',          rol: 'Risk tespiti, gereksinim çıkarma ve yol haritası çizimi.' },
-
-  // İcracı Motorlar (A Serisi)
-  'A-01': { isim: 'İcracı-Frontend',  rol: 'Kullanıcı arayüzü, React/Next.js kod yazımı ve UI entegrasyonu.' },
-  'A-02': { isim: 'İcracı-Backend',   rol: 'Sunucu mantığı, API yazımı ve sistem entegrasyonları.' },
-  'A-03': { isim: 'İcracı-DB',        rol: 'Veritabanı tasarımı, Supabase RLS ve SQL sorguları.' },
-  'A-04': { isim: 'İcracı-Güvenlik',  rol: 'Token yetkilendirmesi, ihlal kapatma ve güvenlik yamaları.' },
-  'A-05': { isim: 'İcracı-Entegrasyon',rol: 'Dış API (Telegram/WhatsApp vb.) ve 3. parti servis bağlantıları.' },
-  'A-06': { isim: 'İcracı-DevOps',    rol: 'Sunucu ayarları, GitHub Actions, CI/CD ve dağıtım işlemleri.' },
-  'A-07': { isim: 'İcracı-Tasarım',   rol: 'CSS, Tailwind, estetik ve kullanıcı deneyimi geliştirmeleri.' },
-
-  // Denetim Motorları (L Serisi)
-  'L-1':  { isim: 'Hata Ayıklayıcı',  rol: 'Yazılan koddaki sözdizimi ve mantık hatalarını (Bug) tespit etme.' },
-  'L-2':  { isim: 'Sistem Denetçisi', rol: 'Sistem Kuralları (Nizam) doktrinine uygunluk kontrolü.' },
-  'L-3':  { isim: 'Güvenlik Denetçisi',rol: 'Sızma testleri, zero-day açık kontrolü ve risk denetimi.' },
-  'L-4':  { isim: 'Performans Optimizatörü', rol: 'Token maliyeti azaltma, hızlandırma ve kaynak optimizasyonu.' },
-
-  // Arşiv ve Kapanış (G Serisi)
-  'G-8':  { isim: 'Arşiv Uzmanı',     rol: 'Tamamlanan işlemlerin loglanması, dokümantasyonu ve mühürlenmesi.' }
-};
+// ── AJAN KADROSU (32 TAKIM × 5 = 160 BİRİM) ──────────────
+// Her ajan SADECE kendi uzmanlık alanında çalışır.
+// Görev gelir → doğru takıma atanır → ajan yapar.
+const AJANLAR = {};
+for (const ajan of TAM_KADRO) {
+  AJANLAR[ajan.id] = { isim: ajan.kod_adi, rol: ajan.gorev_tanimi, takim: ajan.takim_kodu, beceriler: ajan.beceriler };
+}
+log(`✅ 160 ajan kadrosu yüklendi (${Object.keys(AJANLAR).length} birim).`);
 
 async function routeTaskG2(task) {
-  const systemPrompt = `Sen Sistem Takip Paneli (STP) G-2 Otonom Görev Dağıtıcı'sısın. 
-  Görevi analiz et ve işe en uygun ajanı (motoru) SEÇ. Toplam 15 uzman ajanımız var:
-  
-  AJANLAR LİSTESİ:
-  K-1 (Strateji), K-2 (Analiz/Risk)
-  A-01 (Frontend), A-02 (Backend), A-03 (Veritabanı), A-04 (Güvenlik), A-05 (Dış API), A-06 (DevOps), A-07 (UI/UX)
-  L-1 (Bug Tespiti), L-2 (Ana Denetçi), L-3 (Sızma/Güvenlik Açığı Türleri), L-4 (Performans Uzmanı)
-  G-8 (Arşiv ve Evrak Dokümantasyonu)
-  
-  Görev metnine en uygun olan sadece TEK BİR AJAN_ID döndür (Örn: A-01 veya L-3). 
-  JSON veya başka bir şey yazma, KESİNLİKLE sadece ID yaz.`;
+  const systemPrompt = `Sen G-2 Görev Rotalayıcısısın. 32 uzman takım var.
+Görevi analiz et ve en uygun TAKIM KODUNU döndür.
+
+TAKIMLAR:
+GA=Gereksinim Analizi, RA=Risk Analizi, HU=Hukuk, MK=Maliyet, ZP=Zaman Planlaması,
+MT=Mimari Tasarım, AT=Altyapı, VM=Veri Modelleme, AP=API Tasarımı, GT=Güvenlik Tasarımı, UX=UI/UX,
+TS=Teknoloji Seçimi, KK=Kod Kalitesi, HY=Hata Yönetimi, BY=Bağımlılık, ER=Erişilebilirlik, EN=Entegrasyon,
+TE=Test, PO=Performans, ST=Sızma Testi, VA=Veri Akışı,
+DO=DevOps, GM=Migrasyon, SY=Sürüm Yönetimi,
+OP=Operasyon, CI=Canlı İzleme, YF=Yedekleme, SD=Sistem Denetimi, HT=Hata Tespiti, HO=Hata Onarımı, DK=Dokümantasyon, EA=Eğitim
+
+Sadece 2 harflik takım kodu döndür. Başka hiçbir şey yazma.`;
   
   try {
-    const response = await AI.chat(`Görev Başlığı: ${task.title}\nAçıklama: ${task.description || ''}`, systemPrompt);
+    const response = await AI.chat(`Görev: ${task.title}\nAçıklama: ${task.description || ''}`, systemPrompt);
     const textOut = response.content.trim().toUpperCase();
     
-    // Düzenli ifade ile sadece uygun ajan ID'sini ayıkla
-    const idMatch = textOut.match(/([KkAaLlGg]-\d{1,2})/);
-    if (idMatch) {
-        const ajanId = idMatch[1].toUpperCase();
-        if (AJANLAR[ajanId]) return ajanId;
+    // 2 harfli takım kodunu ayıkla
+    const kodMatch = textOut.match(/\b([A-Z]{2})\b/);
+    if (kodMatch && TAKIM_KODLARI[kodMatch[1]]) {
+      const takimKodu = kodMatch[1];
+      // Takımın ilk müsait ajanını ata (ALFA)
+      return takimKodu + '-01';
     }
   } catch (e) {
     log(`G-2 Rotalama Hatası: ${e.message}, fallback uygulanıyor.`, 'WARN');
   }
 
-  // Fallback Zekası (Manuel yedekleme)
+  // Fallback: Anahtar kelime eşleştirme
   const lower = task.title.toLowerCase();
-  if (['veritabanı', 'sql', 'migration', 'supabase'].some(k => lower.includes(k))) return 'A-03';
-  if (['api', 'webhook', 'servis'].some(k => lower.includes(k))) return 'A-05';
-  if (['arayüz', 'görsel', 'css', 'tasarım'].some(k => lower.includes(k))) return 'A-07';
-  if (['güvenlik', 'hack', 'yetki', 'token'].some(k => lower.includes(k))) return 'A-04';
-  if (['hata', 'bug', 'düzelt'].some(k => lower.includes(k))) return 'L-1';
-  if (['denetle', 'kontrol', 'test'].some(k => lower.includes(k))) return 'L-2';
-  return 'A-02'; // En genel teknik fallback: Backend
+  if (['veritabanı', 'sql', 'migration', 'tablo', 'şema'].some(k => lower.includes(k))) return 'VM-01';
+  if (['api', 'endpoint', 'rest', 'graphql'].some(k => lower.includes(k))) return 'AP-01';
+  if (['arayüz', 'görsel', 'css', 'tasarım', 'ui', 'ux'].some(k => lower.includes(k))) return 'UX-01';
+  if (['güvenlik', 'hack', 'yetki', 'token', 'şifre'].some(k => lower.includes(k))) return 'GT-01';
+  if (['hata', 'bug', 'sorun', 'arıza'].some(k => lower.includes(k))) return 'HT-01';
+  if (['düzelt', 'fix', 'onar', 'patch'].some(k => lower.includes(k))) return 'HO-01';
+  if (['test', 'doğrula', 'kontrol'].some(k => lower.includes(k))) return 'TE-01';
+  if (['deploy', 'yayınla', 'ci', 'cd', 'docker'].some(k => lower.includes(k))) return 'DO-01';
+  if (['performans', 'hız', 'yavaş', 'optimize'].some(k => lower.includes(k))) return 'PO-01';
+  if (['dokümantasyon', 'belge', 'readme', 'wiki'].some(k => lower.includes(k))) return 'DK-01';
+  if (['risk', 'tehlike', 'alternatif'].some(k => lower.includes(k))) return 'RA-01';
+  if (['mimari', 'yapı', 'monolith', 'microservice'].some(k => lower.includes(k))) return 'MT-01';
+  if (['entegrasyon', 'webhook', 'bağlantı'].some(k => lower.includes(k))) return 'EN-01';
+  if (['yedek', 'backup', 'felaket'].some(k => lower.includes(k))) return 'YF-01';
+  if (['izleme', 'alarm', 'monitoring'].some(k => lower.includes(k))) return 'CI-01';
+  if (['gereksinim', 'analiz', 'kapsam'].some(k => lower.includes(k))) return 'GA-01';
+  if (['maliyet', 'bütçe', 'kaynak'].some(k => lower.includes(k))) return 'MK-01';
+  if (['zaman', 'takvim', 'plan'].some(k => lower.includes(k))) return 'ZP-01';
+  if (['kod kalite', 'refactor', 'clean'].some(k => lower.includes(k))) return 'KK-01';
+  if (['göç', 'migrasyon', 'taşıma'].some(k => lower.includes(k))) return 'GM-01';
+  if (['sürüm', 'versiyon', 'release'].some(k => lower.includes(k))) return 'SY-01';
+  if (['denetim', 'audit', 'uyumluluk'].some(k => lower.includes(k))) return 'SD-01';
+  return 'GA-01'; // Genel fallback: Gereksinim Analizi
 }
 
 async function analyzeTask(task, ajanId) {
   const agent = AJANLAR[ajanId];
-  const systemPrompt = `Sen "${agent.isim}" ajanısın. STP L1 YAPICI (Execution Engine) olarak görevi planlamaktan sorumlusun.
-  
-  ${promptEnjeksiyon(ajanId)}
-  
-  Görevi atomik adımlara böl ve JSON formatında döndür.`;
+  if (!agent) {
+    log(`AJAN BULUNAMADI: ${ajanId}`, 'ERROR');
+    return { plan: `Ajan bulunamadı: ${ajanId}`, steps: [], risk: 'yüksek', ajan: ajanId };
+  }
+
+  const systemPrompt = `Sen "${agent.isim}" ajanısın.
+Uzmanlık alanın: ${agent.rol}
+Beceri setin: ${agent.beceriler.join(', ')}
+
+${promptEnjeksiyon(ajanId)}
+
+SADECE uzmanlık alanında çalış. Kapsam dışı her işlemi reddet.
+Görevi atomik adımlara böl ve JSON formatında döndür.`;
 
   const userPrompt = `Görev: "${task.title}"\nÖncelik: ${task.priority}`;
 
@@ -145,86 +155,185 @@ async function analyzeTask(task, ajanId) {
     if (jsonMatch) {
       return JSON.parse(jsonMatch[0]);
     }
-    return { plan: text.substring(0, 500), steps: [], risk: 'belirsiz', ajan: agent.isim };
+    return { plan: text.substring(0, 500), steps: [], risk: 'belirsiz', ajan: agent.isim, takim: agent.takim };
   } catch (err) {
-    log(`L1 ANALİZ HATA: ${err.message}`, 'ERROR');
+    log(`ANALİZ HATA [${ajanId}]: ${err.message}`, 'ERROR');
     return { plan: `Hata: ${err.message}`, steps: [], risk: 'yüksek', ajan: agent.isim };
   }
 }
 
 // ── GÖREV İŞLE ──────────────────────────────────────────────
+// MDS-160 PROTOKOLÜ: Görev → Rotalama → Yapıcı → Denetçi → Doğrulama → Kayıt
 async function processTask(task) {
-  // G-2 Otonom Görev Atama
-  const ajanId = await routeTaskG2(task);
-  const ajan = AJANLAR[ajanId];
-  
-  log(`📋 [G-2] Görev atandı: [${task.task_code}] → ${ajan.isim} (${ajanId})`);
+  // [MDS-160] Execution ID üret (Immutable Trace)
+  const exeId = MDS.executionIdUret();
+  log(`🆔 [${exeId}] Yeni görev işleme başlatıldı: [${task.task_code}]`);
 
-  // SİSTEM KURALLARI: Giriş kontrolü
+  // [MDS-160 II] GİRİŞ KONTROLÜ: Sistem kuralları
   const girisKontrol = kuralKontrol('GOREV_ISLEM', task.title);
   if (!girisKontrol.gecti) {
     const logMsg = ihlalLog('PLANLAMA', girisKontrol);
     if (logMsg) log(logMsg, 'WARN');
-    log(`🚫 Görev engellendi [${task.task_code}]: ${girisKontrol.ihlaller.map(i => i.aciklama).join(', ')}`, 'WARN');
+    log(`🚫 [${exeId}] INVALID_COMMAND: [${task.task_code}] → ${girisKontrol.ihlaller.map(i => i.aciklama).join(', ')}`, 'WARN');
     await supabase.from('tasks')
-      .update({ status: 'reddedildi', updated_at: new Date().toISOString(), metadata: { ...task.metadata, sistem_kurallari_red: girisKontrol } })
+      .update({ status: 'reddedildi', updated_at: new Date().toISOString(), metadata: { ...task.metadata, execution_id: exeId, hata_kodu: 'INVALID_COMMAND', sistem_kurallari_red: girisKontrol } })
       .eq('id', task.id);
-    return { plan: 'Sistem kuralları tarafından reddedildi', steps: [], risk: 'yüksek' };
+    return { plan: 'INVALID_COMMAND', steps: [], risk: 'yüksek', execution_id: exeId };
   }
 
-  // 1. Durumu "devam_ediyor" yap
+  // [MDS-160 III] ROTALAMA: G-2 görevi doğru takıma yönlendirir
+  const ajanId = await routeTaskG2(task);
+  const ajan = AJANLAR[ajanId];
+  log(`📋 [${exeId}] [G-2] Görev atandı: [${task.task_code}] → ${ajan.isim} (${ajanId}) [Takım: ${ajan.takim}]`);
+
+  // [MDS-160 III] EXECUTION LOCK: Durumu kilitle
   await supabase.from('tasks')
     .update({ status: 'devam_ediyor', updated_at: new Date().toISOString() })
     .eq('id', task.id);
 
-  // 2. L1 YAPICI: Analiz ve Planlama
-  log(`🧠 [L1] Analiz başlıyor...`);
-  const analysis = await analyzeTask(task, ajanId);
-  log(`✅ AI analiz tamamlandı: risk=${analysis.risk}, adım=${analysis.steps?.length || 0}`);
+  // ═══════════════════════════════════════════════════════════
+  // ADIM 1: YAPICI (XX-01) — Görevi analiz eder ve planlar
+  // ═══════════════════════════════════════════════════════════
+  log(`⚡ [${exeId}] YAPICI [${ajanId}] ${ajan.isim} görevi analiz ediyor...`);
+  let analysis = await analyzeTask(task, ajanId);
+  analysis.execution_id = exeId;
 
-  // SİSTEM KURALLARI: AI yanıt denetimi
+  // [MDS-160 VI] ÇIKTI FİLTRELEME: Yasaklı ifadeler temizlenir
+  if (analysis.plan) {
+    const filtre = MDS.ciktiFiltreyle(analysis.plan);
+    if (filtre.filtrelenen > 0) {
+      log(`🧹 [${exeId}] ${filtre.filtrelenen} yasaklı ifade filtrelendi.`);
+      analysis.plan = filtre.temiz;
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // ADIM 2: DENETÇİ (XX-02) — Çıktıyı kontrol eder
+  // ═══════════════════════════════════════════════════════════
+  const denetciId = ajan.takim + '-02';
+  const denetci = AJANLAR[denetciId];
+  if (denetci) {
+    log(`🔍 [${exeId}] DENETÇİ [${denetciId}] ${denetci.isim} kontrol ediyor...`);
+    try {
+      const denetimPrompt = `Sen "${denetci.isim}" denetçisisin.
+Uzmanlık alanın: ${denetci.rol}
+
+YAPICI AJANIN ÇIKTISI:
+${JSON.stringify(analysis, null, 2)}
+
+GÖREVİN:
+1. Çıktıyı uzmanlık alanın açısından kontrol et.
+2. Eksik, hatalı veya tutarsız adım varsa belirt.
+3. Sonucu JSON döndür: {"onay": true/false, "notlar": "...", "duzeltmeler": "..."}
+Sadece JSON döndür.`;
+
+      const denetimSonuc = await AI.chat(denetimPrompt, 'Sen kıdemli denetçisin. Sadece kontrol yap.', { temperature: 0.1 });
+      const denetimText = denetimSonuc.content;
+      
+      const jsonMatch = denetimText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        try {
+          const denetim = JSON.parse(jsonMatch[0]);
+          analysis.denetim = { denetci_id: denetciId, denetci_adi: denetci.isim, ...denetim };
+          if (denetim.onay === false) {
+            log(`⚠️ [${exeId}] DENETÇİ RED: ${denetim.notlar || ''}`, 'WARN');
+          } else {
+            log(`✅ [${exeId}] DENETÇİ ONAYLADI.`);
+          }
+        } catch (parseErr) {
+          analysis.denetim = { denetci_id: denetciId, ham_yanit: denetimText };
+        }
+      } else {
+        analysis.denetim = { denetci_id: denetciId, ham_yanit: denetimText };
+      }
+    } catch (denetimErr) {
+      log(`⚠️ [${exeId}] Denetim hatası [${denetciId}]: ${denetimErr.message}`, 'WARN');
+      analysis.denetim = { denetci_id: denetciId, hata: denetimErr.message };
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // ADIM 3: ÇİFT DOĞRULAMA (MDS-160 V)
+  //   Self-Check: Çıktı komut kapsamına uyuyor mu?
+  //   Rule-Check: Kural ihlali var mı?
+  // ═══════════════════════════════════════════════════════════
+  const orijinalAjan = ajanBul(ajanId);
+  const dogrulama = MDS.ciftDogrulama(analysis, task, orijinalAjan);
+  analysis.dogrulama = dogrulama;
+
+  if (!dogrulama.gecti) {
+    log(`⚠️ [${exeId}] ÇİFT DOĞRULAMA BAŞARISIZ: ${dogrulama.detay}`, 'WARN');
+    
+    // [MDS-160 V] MAX 1 RETRY
+    log(`🔄 [${exeId}] Re-Try: Tekrar üretim yapılıyor (1/${MDS.DOGRULAMA.MAX_RETRY})...`);
+    analysis = await analyzeTask(task, ajanId);
+    analysis.execution_id = exeId;
+    
+    const retryDogrulama = MDS.ciftDogrulama(analysis, task, orijinalAjan);
+    analysis.dogrulama = retryDogrulama;
+    
+    if (!retryDogrulama.gecti) {
+      log(`❌ [${exeId}] FAILED_VALIDATION: Tekrar da başarısız. Süreç durduruluyor.`, 'ERROR');
+      await supabase.from('tasks')
+        .update({ status: 'reddedildi', updated_at: new Date().toISOString(), metadata: { ...task.metadata, execution_id: exeId, hata_kodu: 'FAILED_VALIDATION', dogrulama: retryDogrulama } })
+        .eq('id', task.id);
+      return { plan: 'FAILED_VALIDATION', steps: [], risk: 'yüksek', execution_id: exeId };
+    }
+    log(`✅ [${exeId}] Re-Try başarılı. Doğrulama geçti.`);
+  } else {
+    log(`✅ [${exeId}] ÇİFT DOĞRULAMA BAŞARILI.`);
+  }
+
+  // [MDS-160 VI] FINAL GATE: Sistem kuralları yanıt denetimi
   const yanitSonuc = yanitDenetim(analysis.plan || '', ajanId);
   if (yanitSonuc.ihlal_var) {
     const logMsg = ihlalLog('PLANLAMA_YANIT', yanitSonuc);
     if (logMsg) log(logMsg, 'WARN');
     if (yanitSonuc.iptal) {
-      log(`🚫 AI yanıtı kural ihlali nedeniyle reddedildi [${task.task_code}]`, 'WARN');
-      analysis.plan = '[SİSTEM KURALLARI] AI yanıtı filtrelendi: ' + yanitSonuc.ihlaller.map(i => i.aciklama).join(', ');
+      log(`🚫 [${exeId}] FINAL GATE RED: AI yanıtı filtrelendi [${task.task_code}]`, 'WARN');
+      analysis.plan = '[DEVIATION_DETECTED] ' + yanitSonuc.ihlaller.map(i => i.aciklama).join(', ');
     }
   }
 
-  // 3. Sonucu kaydet
+  // [MDS-160 IV] SONUÇ KAYDET (Immutable Trace)
   await supabase.from('tasks')
     .update({
       status: 'dogrulama',
       updated_at: new Date().toISOString(),
       metadata: {
         ...task.metadata,
+        execution_id: exeId,
         ai_analiz_sonucu: analysis,
         islenen_ajan: ajanId,
+        islenen_takim: ajan.takim,
+        denetci: analysis.denetim || null,
+        dogrulama: analysis.dogrulama || null,
         isleme_zamani: new Date().toISOString(),
       },
     })
     .eq('id', task.id);
 
-  // 4. Audit log yaz
+  // [MDS-160 V] AUDIT LOG (Değiştirilemez Kayıt)
   try {
     await supabase.from('audit_logs').insert([{
       action_code: 'AI_TASK_PROCESSED',
       operator_id: ajanId,
       details: {
+        execution_id: exeId,
         task_id: task.id,
         task_code: task.task_code,
         title: task.title,
-        ajan: ajan.isim,
+        yapici: { id: ajanId, isim: ajan.isim, takim: ajan.takim },
+        denetci: analysis.denetim || null,
+        dogrulama: analysis.dogrulama || null,
         plan: analysis.plan,
         risk: analysis.risk,
         steps: analysis.steps,
       },
     }]);
-  } catch (e) { log(`Audit log yazılamadı: ${e.message}`, 'WARN'); }
+  } catch (e) { log(`[${exeId}] Audit log yazılamadı: ${e.message}`, 'WARN'); }
 
-  log(`📌 Görev işlendi: [${task.task_code}] → durum: dogrulama`);
+  log(`📌 [${exeId}] Görev işlendi: [${task.task_code}] → ${ajanId} (${ajan.takim}) → durum: dogrulama`);
   return analysis;
 }
 
@@ -285,8 +394,9 @@ async function pollTasks() {
 // ── BAŞLAT ──────────────────────────────────────────────────
 async function start() {
   log('══════════════════════════════════════════════');
-  log('  STP AI AJANLAR — Bağımsız Motor v1         ');
-  log('  Supabase + Gemini AI + Otonom Görev İşleme  ');
+  log('  STP AI AJANLAR — 160 Birim Kadro Motoru v2  ');
+  log('  32 Takım × 5 Ajan = 160 Askeri Düzey Birim  ');
+  log('  Görev gelir → Atanır → Yapılır              ');
   log('══════════════════════════════════════════════');
 
   // Bağlantı testi
