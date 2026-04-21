@@ -169,7 +169,7 @@ export const TUTANAK_KURALLARI: Kural[] = [
   {
     no: 'TU-003', kategori: 'TUTANAK', ihlal: 'IPTAL', kaynak: 'Madde-49',
     kural: '3 TEKRAR DURDURUR',
-    aciklama: 'Aynı hata 3 kez tekrarlanırsa sistem durdurulur. Tekrarlayan hata pattern tespit = acil durum.',
+    aciklama: 'Aynı hata tekrar ederse sistem durdurulur. Tekrarlayan hata pattern tespit = acil durum.',
   },
   {
     no: 'TU-004', kategori: 'TUTANAK', ihlal: 'IPTAL', kaynak: 'Madde-53',

@@ -20,6 +20,22 @@ async function verifyApiAuth(request: NextRequest): Promise<{ user: any; error?:
       return { user: null, error: 'Unauthorized: Bearer token is missing' };
     }
     const token = authHeader.split('Bearer ')[1];
+
+    // ── SERVİS TOKEN KONTROLÜ (WhatsApp, Telegram bot'ları için) ──
+    // Servis token SADECE auth yapar — 15 kontrol noktasını ATLAMAZ.
+    // gorevOnKontrol, validateInput, ruleGuard hepsi çalışmaya devam eder.
+    const serviceToken = process.env.STP_SERVICE_TOKEN;
+    if (serviceToken && token === serviceToken) {
+      return {
+        user: {
+          id: 'SERVICE_BOT',
+          email: 'bot@stp.internal',
+          role: 'service',
+        },
+      };
+    }
+
+    // ── KULLANICI JWT KONTROLÜ (Panel UI için) ───────────────────
     const { data, error } = await supabase.auth.getUser(token);
     if (error || !data.user) {
       return { user: null, error: `Auth Error: ${error?.message || 'Invalid token'}` };

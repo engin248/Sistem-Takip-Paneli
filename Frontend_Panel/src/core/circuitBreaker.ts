@@ -2,7 +2,7 @@
 // ============================================================
 // CIRCUIT BREAKER — OLLAMA HATA KORUMASI
 // ============================================================
-// Ollama 3 kez başarısız → devre açılır → OpenAI'ya düşer
+// Ollama başarısız olursa → devre açılır → OpenAI'ya düşer
 // 30sn sonra yarı açık → test → başarılıysa kapanır
 // Serverless uyumu: Durum Supabase'de persist edilir.
 // ============================================================

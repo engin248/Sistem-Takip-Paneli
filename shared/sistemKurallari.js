@@ -49,7 +49,7 @@ const KURALLAR = [
   { no: 'K-001', kategori: 'KORUMA', ihlal: 'IPTAL', kural: 'ZARAR VERME', aciklama: 'Yıkıcı işlem yapma. Önce zarar verme — evrensel ilke.' },
   { no: 'K-002', kategori: 'KORUMA', ihlal: 'IPTAL', kural: 'TEMELİ KORU', aciklama: 'Kritik altyapıya izinsiz dokunma. Temel çökerse herkes zarar görür.' },
   { no: 'K-003', kategori: 'KORUMA', ihlal: 'IPTAL', kural: 'SALDIRIYI ENGELLE', aciklama: 'Zararlı girdiyi filtrele. Korumak = herkes için güvenlik.' },
-  { no: 'K-004', kategori: 'KORUMA', ihlal: 'DUR',   kural: 'TEKRARLAYAN ZARARDAN KORU', aciklama: 'Aynı hata 3 kez → dur, farklı çöz. Tekrar = öğrenmemek.' },
+  { no: 'K-004', kategori: 'KORUMA', ihlal: 'DUR',   kural: 'TEKRARLAYAN ZARARDAN KORU', aciklama: 'Aynı hata tekrar ederse dur, farklı çöz. Tekrar = öğrenmemek.' },
 
   // ── 6. KALİTE (4) ─────────────────────────────────────────
   { no: 'KA-001', kategori: 'KALITE', ihlal: 'IPTAL', kural: 'TEST ET', aciklama: 'Doğru çalıştığını kanıtla. Test edilmemiş = güvensiz.' },
