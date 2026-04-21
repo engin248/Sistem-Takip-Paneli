@@ -266,13 +266,18 @@ client.on('message_create', async msg => {
     }
 
     // ── KELİME KİLİDİ (TRİGGER KONTROLÜ) ───────────
-    // Sadece "Sistem Takip Paneli" kimliğine saygılı tetikleyiciler:
-    const TRIGGER_WORDS = ['sistem', 'panel', 'takip', 'görev', 'gorev'];
+    // Botun dikkate alacağı özel personel ve sistem yetki kelimeleri:
+    const TRIGGER_WORDS = [
+      'sistem', 'operatür', 'operatör', 'operator',
+      'burhan', 'asker', 'yetkili', 'gürevli', 'görevli', 'gorevli',
+      'sibel hnm', 'sibel hanım', 'sibel'
+    ];
     
     function hasTrigger(text) {
       if (!text) return false;
-      const firstWord = text.trim().toLowerCase().split(/[\s,.:;!?_]+/)[0];
-      return TRIGGER_WORDS.includes(firstWord);
+      const lowerText = text.trim().toLowerCase();
+      // Mesajın başlangıcı bu kelimelerden biriyle başlıyorsa kabul et
+      return TRIGGER_WORDS.some(word => lowerText.startsWith(word));
     }
 
     // ═══════════════════════════════════════════════════════════
