@@ -243,8 +243,8 @@ function analyzeLocalPriority(text) {
 
 const PE = { kritik: '🔴', yuksek: '🟠', normal: '🟡', dusuk: '🟢' };
 
-// ── GELEN MESAJ ───────────────────────────────────────────────
-client.on('message', async msg => {
+// ── GELEN VE GİDEN MESAJ (Kritik: Kendi kendine gönderilenleri okuyabilmek için message_create olmalı) ───────────────────────────────────────────────
+client.on('message_create', async msg => {
   try {
     const from = msg.from;
     const type = msg.type;
