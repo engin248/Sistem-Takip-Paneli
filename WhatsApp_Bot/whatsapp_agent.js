@@ -90,7 +90,9 @@ function isAuthorized(msg, client) {
   const myNumber = client.info && client.info.wid ? client.info.wid._serialized : null;
   
   // 2. EĞER SADECE BİZE ÖZELSE (Kendi Kendimize Sohbet / Kayıtlı Mesajlar)
-  if (myNumber && msg.from === myNumber && msg.to === myNumber) return true;
+  // WhatsApp altyapısı "Kendine Gönder" chatinde to adresini @lid uzantılı şifreliyor!
+  const isSelfChat = msg.fromMe && (msg.to === myNumber || msg.to.endsWith('@lid'));
+  if (myNumber && msg.from === myNumber && isSelfChat) return true;
 
   // 3. Başka yetkili numara .env'de tanımlı mı?
   if (AUTHORIZED_NUMBERS.length > 0 && AUTHORIZED_NUMBERS.includes(msg.from)) {
@@ -248,6 +250,11 @@ client.on('message_create', async msg => {
   try {
     const from = msg.from;
     const type = msg.type;
+    
+    // DEBUG: Gelen tüm mesajların kime/kimden gittiğini loglayalım
+    if (msg.fromMe || msg.to === from) {
+      log(`[DEBUG] from: ${from}, to: ${msg.to}, fromMe: ${msg.fromMe}, myNumber: ${client.info?.wid?._serialized}`, 'INFO');
+    }
 
     // Yetki kontrol
     if (!isAuthorized(msg, client)) return;
