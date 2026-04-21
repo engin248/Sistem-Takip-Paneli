@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendTelegramNotification, formatSystemAlert, isTelegramNotificationAvailable } from '@/services/telegramNotifier';
 import { ERR, processError } from '@/lib/errorCore';
 import { CONTROL } from '@/core/control_engine';
+import { gorevOnKontrol } from '@/core/ruleGuard';
 
 // ============================================================
 // TELEGRAM BİLDİRİM API — /api/notify
@@ -49,6 +50,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: 'message alanı zorunludur' },
         { status: 400 }
+      );
+    }
+
+    // ── SİSTEM KURALLARI: Mesaj İçerik Kontrolü ──────────────
+    const kontrol = gorevOnKontrol('NOTIFY_API', 'L1', message);
+    if (!kontrol.gecti) {
+      return NextResponse.json(
+        { success: false, error: `Sistem Kuralları: ${kontrol.aciklama}` },
+        { status: 403 }
       );
     }
 

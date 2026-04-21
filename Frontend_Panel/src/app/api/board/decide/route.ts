@@ -11,6 +11,7 @@ import { createAndVoteDecision, fetchBoardDecisions } from '@/services/boardServ
 import { ERR, processError } from '@/lib/errorCore';
 import { BoardDecisionSchema, validateInput } from '@/lib/validation';
 import type { DecisionCategory } from '@/services/consensusEngine';
+import { gorevOnKontrol } from '@/core/ruleGuard';
 
 const VALID_CATEGORIES: DecisionCategory[] = [
   'DEPLOYMENT', 'SCHEMA_CHANGE', 'SECURITY', 'ROLLBACK', 'CONFIG_CHANGE',
@@ -40,6 +41,15 @@ export async function POST(request: NextRequest) {
     }
 
     const validatedData = validation.data!;
+
+    // ── SİSTEM KURALLARI: Giriş Kontrolü ───────────────────
+    const kontrol = gorevOnKontrol('BOARD_DECIDE', 'L1', validatedData.title);
+    if (!kontrol.gecti) {
+      return NextResponse.json(
+        { success: false, error: `Sistem Kuralları: ${kontrol.aciklama}` },
+        { status: 403 }
+      );
+    }
 
     const result = await createAndVoteDecision({
       title: validatedData.title,

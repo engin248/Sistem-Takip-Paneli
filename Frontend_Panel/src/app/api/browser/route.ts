@@ -23,6 +23,7 @@ import {
 } from '@/services/browserService';
 import { ERR, processError } from '@/lib/errorCore';
 import { CONTROL } from '@/core/control_engine';
+import { gorevOnKontrol } from '@/core/ruleGuard';
 
 type BrowserAction = 'navigate' | 'search' | 'screenshot' | 'extract' | 'health';
 
@@ -40,6 +41,15 @@ export async function POST(request: NextRequest) {
     }
 
     const { action } = body as { action?: string };
+
+    // ── SİSTEM KURALLARI: Giriş Kontrolü ───────────────────
+    const kontrol = gorevOnKontrol('BROWSER_API', 'L1', JSON.stringify(body));
+    if (!kontrol.gecti) {
+      return NextResponse.json(
+        { success: false, error: `Sistem Kuralları: ${kontrol.aciklama}`, kural_no: kontrol.kural_no },
+        { status: 403 }
+      );
+    }
 
     if (!action) {
       return NextResponse.json(

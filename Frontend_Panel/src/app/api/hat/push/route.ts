@@ -2,6 +2,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { pushToRedLine } from '@/services/hatBridge';
 import { komutGonder } from '@/services/komutZinciriService';
+import { gorevOnKontrol } from '@/core/ruleGuard';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,6 +11,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     if (!body?.title) {
       return NextResponse.json({ success: false, message: 'title required' }, { status: 400 });
+    }
+
+    // ── SİSTEM KURALLARI: Giriş Kontrolü ───────────────────────
+    const kontrol = gorevOnKontrol('HAT_PUSH', 'L1', String(body.title));
+    if (!kontrol.gecti) {
+      return NextResponse.json({ success: false, message: `Sistem Kuralları: ${kontrol.aciklama}`, kural_no: kontrol.kural_no }, { status: 403 });
     }
 
     // 1. Mevcut RED_LINE push (geriye uyumluluk)
