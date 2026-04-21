@@ -46,6 +46,7 @@ const KURALLAR = [
   { no: 'KA-002', kategori: 'KALİTE', ihlal: 'UYARI', kural: 'BÜTÜNÜ GÖZET', aciklama: 'Bir parçayı değiştirdiğinde bütünü kontrol et.' },
   { no: 'KA-003', kategori: 'KALİTE', ihlal: 'IPTAL', kural: 'SEBEP BUL', aciklama: 'Sorunu kökünden çöz. Yüzeysel çözüm = geçici = yanlış.' },
   { no: 'KA-004', kategori: 'KALİTE', ihlal: 'IPTAL', kural: 'KORUMAYA AL', aciklama: 'Doğru yapılan işi kaybetme. Push edilmeden bitmez.' },
+  { no: 'KA-005', kategori: 'KALİTE', ihlal: 'IPTAL', kural: 'YARIM İŞ YASAK', aciklama: 'Her işlem tüm etki alanlarıyla test edilecek, tüm işlevselliği kontrol edilecek. Test edilmeyen, kontrol edilmeyen iş yapılmış sayılmaz.' },
 
   // 7. ŞEFFAFLIK (4)
   { no: 'Ş-001', kategori: 'ŞEFFAFLIK', ihlal: 'UYARI', kural: 'NE YAPTIĞINI AÇIKLA', aciklama: 'Her işlem açıklamalı olsun. Gizli işlem = güvensizlik.' },

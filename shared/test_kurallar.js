@@ -24,7 +24,7 @@ assert('promptEnjeksiyon fonksiyonu var', typeof sk.promptEnjeksiyon === 'functi
 assert('yanitDenetim fonksiyonu var', typeof sk.yanitDenetim === 'function');
 assert('ihlalLog fonksiyonu var', typeof sk.ihlalLog === 'function');
 assert('kuralOzeti fonksiyonu var', typeof sk.kuralOzeti === 'function');
-assert('32 kural mevcut', sk.TOPLAM_KURAL === 32);
+assert('33 kural mevcut', sk.TOPLAM_KURAL === 33);
 
 // Kategori doğrulama
 const ozet = sk.kuralOzeti();
@@ -46,7 +46,7 @@ assert('SORUMLULUK: 4 kural', say('SORUMLULUK') === 4);
 assert('SAYGI: 4 kural', say('SAYGI') === 4);
 assert('ADALET: 3 kural', say('ADALET') === 3);
 assert('KORUMA: 4 kural', say('KORUMA') === 4);
-assert('KALITE: 4 kural', say('KALITE') === 4);
+assert('KALITE: 5 kural', say('KALITE') === 5);
 assert('SEFFAFLIK: 4 kural', say('SEFFAFLIK') === 4);
 assert('OGRENME: 3 kural', say('OGRENME') === 3);
 
