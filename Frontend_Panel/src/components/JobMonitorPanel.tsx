@@ -121,9 +121,9 @@ export default function JobMonitorPanel() {
       {/* ── Başlık ───────────────────────────────────────────── */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
-          <span className="text-xl">📋</span>
+          <span className="text-xl">📡</span>
           <div>
-            <div className="text-[10px] font-black tracking-[0.2em] uppercase text-indigo-400">JOB MONITOR</div>
+            <div className="text-[10px] font-black tracking-[0.2em] uppercase text-indigo-400">CANLI TAKİP EKRANI</div>
             <div className="text-[8px] font-mono text-slate-500">5sn oto-yenileme • tick:{tick}</div>
           </div>
         </div>

@@ -15,7 +15,7 @@ class AIOrchestrator {
         this.geminiModel = null;
         this.ollamaConfig = {
             host: process.env.OLLAMA_URL || 'http://localhost:11434',
-            model: process.env.OLLAMA_MODEL || 'gemma2'
+            model: process.env.OLLAMA_MODEL || 'llama3.1:latest'
         };
 
         if (process.env.GEMINI_API_KEY) {
@@ -86,8 +86,12 @@ class AIOrchestrator {
                 res.on('end', () => {
                     try {
                         const parsed = JSON.parse(data);
+                        if (parsed.error) {
+                             reject(new Error(parsed.error));
+                             return;
+                        }
                         resolve({
-                            content: parsed.message.content,
+                            content: parsed.message ? parsed.message.content : '',
                             provider: 'ollama',
                             model: this.ollamaConfig.model
                         });
