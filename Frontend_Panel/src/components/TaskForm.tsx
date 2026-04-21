@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { fetchTasksFromDB } from '@/services/taskService';
 import { toast } from 'sonner';
 import { useLanguageStore } from '@/store/useLanguageStore';
@@ -48,6 +48,60 @@ export default function TaskForm() {
   const { lang, dir } = useLanguageStore();
   const { operator } = useOperatorStore();
   const tr = t(lang);
+
+  // ── SESLİ GİRİŞ — Web Speech API ──────────────────────────
+  const [isListening, setIsListening] = useState(false);
+  const [voiceSupported, setVoiceSupported] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
+  useEffect(() => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      setVoiceSupported(true);
+      const recognition = new SpeechRecognition();
+      recognition.lang = lang === 'ar' ? 'ar-SA' : 'tr-TR';
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0]?.[0]?.transcript ?? '';
+        if (transcript.trim()) {
+          setTitle((prev) => prev ? `${prev} ${transcript.trim()}` : transcript.trim());
+          toast.success(`🎤 Ses algılandı: "${transcript.trim().substring(0, 60)}"`);
+        }
+        setIsListening(false);
+      };
+
+      recognition.onerror = (event: any) => {
+        if (event.error !== 'aborted') {
+          toast.error(`🎤 Ses hatası: ${event.error}`);
+        }
+        setIsListening(false);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+    }
+  }, [lang]);
+
+  const toggleVoice = useCallback(() => {
+    if (!recognitionRef.current) return;
+    if (isListening) {
+      recognitionRef.current.abort();
+      setIsListening(false);
+    } else {
+      try {
+        recognitionRef.current.start();
+        setIsListening(true);
+      } catch {
+        toast.error('Mikrofon erişimi sağlanamadı');
+      }
+    }
+  }, [isListening]);
 
   // ── AJAN LİSTESİ — API ROUTE'DAN FETCH ────────────────────
   const [agents, setAgents] = useState<AgentInfo[]>([]);
@@ -223,16 +277,42 @@ export default function TaskForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      {/* ── Başlık ──────────────────────────────────────────── */}
-      <input
-        id="task-title-input"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        className="w-full border border-slate-700 bg-slate-800/50 text-slate-100 p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/50 outline-none placeholder-slate-500 transition-all"
-        placeholder={tr.placeholder || 'İş emri başlığı...'}
-        disabled={isSubmitting}
-        dir={dir}
-      />
+      {/* ── Başlık + Mikrofon ──────────────────────────────── */}
+      <div className="flex gap-2 items-center">
+        <input
+          id="task-title-input"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="flex-1 border border-slate-700 bg-slate-800/50 text-slate-100 p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500/50 outline-none placeholder-slate-500 transition-all"
+          placeholder={isListening ? '🎤 Dinleniyor...' : (tr.placeholder || 'İş emri başlığı...')}
+          disabled={isSubmitting || isListening}
+          dir={dir}
+        />
+        {voiceSupported && (
+          <button
+            id="voice-input-btn"
+            type="button"
+            onClick={toggleVoice}
+            disabled={isSubmitting}
+            className={`
+              w-10 h-10 flex items-center justify-center rounded-lg border transition-all duration-300 text-lg
+              ${isListening
+                ? 'bg-red-500/20 border-red-500/50 text-red-400 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.4)]'
+                : 'bg-slate-800/50 border-slate-700 text-slate-400 hover:text-cyan-400 hover:border-cyan-500/50 hover:bg-cyan-500/10'
+              }
+            `}
+            title={isListening ? 'Kaydı durdur' : 'Sesli komut ver'}
+          >
+            {isListening ? '⏹️' : '🎤'}
+          </button>
+        )}
+      </div>
+      {isListening && (
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 animate-pulse">
+          <div className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+          <span className="text-[10px] font-bold text-red-400 tracking-wider uppercase">SESLİ GİRİŞ AKTİF — Konuşun...</span>
+        </div>
+      )}
 
       {/* ── AI Öneri Badge ──────────────────────────────────── */}
       {renderAISuggestion()}
