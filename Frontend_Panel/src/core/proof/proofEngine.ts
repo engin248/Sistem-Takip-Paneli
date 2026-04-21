@@ -1,4 +1,4 @@
-// STUB — Proof Engine artık bağımsız modül (STP_Denetim/)
+// STUB — Proof Engine artık bağımsız modül (Sistem Takip Paneli_Denetim/)
 export async function solveProof(_spec: unknown): Promise<{ solved: boolean; hash: string }> {
   return { solved: true, hash: 'stub-proof-hash' };
 }

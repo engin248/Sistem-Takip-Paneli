@@ -4,7 +4,7 @@
 // Tüm dış girdiler (form, API, Telegram) bu şemalardan geçer.
 // Geçemeyen veri sisteme ASLA girmez.
 //
-// Hata Kodu: ERR-STP001-001 (genel validasyon)
+// Hata Kodu: ERR-Sistem Takip Paneli001-001 (genel validasyon)
 // Doktrin: Kirli veri = Kirli audit. Tolerans SIFIR.
 // ============================================================
 

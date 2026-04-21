@@ -9,10 +9,10 @@ import { reportSistemProcess, reportSistemAnomaly } from './sistemReporter';
 import type { AltGorev } from './taskDecomposer';
 
 /** 
- * STP EKİBİ YAPISI
+ * Sistem Takip Paneli EKİBİ YAPISI
  * Doers: 2 ANTI + 2 IVDE
  * Controllers: 4 CNTRL
- * Super-Controller: STP (Antigravity Agent)
+ * Super-Controller: Sistem Takip Paneli (Antigravity Agent)
  */
 
 export interface SİSTEMTeam {
@@ -28,7 +28,7 @@ export const SISTEM_TAKIP_PANELLERI_EKIBI: SİSTEMTeam = {
 };
 
 /**
- * Görevin STP kapsamına girip girmediğini kontrol eder.
+ * Görevin Sistem Takip Paneli kapsamına girip girmediğini kontrol eder.
  * @param gorev Ham görev metni
  */
 export function isSistemTask(gorev: string): boolean {
@@ -37,14 +37,14 @@ export function isSistemTask(gorev: string): boolean {
   const matched = SİSTEMKeywords.some(k => lower.includes(k));
   
   if (matched) {
-    reportSistemProcess('ANALIZ', 'Matematiksel görev tespit edildi, STP disiplini aktif.', { gorev });
+    reportSistemProcess('ANALIZ', 'Matematiksel görev tespit edildi, Sistem Takip Paneli disiplini aktif.', { gorev });
   }
   
   return matched;
 }
 
 /**
- * STP disiplini için görev planı revizyonu.
+ * Sistem Takip Paneli disiplini için görev planı revizyonu.
  * Her işlem 2+2 ekip tarafından yapılır, 4 kişi tarafından denetlenir.
  */
 export function applySistemDiscipline(originalSteps: AltGorev[]): AltGorev[] {
@@ -81,7 +81,7 @@ export function applySistemDiscipline(originalSteps: AltGorev[]): AltGorev[] {
 }
 
 /**
- * STP (Super-Controller) Plan Kontrolü.
+ * Sistem Takip Paneli (Super-Controller) Plan Kontrolü.
  * İŞlem başlamadan önce planı ve stratejik ekseni denetler.
  */
 export function validateSistemPlan(planOzet: string): { valid: boolean; report: string } {
@@ -95,8 +95,8 @@ export function validateSistemPlan(planOzet: string): { valid: boolean; report: 
   const allPassed = rules.every(r => r === true);
   
   const reportText = allPassed 
-    ? "STP: Operasyon ve proje planı 'SİSTEM TAKİP PANELİ' disiplinine uygundur. İŞlem başlatılabilir." 
-    : "STP HATASI: Ekip yapısı veya denetim katmanı eksik. Plan reddedildi.";
+    ? "Sistem Takip Paneli: Operasyon ve proje planı 'SİSTEM TAKİP PANELİ' disiplinine uygundur. İŞlem başlatılabilir." 
+    : "Sistem Takip Paneli HATASI: Ekip yapısı veya denetim katmanı eksik. Plan reddedildi.";
 
   reportSistemProcess('PLANLAMA', allPassed ? 'Plan onaylandı.' : 'Plan reddedildi.', { valid: allPassed });
 

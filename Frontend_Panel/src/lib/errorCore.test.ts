@@ -22,17 +22,17 @@ describe('errorCore', () => {
   // ── HATA KODLARI ──────────────────────────────────────────
   describe('ERR sabitleri', () => {
     it('SYSTEM_GENERAL tanımlı', () => {
-      expect(ERR.SYSTEM_GENERAL).toBe('ERR-STP001-001');
+      expect(ERR.SYSTEM_GENERAL).toBe('ERR-Sistem Takip Paneli001-001');
     });
 
     it('TASK_CREATE tanımlı', () => {
       expect(ERR.TASK_CREATE).toBeDefined();
-      expect(ERR.TASK_CREATE).toMatch(/^ERR-STP001-/);
+      expect(ERR.TASK_CREATE).toMatch(/^ERR-Sistem Takip Paneli001-/);
     });
 
-    it('tüm kodlar ERR-STP001 formatında', () => {
+    it('tüm kodlar ERR-Sistem Takip Paneli001 formatında', () => {
       for (const [, code] of Object.entries(ERR)) {
-        expect(code).toMatch(/^ERR-STP001-\d{3}$/);
+        expect(code).toMatch(/^ERR-Sistem Takip Paneli001-\d{3}$/);
       }
     });
 

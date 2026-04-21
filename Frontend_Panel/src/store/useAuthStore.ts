@@ -43,6 +43,6 @@ export const useAuthStore = create<AuthState>()(
 
       setLoading: (loading) => set({ isLoading: loading }, false, 'setLoading'),
     }),
-    { name: 'STP-AuthStore', enabled: process.env.NODE_ENV !== 'production' }
+    { name: 'Sistem Takip Paneli-AuthStore', enabled: process.env.NODE_ENV !== 'production' }
   )
 );

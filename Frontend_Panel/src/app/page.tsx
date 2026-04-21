@@ -812,9 +812,9 @@ export default function Dashboard() {
               <SistemKurallariPaneli />
             </HQScreen>
 
-            {/* ── EKRAN 16: JOB MONITOR ────────────────────────── */}
+            {/* ── EKRAN 16: İŞ KUYRUĞU TAKİBİ ───────────────────── */}
             <HQScreen
-              screen={HQ_SCREENS[15]!}
+              screen={HQ_SCREENS[16]!}
               isActive={activeScreen === 'SCR-16'}
               onClick={() => handleScreenClick('SCR-16')}
               isExpanded={expandedScreen === 'SCR-16'}
@@ -834,7 +834,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-              <span className="text-[9px] font-mono text-green-400 tracking-wider">STP OPERASYONEL</span>
+              <span className="text-[9px] font-mono text-green-400 tracking-wider">SİSTEM TAKİP PANELİ OPERASYONEL</span>
             </div>
             <span className="text-[9px] font-mono text-slate-600">|</span>
             <span className="text-[9px] font-mono text-slate-500">

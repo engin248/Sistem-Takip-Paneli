@@ -41,7 +41,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-white/5 border border-white/10 rounded-2xl mb-4">
-            <span className="text-2xl font-black text-white tracking-tighter">STP</span>
+            <span className="text-2xl font-black text-white tracking-tighter">Sistem Takip Paneli</span>
           </div>
           <h1 className="text-xl font-black text-white tracking-tight">
             Sistem Takip Paneli

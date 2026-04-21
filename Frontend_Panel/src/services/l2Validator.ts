@@ -11,7 +11,7 @@
 // ÖN: Operatörden bağımsız, otonom denetim
 // ARKA: Sistem bütünlüğü + güven katmanı
 //
-// Hata Kodu: ERR-STP001-001 (genel)
+// Hata Kodu: ERR-Sistem Takip Paneli001-001 (genel)
 // ============================================================
 
 import { supabase, validateSupabaseConnection } from '@/lib/supabase';

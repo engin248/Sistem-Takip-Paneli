@@ -72,7 +72,7 @@ export default function TelegramSender() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: "STP Panel Bildirimi",
+          title: "Sistem Takip Paneli Panel Bildirimi",
           message: message.trim(),
           severity,
         }),

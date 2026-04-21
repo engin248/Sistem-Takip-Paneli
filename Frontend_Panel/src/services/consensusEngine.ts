@@ -7,8 +7,8 @@
 //   - 3/3 ONAY → MÜHÜRLÜ (consensus achieved)
 //   - 1+ RED → REDDEDİLDİ (consensus failed)
 // Hata Kodları:
-//   ERR-STP001-020 → AI ajan oyu kaydedilemedi
-//   ERR-STP001-021 → Konsensüs hesaplaması başarısız
+//   ERR-Sistem Takip Paneli001-020 → AI ajan oyu kaydedilemedi
+//   ERR-Sistem Takip Paneli001-021 → Konsensüs hesaplaması başarısız
 // ============================================================
 
 

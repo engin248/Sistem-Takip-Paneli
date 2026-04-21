@@ -69,7 +69,7 @@ export async function proxy(request: NextRequest) {
       return new NextResponse(
         JSON.stringify({
           hata: 'Erisim engellendi. Bu sistem yalnizca localhost uzerinden calisir.',
-          hata_kodu: 'ERR-STP001-MUHAFIZ-001',
+          hata_kodu: 'ERR-Sistem Takip Paneli001-MUHAFIZ-001',
           mod: 'GUVENLI MOD',
           timestamp: new Date().toISOString(),
           debug: { host, pathname },

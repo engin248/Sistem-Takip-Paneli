@@ -4,9 +4,9 @@
 // board_decisions tablosu ile CRUD işlemleri.
 // Her karar konsensüs motoru tarafından oylanır ve mühürlenir.
 // Hata Kodları:
-//   ERR-STP001-018 → Karar oluşturulamadı
-//   ERR-STP001-019 → Kararlar çekilemedi
-//   ERR-STP001-022 → Mühür uygulanamadı
+//   ERR-Sistem Takip Paneli001-018 → Karar oluşturulamadı
+//   ERR-Sistem Takip Paneli001-019 → Kararlar çekilemedi
+//   ERR-Sistem Takip Paneli001-022 → Mühür uygulanamadı
 // ============================================================
 
 import { supabase, validateSupabaseConnection } from '@/lib/supabase';

@@ -60,8 +60,8 @@ export const useOperatorStore = create<OperatorState>()(
           return ELEVATED_ROLES.includes(operator.role);
         },
       }),
-      { name: 'stp-operator' }
+      { name: 'Sistem Takip Paneli-operator' }
     ),
-    { name: 'STP-OperatorStore', enabled: process.env.NODE_ENV !== 'production' }
+    { name: 'Sistem Takip Paneli-OperatorStore', enabled: process.env.NODE_ENV !== 'production' }
   )
 );

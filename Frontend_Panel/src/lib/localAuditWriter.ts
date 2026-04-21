@@ -4,14 +4,14 @@
 // ============================================================
 // Tüm kritik işlemler C:\agent_audit\ dizinine JSONL olarak yazılır.
 // Supabase'e ek olarak — disk kaydı zorunlu (Kural #44).
-// Dosya formatı: STP_AUDIT_YYYY-MM-DD.jsonl (Kural #45)
+// Dosya formatı: Sistem Takip Paneli_AUDIT_YYYY-MM-DD.jsonl (Kural #45)
 // Append-only — silinemez, değiştirilemez (Kural #46, #53).
 // ============================================================
 
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
 
-const AUDIT_DIR = process.env.STP_AUDIT_DIR ?? join(process.cwd(), '.agent_audit');
+const AUDIT_DIR = process.env.Sistem Takip Paneli_AUDIT_DIR ?? join(process.cwd(), '.agent_audit');
 const IS_PROD   = process.env.NODE_ENV === 'production';
 
 export interface LocalAuditEntry {
@@ -40,7 +40,7 @@ export function writeLocalAudit(entry: LocalAuditEntry): void {
 
     const now      = new Date();
     const dateStr  = now.toISOString().split('T')[0]; // YYYY-MM-DD
-    const filename = `STP_AUDIT_${dateStr}.jsonl`;
+    const filename = `Sistem Takip Paneli_AUDIT_${dateStr}.jsonl`;
     const filepath = join(AUDIT_DIR, filename);
 
     const record = {
@@ -64,5 +64,5 @@ export function writeLocalAudit(entry: LocalAuditEntry): void {
 export function getAuditFilePath(date?: Date): string {
   const d       = date ?? new Date();
   const dateStr = d.toISOString().split('T')[0];
-  return join(AUDIT_DIR, `STP_AUDIT_${dateStr}.jsonl`);
+  return join(AUDIT_DIR, `Sistem Takip Paneli_AUDIT_${dateStr}.jsonl`);
 }

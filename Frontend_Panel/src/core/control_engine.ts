@@ -3,7 +3,7 @@
 // Konum: src/core/control_engine.ts
 // ============================================================
 // Aksiyom: A3 (çelişki), A4 (veri doğrulama), A6 (izlenebilirlik)
-// Hata kodları: ERR-STP001 ~ ERR-STP009
+// Hata kodları: ERR-Sistem Takip Paneli001 ~ ERR-Sistem Takip Paneli009
 //
 // Kural #20  — Rate limit: 10 komut/dk/userId
 // Kural #88  — Concurrent lock: aynı userId için paralel işlem yasak
@@ -30,7 +30,7 @@ function checkRateLimit(userId: string): void {
   const now   = Date.now();
   const times = (_rateMap.get(userId) ?? []).filter(t => now - t < RATE_WINDOW_MS);
   if (times.length >= RATE_LIMIT) {
-    throw new Error(`ERR-STP008: Rate limit aşıldı — ${RATE_LIMIT} komut/dk (Kural #20)`);
+    throw new Error(`ERR-Sistem Takip Paneli008: Rate limit aşıldı — ${RATE_LIMIT} komut/dk (Kural #20)`);
   }
   times.push(now);
   _rateMap.set(userId, times);
@@ -54,7 +54,7 @@ function checkErrorBlock(userId: string): void {
 
   if (record.count >= MAX_ERRORS) {
     throw new Error(
-      `ERR-STP010: ${MAX_ERRORS} ardışık hata — userId ${userId} ${ERROR_BLOCK_MS / 60000} dk boyunca bloklandı (Kural #49)`
+      `ERR-Sistem Takip Paneli010: ${MAX_ERRORS} ardışık hata — userId ${userId} ${ERROR_BLOCK_MS / 60000} dk boyunca bloklandı (Kural #49)`
     );
   }
 }
@@ -82,7 +82,7 @@ export async function L0_GATEKEEPER(
   // ── Zod context doğrulama ───────────────────────────────
   const parsed = CommandContextSchema.safeParse(context);
   if (!parsed.success) {
-    throw new Error(`ERR-STP004: Context geçersiz — ${parsed.error.issues[0]?.message ?? 'bilinmeyen'}`);
+    throw new Error(`ERR-Sistem Takip Paneli004: Context geçersiz — ${parsed.error.issues[0]?.message ?? 'bilinmeyen'}`);
   }
 
   // ── ADIM 0: Rate limit + Hata blok kontrolü (Kural #20 + #49) ─
@@ -91,7 +91,7 @@ export async function L0_GATEKEEPER(
 
   // ── ADIM 1: Null / boş / kısa (A4) ─────────────────────
   if (!rawInput || rawInput.trim().length < 3) {
-    throw new Error('ERR-STP001: Girdi geçersiz veya çok kısa (<3 karakter)');
+    throw new Error('ERR-Sistem Takip Paneli001: Girdi geçersiz veya çok kısa (<3 karakter)');
   }
 
   // ── ADIM 2: Sanitization (injection koruması) ───────────
@@ -101,7 +101,7 @@ export async function L0_GATEKEEPER(
     .trim();
 
   if (sanitized.length < 3) {
-    throw new Error('ERR-STP003: Girdi sanitization sonrası geçersiz');
+    throw new Error('ERR-Sistem Takip Paneli003: Girdi sanitization sonrası geçersiz');
   }
 
   // ── ADIM 2.5: HERMAI MİMARİLİ ALGORİTMA ZIRHI (SEBEP-SONUÇ AÇIKLAMALI) ────────
@@ -109,15 +109,15 @@ export async function L0_GATEKEEPER(
   const regexZirh = enforceSanityAST(sanitized);
   if (!regexZirh.isClean) {
        throw new Error(
-         `ERR-STP011: L0 Komut Kontrol Kapısından RET. 
+         `ERR-Sistem Takip Paneli011: L0 Komut Kontrol Kapısından RET. 
 Sebep: ${regexZirh.reason}. 
-Açıklama: Sistemin kelime/harf düzenine ve bağlam bütünlüğüne müdahale veya yasaklı inisiyatif (silme/anlamsız döngü) tespit edildi. STP Algoritma Devresi iptal etti.`
+Açıklama: Sistemin kelime/harf düzenine ve bağlam bütünlüğüne müdahale veya yasaklı inisiyatif (silme/anlamsız döngü) tespit edildi. Sistem Takip Paneli Algoritma Devresi iptal etti.`
        );
   }
 
   // ── ADIM 3: Yetki (A3) ──────────────────────────────────
   if (!context.isAuthorized) {
-    throw new Error('ERR-STP002: Yetkisiz erişim');
+    throw new Error('ERR-Sistem Takip Paneli002: Yetkisiz erişim');
   }
 
   // ── ADIM 4: Replay koruması (Kural #90) ─────────────────
@@ -130,7 +130,7 @@ Açıklama: Sistemin kelime/harf düzenine ve bağlam bütünlüğüne müdahale
       .maybeSingle();
 
     if (existing) {
-      throw new Error('ERR-STP006: Replay tespit — aynı nonce (Kural #90 retry=0)');
+      throw new Error('ERR-Sistem Takip Paneli006: Replay tespit — aynı nonce (Kural #90 retry=0)');
     }
 
     // ── ADIM 4b: Concurrent lock (Kural #88) ─────────────────
@@ -142,11 +142,11 @@ Açıklama: Sistemin kelime/harf düzenine ve bağlam bütünlüğüne müdahale
       .maybeSingle();
 
     if (activeCmd) {
-      throw new Error('ERR-STP009: Aktif işlem var — concurrent lock (Kural #88)');
+      throw new Error('ERR-Sistem Takip Paneli009: Aktif işlem var — concurrent lock (Kural #88)');
     }
   } catch (err) {
     // Replay/concurrent hataları tekrar fırlat
-    if (err instanceof Error && (err.message.includes('ERR-STP006') || err.message.includes('ERR-STP009'))) {
+    if (err instanceof Error && (err.message.includes('ERR-Sistem Takip Paneli006') || err.message.includes('ERR-Sistem Takip Paneli009'))) {
       throw err;
     }
     // Tablo yoksa veya DB erişim hatası → replay kontrolü atlanır, devam

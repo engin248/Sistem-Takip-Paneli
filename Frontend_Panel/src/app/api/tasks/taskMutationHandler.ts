@@ -9,7 +9,7 @@
 
 import { type NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { CreateTaskSchema, UpdateTaskSchema, validateInput } from '@/lib/validation';
+import { CreateTaskSchema, UpdateTaskSchema, DeleteTaskSchema, validateInput } from '@/lib/validation';
 import { ERR, processError } from '@/lib/errorCore';
 import { gorevOnKontrol } from '@/core/ruleGuard';
 import { verifyApiAuth } from '@/lib/apiAuth';
@@ -118,6 +118,9 @@ export async function handleTaskDelete(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     if (!id) return NextResponse.json({ success: false, error: 'Missing ID' }, { status: 400 });
+
+    const { data: payload, errors: valError } = validateInput(DeleteTaskSchema, { taskId: id }, { kaynak: 'taskMutationHandler', islem: 'DELETE_TASK' });
+    if (!payload || valError) return NextResponse.json({ success: false, error: 'Validation Error', details: valError }, { status: 400 });
 
     const { error: dbError } = await supabase.from('tasks').delete().eq('id', id);
     if (dbError) throw dbError;

@@ -146,7 +146,7 @@ async function updateProofChain(
         proof_hash:  proof.proofHash,
         prev_hash:   prevHash,
         merkle_root: merkleRoot,
-        signature:   `STP_CHAIN_${merkleRoot.substring(0, 16)}`,
+        signature:   `Sistem Takip Paneli_CHAIN_${merkleRoot.substring(0, 16)}`,
     });
 
     return { merkleRoot, chainValid: !error };

@@ -3,7 +3,7 @@
 // ============================================================
 // POST: Yeni karar oluşturur ve 3 AI ajan konsensüs oylaması yapar
 // GET: Karar geçmişini döndürür
-// Hata Kodları: ERR-STP001-018, 019, 020, 021, 022
+// Hata Kodları: ERR-Sistem Takip Paneli001-018, 019, 020, 021, 022
 // ============================================================
 
 import { NextRequest, NextResponse } from 'next/server';

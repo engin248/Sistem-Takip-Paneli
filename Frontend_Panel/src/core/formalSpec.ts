@@ -1,9 +1,9 @@
 // src/core/formalSpec.ts
 // K3 — Formal Spesifikasyon Üreteci
-// STP analizinden pre/post condition ve invariant çıkarır
+// Sistem Takip Paneli analizinden pre/post condition ve invariant çıkarır
 
 import { supabase } from '@/lib/supabase';
-import type { STPAnalysis } from './types';
+import type { Sistem Takip PaneliAnalysis } from './types';
 
 export interface FormalSpec {
     commandId:       string;
@@ -17,7 +17,7 @@ export interface FormalSpec {
 export async function generateFormalSpec(
     commandId: string,
     input:     string,
-    analysis:  STPAnalysis
+    analysis:  Sistem Takip PaneliAnalysis
 ): Promise<FormalSpec> {
     // Pre-conditions
     const preConditions: string[] = [

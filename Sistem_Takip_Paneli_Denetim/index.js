@@ -29,6 +29,7 @@ const crypto = require('crypto');
 const fs   = require('fs');
 const path = require('path');
 const { kuralKontrol, yanitDenetim, ihlalLog, promptEnjeksiyon } = require('../shared/sistemKurallari');
+const AI = require('../shared/aiOrchestrator');
 
 // ── .env YÜKLE ──────────────────────────────────────────────
 function loadEnv() {
@@ -57,11 +58,6 @@ const LOG_FILE      = path.join(__dirname, 'denetim.log');
 
 // ── SUPABASE & GEMINI ───────────────────────────────────────
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-let geminiModel = null;
-if (GEMINI_KEY) {
-  const genAI = new GoogleGenerativeAI(GEMINI_KEY);
-  geminiModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-}
 
 // ── LOG ─────────────────────────────────────────────────────
 function log(msg, level = 'INFO') {
@@ -221,12 +217,11 @@ async function auditTask(task) {
 
   // Gemini çift doğrulama + SİSTEM KURALLARI enjeksiyonu
   let aiVerified = false;
-  if (geminiModel && score >= PASS_THRESHOLD) {
     try {
       const kuralBlok = promptEnjeksiyon('L2');
-      const prompt = `${kuralBlok}\n\nGörev: "${task.title}"\nÖncelik: ${task.priority}\nSkor: %${score}\n\nBu görev güvenli ve mantıklı mı? Sadece TRUE veya FALSE yaz.`;
-      const result = await geminiModel.generateContent(prompt);
-      const aiYanit = result.response.text();
+      const userPrompt = `Görev: "${task.title}"\nÖncelik: ${task.priority}\nSkor: %${score}\n\nBu görev güvenli ve mantıklı mı? Sadece TRUE veya FALSE yaz.`;
+      const response = await AI.chat(userPrompt, kuralBlok);
+      const aiYanit = response.content;
       aiVerified = aiYanit.trim().toUpperCase().startsWith('TRUE');
       // SİSTEM KURALLARI: Yanıt denetimi
       const denetimSonuc = yanitDenetim(aiYanit, 'L2');
@@ -240,7 +235,7 @@ async function auditTask(task) {
     }
   }
 
-  const finalVerdict = score >= PASS_THRESHOLD && (aiVerified || !geminiModel);
+  const finalVerdict = score >= PASS_THRESHOLD && aiVerified;
 
   log(`📊 Skor: %${score} (${passed}/${CRITERIA.length}) | AI: ${aiVerified ? '✅' : '❌'} | Sonuç: ${finalVerdict ? 'ONAY ✅' : 'RED 🔴'}`);
 
@@ -349,8 +344,7 @@ async function start() {
   if (error) { log(`❌ Supabase hata: ${error.message}`, 'CRITICAL'); process.exit(1); }
   log('✅ Supabase bağlantısı doğrulandı.');
 
-  if (geminiModel) log('✅ Gemini AI bağlandı (çift doğrulama aktif).');
-  else log('⚠️ Gemini yok — sadece kural motoru çalışacak.', 'WARN');
+  log('✅ AI Bağlantısı (L2 Denetim / Local-First) doğrulandı.');
 
   log(`📏 Eşik: %${PASS_THRESHOLD} | Kriter: ${CRITERIA.length} | Tarama: ${POLL_INTERVAL/1000}sn`);
   log('🚀 Denetim motoru başlatıldı. Görev bekleniyor...');

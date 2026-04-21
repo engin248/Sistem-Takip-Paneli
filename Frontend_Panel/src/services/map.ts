@@ -19,8 +19,8 @@ export interface TableEntry {
   operations: TableOperation[];
   /** Erişim türü: doğrudan (.from) veya dolaylı (servis zinciri) */
   accessType: 'DOGRUDAN' | 'DOLAYLI';
-  /** Proje: STP veya SKM */
-  project: 'STP' | 'SKM';
+  /** Proje: Sistem Takip Paneli veya SKM */
+  project: 'Sistem Takip Paneli' | 'SKM';
 }
 
 // ─── AKTİF TABLO HARİTASI ────────────────────────────────────
@@ -29,27 +29,27 @@ export interface TableEntry {
 export const TABLE_MAP: readonly TableEntry[] = [
 
   // ═══════════════════════════════════════════════════════════
-  // PROJE: STP (Sistem Takip Paneli)
+  // PROJE: Sistem Takip Paneli (Sistem Takip Paneli)
   // Konum: c:\sistem_takip_paneli\02_is_alani
   // ═══════════════════════════════════════════════════════════
 
   // ── tasks tablosu ──────────────────────────────────────────
-  { table: 'tasks', managedBy: 'src/services/taskService.ts',   operations: ['SELECT', 'UPDATE', 'DELETE', 'REALTIME'],  accessType: 'DOGRUDAN', project: 'STP' },
-  { table: 'tasks', managedBy: 'src/components/TaskForm.tsx',   operations: ['INSERT'],                                   accessType: 'DOGRUDAN', project: 'STP' },
-  { table: 'tasks', managedBy: 'src/components/TaskCard.tsx',   operations: ['UPDATE', 'DELETE'],                          accessType: 'DOLAYLI',  project: 'STP' },
-  { table: 'tasks', managedBy: 'src/app/page.tsx',              operations: ['SELECT', 'REALTIME'],                        accessType: 'DOLAYLI',  project: 'STP' },
-  { table: 'tasks', managedBy: 'src/store/useTaskStore.ts',     operations: ['SELECT'],                                    accessType: 'DOLAYLI',  project: 'STP' },
-  { table: 'tasks', managedBy: 'src/services/exportService.ts', operations: ['SELECT'],                                    accessType: 'DOLAYLI',  project: 'STP' },
-  { table: 'tasks', managedBy: 'src/components/Stats.tsx',      operations: ['SELECT'],                                    accessType: 'DOLAYLI',  project: 'STP' },
+  { table: 'tasks', managedBy: 'src/services/taskService.ts',   operations: ['SELECT', 'UPDATE', 'DELETE', 'REALTIME'],  accessType: 'DOGRUDAN', project: 'Sistem Takip Paneli' },
+  { table: 'tasks', managedBy: 'src/components/TaskForm.tsx',   operations: ['INSERT'],                                   accessType: 'DOGRUDAN', project: 'Sistem Takip Paneli' },
+  { table: 'tasks', managedBy: 'src/components/TaskCard.tsx',   operations: ['UPDATE', 'DELETE'],                          accessType: 'DOLAYLI',  project: 'Sistem Takip Paneli' },
+  { table: 'tasks', managedBy: 'src/app/page.tsx',              operations: ['SELECT', 'REALTIME'],                        accessType: 'DOLAYLI',  project: 'Sistem Takip Paneli' },
+  { table: 'tasks', managedBy: 'src/store/useTaskStore.ts',     operations: ['SELECT'],                                    accessType: 'DOLAYLI',  project: 'Sistem Takip Paneli' },
+  { table: 'tasks', managedBy: 'src/services/exportService.ts', operations: ['SELECT'],                                    accessType: 'DOLAYLI',  project: 'Sistem Takip Paneli' },
+  { table: 'tasks', managedBy: 'src/components/Stats.tsx',      operations: ['SELECT'],                                    accessType: 'DOLAYLI',  project: 'Sistem Takip Paneli' },
 
   // ── audit_logs tablosu ─────────────────────────────────────
-  { table: 'audit_logs', managedBy: 'src/services/auditService.ts', operations: ['INSERT', 'SELECT'],     accessType: 'DOGRUDAN', project: 'STP' },
-  { table: 'audit_logs', managedBy: 'src/components/AuditLog.tsx',  operations: ['SELECT', 'REALTIME'],   accessType: 'DOGRUDAN', project: 'STP' },
-  { table: 'audit_logs', managedBy: 'src/services/taskService.ts',  operations: ['INSERT'],               accessType: 'DOLAYLI',  project: 'STP' },
-  { table: 'audit_logs', managedBy: 'src/lib/errorHandler.ts',      operations: ['INSERT'],               accessType: 'DOLAYLI',  project: 'STP' },
-  { table: 'audit_logs', managedBy: 'src/components/TaskForm.tsx',  operations: ['INSERT'],               accessType: 'DOLAYLI',  project: 'STP' },
-  { table: 'audit_logs', managedBy: 'src/services/exportService.ts',operations: ['INSERT'],               accessType: 'DOLAYLI',  project: 'STP' },
-  { table: 'audit_logs', managedBy: 'src/app/page.tsx',             operations: ['SELECT'],               accessType: 'DOLAYLI',  project: 'STP' },
+  { table: 'audit_logs', managedBy: 'src/services/auditService.ts', operations: ['INSERT', 'SELECT'],     accessType: 'DOGRUDAN', project: 'Sistem Takip Paneli' },
+  { table: 'audit_logs', managedBy: 'src/components/AuditLog.tsx',  operations: ['SELECT', 'REALTIME'],   accessType: 'DOGRUDAN', project: 'Sistem Takip Paneli' },
+  { table: 'audit_logs', managedBy: 'src/services/taskService.ts',  operations: ['INSERT'],               accessType: 'DOLAYLI',  project: 'Sistem Takip Paneli' },
+  { table: 'audit_logs', managedBy: 'src/lib/errorHandler.ts',      operations: ['INSERT'],               accessType: 'DOLAYLI',  project: 'Sistem Takip Paneli' },
+  { table: 'audit_logs', managedBy: 'src/components/TaskForm.tsx',  operations: ['INSERT'],               accessType: 'DOLAYLI',  project: 'Sistem Takip Paneli' },
+  { table: 'audit_logs', managedBy: 'src/services/exportService.ts',operations: ['INSERT'],               accessType: 'DOLAYLI',  project: 'Sistem Takip Paneli' },
+  { table: 'audit_logs', managedBy: 'src/app/page.tsx',             operations: ['SELECT'],               accessType: 'DOLAYLI',  project: 'Sistem Takip Paneli' },
 
   // ═══════════════════════════════════════════════════════════
   // PROJE: SKM (Sistem Kontrol Merkezi)
@@ -113,7 +113,7 @@ export function getUniqueFiles(): string[] {
 }
 
 /** Projeye göre filtrele */
-export function getByProject(project: 'STP' | 'SKM'): TableEntry[] {
+export function getByProject(project: 'Sistem Takip Paneli' | 'SKM'): TableEntry[] {
   return TABLE_MAP.filter(e => e.project === project);
 }
 
@@ -127,7 +127,7 @@ export function getMapStats(): {
   totalEntries: number;
   uniqueTables: number;
   uniqueFiles: number;
-  stpEntries: number;
+  Sistem Takip PaneliEntries: number;
   skmEntries: number;
   directEntries: number;
   indirectEntries: number;
@@ -136,7 +136,7 @@ export function getMapStats(): {
     totalEntries: TABLE_MAP.length,
     uniqueTables: getUniqueTables().length,
     uniqueFiles: getUniqueFiles().length,
-    stpEntries: getByProject('STP').length,
+    Sistem Takip PaneliEntries: getByProject('Sistem Takip Paneli').length,
     skmEntries: getByProject('SKM').length,
     directEntries: getDirectAccess().length,
     indirectEntries: TABLE_MAP.filter(e => e.accessType === 'DOLAYLI').length,

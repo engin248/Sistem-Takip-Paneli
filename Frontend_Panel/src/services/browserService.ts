@@ -17,9 +17,9 @@
 //   - Her oturum sonrası browser kapatılır (kaynak sızıntısı önlemi)
 //
 // Hata Kodları:
-//   ERR-STP001-026 → Tarayıcı başlatılamadı
-//   ERR-STP001-027 → Sayfa navigasyonu başarısız
-//   ERR-STP001-028 → Sayfa içerik çıkarma hatası
+//   ERR-Sistem Takip Paneli001-026 → Tarayıcı başlatılamadı
+//   ERR-Sistem Takip Paneli001-027 → Sayfa navigasyonu başarısız
+//   ERR-Sistem Takip Paneli001-028 → Sayfa içerik çıkarma hatası
 // ============================================================
 
 import { chromium, type Browser, type Page, type BrowserContext } from 'playwright';
@@ -49,7 +49,7 @@ const BROWSER_CONFIG = {
   /** Maksimum içerik uzunluğu (karakter) */
   maxContentLength: 50_000,
   /** User-Agent */
-  userAgent: 'STP-BrowserService/1.0 (Playwright; Headless Chromium)',
+  userAgent: 'Sistem Takip Paneli-BrowserService/1.0 (Playwright; Headless Chromium)',
   /** Viewport boyutu */
   viewport: { width: 1280, height: 720 },
 } as const;

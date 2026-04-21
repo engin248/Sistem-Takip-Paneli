@@ -7,9 +7,9 @@
 //   2. OPENAI (Dış AI): Fallback — Ollama yoksa devreye girer
 //   3. LOKAL (Kural tabanlı): Her koşulda çalışır
 // Hata Kodları:
-//   ERR-STP001-014 → AI analiz başarısız
-//   ERR-STP001-015 → OpenAI API bağlantı hatası
-//   ERR-STP001-040 → Ollama bağlantı hatası
+//   ERR-Sistem Takip Paneli001-014 → AI analiz başarısız
+//   ERR-Sistem Takip Paneli001-015 → OpenAI API bağlantı hatası
+//   ERR-Sistem Takip Paneli001-040 → Ollama bağlantı hatası
 // ============================================================
 
 

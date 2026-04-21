@@ -130,6 +130,6 @@ export const useTaskStore = create<TaskState>()(
       getTasksByStatus: (status) => get().tasks.filter((t) => t.status === status),
       getTasksByPriority: (priority) => get().tasks.filter((t) => t.priority === priority),
     })),
-    { name: 'STP-TaskStore', enabled: process.env.NODE_ENV !== 'production' }
+    { name: 'Sistem Takip Paneli-TaskStore', enabled: process.env.NODE_ENV !== 'production' }
   )
 );

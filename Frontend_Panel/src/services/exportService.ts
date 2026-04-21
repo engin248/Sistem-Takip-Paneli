@@ -7,7 +7,7 @@ import { ERR, processError } from '@/lib/errorCore';
 // ============================================================
 // Formatlar: JSON, CSV
 // Audit log entegrasyonu zorunlu.
-// Hata Kodu: ERR-STP001-012
+// Hata Kodu: ERR-Sistem Takip Paneli001-012
 // ============================================================
 
 type ExportFormat = 'json' | 'csv';
@@ -47,7 +47,7 @@ export async function exportSystemData(
       extension = 'json';
     }
 
-    const fileName = `STP_ARSIV_${timestamp}.${extension}`;
+    const fileName = `Sistem Takip Paneli_ARSIV_${timestamp}.${extension}`;
     const blob = new Blob([dataStr], { type: mimeType });
     const url = URL.createObjectURL(blob);
 

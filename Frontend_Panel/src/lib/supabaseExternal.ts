@@ -1,12 +1,12 @@
 // ============================================================
 // DIŞ SİSTEM SUPABASE CLIENT — KÖPRÜ BAĞLANTISI
 // ============================================================
-// STP'nin kendi DB'sinden (tesxmqhk...) AYRI bir ikinci
+// Sistem Takip Paneli'nin kendi DB'sinden (tesxmqhk...) AYRI bir ikinci
 // Supabase client'ı. Dış sistemin DB'sine bağlanır.
 //
 // Kullanım: bridgeService.ts tarafından çağrılır.
 // Güvenlik: SADECE READ işlemleri için tasarlanmıştır.
-// Hata Kodu: ERR-STP001-030 (dış bağlantı)
+// Hata Kodu: ERR-Sistem Takip Paneli001-030 (dış bağlantı)
 // ============================================================
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";

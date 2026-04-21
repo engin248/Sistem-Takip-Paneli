@@ -8,7 +8,7 @@ import { toast } from "sonner";
 // ALARM PANEL — Alarm Merkezi Arayüzü
 // ============================================================
 // ÜST: /api/alarms endpoint'i (GET + PATCH)
-// ALT: alarmService.ts → stp_alarms tablosu (Supabase persist) + in-memory cache
+// ALT: alarmService.ts → Sistem Takip Paneli_alarms tablosu (Supabase persist) + in-memory cache
 // ÖN: Açık alarm listesi + istatistik kartları + ÇÖZÜLDÜ butonu
 // ============================================================
 

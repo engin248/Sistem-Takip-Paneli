@@ -16,7 +16,7 @@
 // ÖN: Vercel deploy uyumlu
 // ARKA: Browserless.io SaaS — ücretli (ücretsiz 6 saat/ay)
 //
-// Hata Kodu: ERR-STP001-001 (genel)
+// Hata Kodu: ERR-Sistem Takip Paneli001-001 (genel)
 // ============================================================
 
 import { ERR, processError } from '@/lib/errorCore';

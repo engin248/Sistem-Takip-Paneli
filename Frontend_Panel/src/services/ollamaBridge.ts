@@ -14,7 +14,7 @@
 //   → aiProvider.ts       → aiComplete()            (genel metin üretimi)
 //
 // Hata Kodları:
-//   ERR-STP001-040 → Ollama bağlantı hatası
+//   ERR-Sistem Takip Paneli001-040 → Ollama bağlantı hatası
 // ============================================================
 
 import {
@@ -126,9 +126,9 @@ export function generateCostReport(
   ollamaRequests: number,
   openaiRequests: number
 ): CostReport {
-  const openaiCostPerRequest = 0.002;
-  const actualCost = openaiRequests * openaiCostPerRequest;
-  const wouldHaveCost = (ollamaRequests + openaiRequests) * openaiCostPerRequest;
+  const openaiCoSistem Takip PanelierRequest = 0.002;
+  const actualCost = openaiRequests * openaiCoSistem Takip PanelierRequest;
+  const wouldHaveCost = (ollamaRequests + openaiRequests) * openaiCoSistem Takip PanelierRequest;
   const savings = wouldHaveCost - actualCost;
 
   const activeProvider =

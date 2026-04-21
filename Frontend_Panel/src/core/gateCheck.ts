@@ -4,7 +4,7 @@
 // humanGate.ts'deki G1/G2/G6/G7 ile ÇAKIŞMA ÖNLENDİ.
 
 import { supabase } from '@/lib/supabase';
-import type { STPAnalysis, CriteriaResult, ProofResult } from './types';
+import type { Sistem Takip PaneliAnalysis, CriteriaResult, ProofResult } from './types';
 import type { RedTeamResult } from './redTeam';
 import type { ConsensusResult } from './consensus';
 import type { FormalSpec } from './formalSpec';
@@ -26,7 +26,7 @@ export interface GateCheckResult {
 
 export async function runGateCheck(
     commandId:    string,
-    analysis:     STPAnalysis,
+    analysis:     Sistem Takip PaneliAnalysis,
     criteria:     CriteriaResult,
     proof:        ProofResult,
     redTeam:      RedTeamResult,

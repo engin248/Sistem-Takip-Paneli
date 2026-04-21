@@ -19,8 +19,8 @@
 //   [YOL 3] Bilgi Getirme — Dış kaynaklardan bilgi al
 //
 // Hata Kodları:
-//   ERR-STP001-048 → Klonlama hatası
-//   ERR-STP001-049 → Kapasite boşluğu giderme başarısız
+//   ERR-Sistem Takip Paneli001-048 → Klonlama hatası
+//   ERR-Sistem Takip Paneli001-049 → Kapasite boşluğu giderme başarısız
 // ============================================================
 
 import { agentRegistry, type AgentCard, type AgentTier, type AgentStatus } from './agentRegistry';

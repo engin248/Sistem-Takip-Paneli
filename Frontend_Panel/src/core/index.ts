@@ -4,15 +4,15 @@
 // Tipler
 export type {
     Channel, SystemMode, CommandStatus, CommandContext,
-    L0Result, STPAnalysis, CriteriaResult, ProofResult,
+    L0Result, Sistem Takip PaneliAnalysis, CriteriaResult, ProofResult,
     CriteriaCategory, CriteriaPriority, CriterionRule,
 } from './types';
-export { CommandContextSchema, STPAnalysisSchema } from './types';
+export { CommandContextSchema, Sistem Takip PaneliAnalysisSchema } from './types';
 
 // K1.2 — L0 Gatekeeper
 export { L0_GATEKEEPER } from './control_engine';
 
-// K2.1 - STP Analiz (Silindi, dis servise aktarildi)
+// K2.1 - Sistem Takip Paneli Analiz (Silindi, dis servise aktarildi)
 // K2.3 - 92 Kriter Motoru (Silindi, dis servise aktarildi)
 
 // K3 — Formal Spesifikasyon

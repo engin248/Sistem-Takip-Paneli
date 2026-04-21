@@ -1,6 +1,6 @@
 // src/core/SİSTEMReporter.ts
 // ============================================================
-// STP RAPORLAMA KATMANI — Süreç İzleme ve Bildirim
+// Sistem Takip Paneli RAPORLAMA KATMANI — Süreç İzleme ve Bildirim
 // ============================================================
 
 import { logAudit } from '@/services/auditService';
@@ -8,7 +8,7 @@ import { logAudit } from '@/services/auditService';
 export type SİSTEMStage = 'ANALIZ' | 'PLANLAMA' | 'ICRA' | 'DENETIM' | 'ONAY';
 
 /**
- * STP Süreç Raporu Gönderir.
+ * Sistem Takip Paneli Süreç Raporu Gönderir.
  * @param stage İlgili aşama
  * @param description İŞlem açıklaması
  * @param details Teknik detaylar
@@ -18,14 +18,14 @@ export async function reportSistemProcess(
   description: string,
   details: Record<string, unknown> = {}
 ): Promise<void> {
-  const SİSTEMDescription = `[STP-CONTROL] [${stage}] ${description}`;
+  const SİSTEMDescription = `[Sistem Takip Paneli-CONTROL] [${stage}] ${description}`;
   
   await logAudit({
     operation_type: 'SYSTEM',
     performed_by: 'SISTEM_TAKIP_PANELI',
     action_description: SİSTEMDescription,
     metadata: {
-      action_code: `STP_${stage}`,
+      action_code: `Sistem Takip Paneli_${stage}`,
       SİSTEM_controlled: true,
       ...details
     }
@@ -36,7 +36,7 @@ export async function reportSistemProcess(
 }
 
 /**
- * STP Kritik Uyarı Raporu.
+ * Sistem Takip Paneli Kritik Uyarı Raporu.
  */
 export async function reportSistemAnomaly(
   description: string,
@@ -45,11 +45,11 @@ export async function reportSistemAnomaly(
   await logAudit({
     operation_type: 'ERROR',
     performed_by: 'SISTEM_TAKIP_PANELI',
-    action_description: `[STP-ANOMALI] ${description}`,
+    action_description: `[Sistem Takip Paneli-ANOMALI] ${description}`,
     error_severity: severity === 'CRITICAL' ? 'CRITICAL' : 'WARNING',
     status: 'basarisiz',
     metadata: {
-      action_code: 'STP_ANOMALY',
+      action_code: 'Sistem Takip Paneli_ANOMALY',
       SİSTEM_controlled: true,
       critical: severity === 'CRITICAL'
     }

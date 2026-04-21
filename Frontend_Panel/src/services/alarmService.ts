@@ -7,7 +7,7 @@
 //   - Seviye eskalasyonu
 //   - Telegram bildirim entegrasyonu
 //
-// DEPOLAMA: stp_alarms tablosu (birincil) + in-memory Map (cache)
+// DEPOLAMA: Sistem Takip Paneli_alarms tablosu (birincil) + in-memory Map (cache)
 //   - Uygulama başlarken DB'den yüklenir
 //   - Her alarm değişikliği hem Map hem DB'ye yazılır
 //   - Supabase yoksa in-memory only olarak devam eder
@@ -56,7 +56,7 @@ export interface AlarmKaydi {
 }
 
 // ─── IN-MEMORY CACHE KATMANI ────────────────────────────────
-// stp_alarms tablosu birincil depo.
+// Sistem Takip Paneli_alarms tablosu birincil depo.
 // Map cache katmanı — DB yavaş gelirse hız sağlar.
 // ─────────────────────────────────────────────────────────────
 
@@ -79,7 +79,7 @@ async function persistAlarmToDB(alarm: AlarmKaydi): Promise<void> {
   if (!isDbConnected()) return;
 
   try {
-    await supabase.from('stp_alarms').upsert({
+    await supabase.from('Sistem Takip Paneli_alarms').upsert({
       id: alarm.id,
       baslik: alarm.baslik,
       aciklama: alarm.aciklama,
@@ -105,7 +105,7 @@ async function loadAlarmsFromDB(): Promise<void> {
 
   try {
     const { data, error } = await supabase
-      .from('stp_alarms')
+      .from('Sistem Takip Paneli_alarms')
       .select('*')
       .neq('durum', 'COZULDU')
       .order('ilk_tetiklenme', { ascending: false });

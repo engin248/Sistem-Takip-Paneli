@@ -15,7 +15,7 @@
 // ÖN: Kullanıcı onayı olmadan hiçbir kapı geçilemez
 // ARKA: İzlenebilirlik + audit tamamlanma garantisi
 //
-// Hata Kodu: ERR-STP030 ~ ERR-STP039
+// Hata Kodu: ERR-Sistem Takip Paneli030 ~ ERR-Sistem Takip Paneli039
 // ============================================================
 
 import { createHash } from 'crypto';
@@ -240,7 +240,7 @@ export async function confirmGate(
 ): Promise<{ success: boolean; checkpoint?: CheckpointRecord; error?: string }> {
     const checkpoint = await loadCheckpoint(commandId, gateId);
     if (!checkpoint) {
-        return { success: false, error: `ERR-STP030: ${gateId} için bekleyen checkpoint bulunamadı` };
+        return { success: false, error: `ERR-Sistem Takip Paneli030: ${gateId} için bekleyen checkpoint bulunamadı` };
     }
 
     const { error } = await supabase
@@ -253,7 +253,7 @@ export async function confirmGate(
         .eq('id', checkpoint.id);
 
     if (error) {
-        return { success: false, error: `ERR-STP031: Onay kaydedilemedi — ${error.message}` };
+        return { success: false, error: `ERR-Sistem Takip Paneli031: Onay kaydedilemedi — ${error.message}` };
     }
 
     // Immutable log — prev_hash zincir bütünlüğü
@@ -298,7 +298,7 @@ export async function rejectGate(
 ): Promise<{ success: boolean; error?: string }> {
     const checkpoint = await loadCheckpoint(commandId, gateId);
     if (!checkpoint) {
-        return { success: false, error: `ERR-STP032: ${gateId} için bekleyen checkpoint bulunamadı` };
+        return { success: false, error: `ERR-Sistem Takip Paneli032: ${gateId} için bekleyen checkpoint bulunamadı` };
     }
 
     await supabase

@@ -8,9 +8,9 @@
 //   3. Lokal Kurallar — Maliyet: 0₺
 //
 // Hata Kodları:
-//   ERR-STP001-040 → Ollama bağlantı hatası
-//   ERR-STP001-041 → Ollama yanıt parse hatası
-//   ERR-STP001-042 → AI Provider fallback tetiklendi
+//   ERR-Sistem Takip Paneli001-040 → Ollama bağlantı hatası
+//   ERR-Sistem Takip Paneli001-041 → Ollama yanıt parse hatası
+//   ERR-Sistem Takip Paneli001-042 → AI Provider fallback tetiklendi
 // ============================================================
 
 import { ERR, processError } from './errorCore';
@@ -389,7 +389,7 @@ export interface AIProviderStatus {
   activeProvider: AIProviderType;
   ollama: { enabled: boolean; healthy: boolean; model: string; baseUrl: string };
   openai: { enabled: boolean; hasKey: boolean; model: string };
-  costPerRequest: string;
+  coSistem Takip PanelierRequest: string;
 }
 
 export async function getProviderStatus(): Promise<AIProviderStatus> {
@@ -398,14 +398,14 @@ export async function getProviderStatus(): Promise<AIProviderStatus> {
   const hasOpenAIKey = !!(config.openaiApiKey && config.openaiApiKey !== '' && !config.openaiApiKey.includes('your-api-key'));
 
   let activeProvider: AIProviderType = 'local';
-  let costPerRequest = '0₺ (Lokal Kurallar)';
+  let coSistem Takip PanelierRequest = '0₺ (Lokal Kurallar)';
 
   if (!config.forceDisableOllama && ollamaHealthy) {
     activeProvider = 'ollama';
-    costPerRequest = '0₺ (Ollama Yerel)';
+    coSistem Takip PanelierRequest = '0₺ (Ollama Yerel)';
   } else if (!config.forceDisableOpenAI && hasOpenAIKey) {
     activeProvider = 'openai';
-    costPerRequest = '~$0.002/istek (OpenAI)';
+    coSistem Takip PanelierRequest = '~$0.002/istek (OpenAI)';
   }
 
   return {
@@ -421,7 +421,7 @@ export async function getProviderStatus(): Promise<AIProviderStatus> {
       hasKey: hasOpenAIKey,
       model: config.openaiModel,
     },
-    costPerRequest,
+    coSistem Takip PanelierRequest,
   };
 }
 

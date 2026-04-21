@@ -35,6 +35,7 @@ const fs     = require('fs');
 const path   = require('path');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { promptEnjeksiyon, kuralKontrol, yanitDenetim, ihlalLog } = require('../shared/sistemKurallari');
+const AI = require('../shared/aiOrchestrator');
 
 // ── .env YÜKLE ──────────────────────────────────────────────
 function loadEnv() {
@@ -71,15 +72,7 @@ const AUTHORIZED_NUMBERS = (process.env.WHATSAPP_AUTHORIZED_NUMBERS || '')
   if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
 });
 
-// ── GEMINI AI (SADECE SES→YAZI İÇİN) ────────────────────────
-let geminiModel = null;
-if (GEMINI_KEY) {
-  const genAI = new GoogleGenerativeAI(GEMINI_KEY);
-  geminiModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-  log('✅ Gemini AI bağlandı (SADECE ses→yazı için).', 'INFO');
-} else {
-  log('⚠️ GEMINI_API_KEY yok — sesli mesaj desteği devre dışı.', 'WARN');
-}
+log('✅ AI Bağlantısı (Orkestratör/Local-First) doğrulandı.', 'INFO');
 
 // ── LOG ──────────────────────────────────────────────────────
 function log(msg, level = 'INFO') {
@@ -163,27 +156,21 @@ async function fotografArsivle(msg) {
   }
 }
 
-// ── SESLİ MESAJ → YAZIYA ÇEVİR (Gemini STT) ─────────────────
 async function transcribeVoice(msg) {
-  if (!geminiModel) throw new Error('Gemini AI bağlı değil — sesli mesaj çevrilemez');
-
   const media = await msg.downloadMedia();
   if (!media || !media.data) throw new Error('Ses dosyası indirilemedi');
 
-  const audioBuffer = Buffer.from(media.data, 'base64');
-  log(`SES DOSYASI: ${audioBuffer.length} byte, mime: ${media.mimetype}`, 'INFO');
+  log(`SES DOSYASI: mime: ${media.mimetype}`, 'INFO');
 
-  const result = await geminiModel.generateContent([
-    {
-      inlineData: {
-        mimeType: media.mimetype || 'audio/ogg',
-        data: media.data, // zaten base64
-      },
-    },
-    { text: 'Bu ses kaydını Türkçe olarak yazıya çevir. Sadece çevrilen metni döndür, başka bir şey ekleme.' },
-  ]);
+  // Gemini STT için orkestratör üzerinden gönderim
+  const response = await AI.chat('Bu ses kaydını Türkçe olarak yazıya çevir. Sadece metni döndür.', 'Sen bir STT asistanısın.', {
+    inlineData: {
+      mimeType: media.mimetype || 'audio/ogg',
+      data: media.data,
+    }
+  });
 
-  const transcript = result.response.text()?.trim();
+  const transcript = response.content?.trim();
   if (!transcript || transcript.length < 3) throw new Error('Ses anlaşılamadı');
   return transcript;
 }

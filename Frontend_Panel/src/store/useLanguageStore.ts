@@ -18,7 +18,7 @@ export const useLanguageStore = create<LangState>()(
       })),
     }),
     {
-      name: 'stp-lang',
+      name: 'Sistem Takip Paneli-lang',
     }
   )
 );

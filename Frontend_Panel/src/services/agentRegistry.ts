@@ -12,9 +12,9 @@
 //   DESTEK — â€™ Altyapı, otomasyon, hafıza, iletişim, analitik
 //
 // Hata Kodları:
-//   ERR-STP001-045 — â€™ Ajan bulunamadı
-//   ERR-STP001-046 — â€™ Ajan kaydı başarısız
-//   ERR-STP001-047 — â€™ Ajan güncelleme hatası
+//   ERR-Sistem Takip Paneli001-045 — â€™ Ajan bulunamadı
+//   ERR-Sistem Takip Paneli001-046 — â€™ Ajan kaydı başarısız
+//   ERR-Sistem Takip Paneli001-047 — â€™ Ajan güncelleme hatası
 // ============================================================
 
 import { ERR, processError } from '@/lib/errorCore';
@@ -639,7 +639,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
   },
 
   // ===========================================================================
-  // SİSTEM TAKİP PANELİ / STP ÖZEL EKİBİ (8) — 4 İŞlem & Denetim Grubu
+  // SİSTEM TAKİP PANELİ / Sistem Takip Paneli ÖZEL EKİBİ (8) — 4 İŞlem & Denetim Grubu
   // ===========================================================================
   {
     id: 'ANTI-01', kod_adi: 'ANTI-A1',

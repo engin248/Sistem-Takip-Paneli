@@ -10,7 +10,7 @@ import { Toaster } from "sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "STP-OPERASYON MERKEZİ",
+  title: "Sistem Takip Paneli-OPERASYON MERKEZİ",
   description: "Sistem Takip Paneli — Görev Yönetimi ve Denetim Merkezi",
 };
 

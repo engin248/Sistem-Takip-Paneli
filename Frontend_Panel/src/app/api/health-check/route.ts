@@ -1,7 +1,7 @@
 // ============================================================
 // HEALTH CHECK API — SİSTEM SAĞLIK KONTROLÜ
 // ============================================================
-// İç (STP) ve dış sistemlerin sağlık durumunu
+// İç (Sistem Takip Paneli) ve dış sistemlerin sağlık durumunu
 // tek endpoint'ten döndürür.
 //
 // GET /api/health-check → Tam sağlık raporu
@@ -44,20 +44,20 @@ export async function GET() {
   try {
     const systems: SystemHealth[] = [];
 
-    // ── 1. STP INTERNAL DB ────────────────────────────────
-    const stpConnection = validateSupabaseConnection();
+    // ── 1. Sistem Takip Paneli INTERNAL DB ────────────────────────────────
+    const Sistem Takip PaneliConnection = validateSupabaseConnection();
     systems.push({
-      name: 'STP Veritabanı (tesxmqhk...)',
-      status: stpConnection.isValid ? 'healthy' : 'down',
+      name: 'Sistem Takip Paneli Veritabanı (tesxmqhk...)',
+      status: Sistem Takip PaneliConnection.isValid ? 'healthy' : 'down',
       latencyMs: Date.now() - startTime,
       details: {
-        missing_vars: stpConnection.missingVars,
+        missing_vars: Sistem Takip PaneliConnection.missingVars,
       },
     });
 
     // ── 2. DIŞ SİSTEM (KÖPRÜ) ─────────────────────────────
     // NOT: EXTERNAL_SUPABASE_URL tanımlı değilse dış kontrol atlanır.
-    // STP bağımsız çalışır — dış bağımlılık olmadan healthy döner.
+    // Sistem Takip Paneli bağımsız çalışır — dış bağımlılık olmadan healthy döner.
     const externalSiteUrl = process.env.EXTERNAL_SITE_URL
                          ?? process.env.EXTERNAL_SUPABASE_URL
                          ?? 'not-configured';
@@ -122,9 +122,9 @@ export async function GET() {
     }
 
     // ── GENEL DURUM HESAPLAMA ──────────────────────────────────────
-    // Kritik: Sadece STP DB. Ollama (Yerel) Vercelde her zaman ulaşılamaz olabilir, opsiyoneldir.
-    const kritikSistemler = systems.filter(s => s.name.includes('STP'));
-    const opsiyonelSistemler = systems.filter(s => !s.name.includes('STP'));
+    // Kritik: Sadece Sistem Takip Paneli DB. Ollama (Yerel) Vercelde her zaman ulaşılamaz olabilir, opsiyoneldir.
+    const kritikSistemler = systems.filter(s => s.name.includes('Sistem Takip Paneli'));
+    const opsiyonelSistemler = systems.filter(s => !s.name.includes('Sistem Takip Paneli'));
     const kritikDown = kritikSistemler.some(s => s.status === 'down');
     const opsiyonelDown = opsiyonelSistemler.some(s => s.status === 'down');
     const hasDegraded = systems.some(s => s.status === 'degraded' || s.status === 'unknown');

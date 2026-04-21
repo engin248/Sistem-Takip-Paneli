@@ -34,7 +34,7 @@ export interface L0Result {
     channel: Channel;
 }
 
-export const STPAnalysisSchema = z.object({
+export const Sistem Takip PaneliAnalysisSchema = z.object({
     reasoning: z.string(),
     methodology: z.string(),
     alternatives: z.array(z.string()),
@@ -47,7 +47,7 @@ export const STPAnalysisSchema = z.object({
     entropyClass: z.enum(['low', 'medium', 'high']),
     proofLevel: z.enum(['PROVEN', 'VALIDATED', 'BOUNDED_VERIFIED', 'GODEL_LIMIT']),
 });
-export type STPAnalysis = z.infer<typeof STPAnalysisSchema>;
+export type Sistem Takip PaneliAnalysis = z.infer<typeof Sistem Takip PaneliAnalysisSchema>;
 
 export type CriteriaCategory = 'functional' | 'logical' | 'performance' | 'security' | 'data';
 export type CriteriaPriority = 'critical' | 'high' | 'standard';
@@ -57,7 +57,7 @@ export interface CriterionRule {
     name: string;
     category: CriteriaCategory;
     priority: CriteriaPriority;
-    fn: (input: string, analysis: STPAnalysis) => boolean;
+    fn: (input: string, analysis: Sistem Takip PaneliAnalysis) => boolean;
 }
 
 export interface CriteriaResult {

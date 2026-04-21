@@ -1,7 +1,7 @@
 // ============================================================
 // BRIDGE SERVICE — DIŞ SİSTEM KÖPRÜSÜ (SİSTEM TAKİP PANELİ)
 // ============================================================
-// STP'nin dış hedef sistemleri (cauptlsn... vb) izlemesi ve 
+// Sistem Takip Paneli'nin dış hedef sistemleri (cauptlsn... vb) izlemesi ve 
 // durumunu takip etmesi için köprü servisi.
 //
 // Dış Sistem DB Tablo Yapısı:
@@ -22,7 +22,7 @@
 //   - SADECE READ (SELECT) — dış DB'ye yazma YASAK
 //   - env değişkenleri yoksa servis devre dışı kalır
 //
-// Hata Kodu: ERR-STP001-030, ERR-STP001-031
+// Hata Kodu: ERR-Sistem Takip Paneli001-030, ERR-Sistem Takip Paneli001-031
 // ============================================================
 
 import { getExternalSupabase, isExternalConfigured, getExternalConnectionInfo } from '@/lib/supabaseExternal';
@@ -385,7 +385,7 @@ export async function httpHealthCheck(url: string, timeoutMs: number = 10000): P
     const response = await fetch(url, {
       method: 'GET',
       signal: controller.signal,
-      headers: { 'User-Agent': 'STP-Bridge/1.0' },
+      headers: { 'User-Agent': 'Sistem Takip Paneli-Bridge/1.0' },
     });
 
     clearTimeout(timeoutId);

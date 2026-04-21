@@ -496,9 +496,9 @@ YETKİN: proje_planlama, timeline, önceliklendirme, kaynak_tahsis.
 ];
 
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// SİSTEM TAKİP PANELİ / STP PROFILLERI (ANTI, IVDE, CNTRL)
+// SİSTEM TAKİP PANELİ / Sistem Takip Paneli PROFILLERI (ANTI, IVDE, CNTRL)
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-const STP_PROFILLER: AjanProfil[] = [
+const Sistem Takip Paneli_PROFILLER: AjanProfil[] = [
   {
     id: 'ANTI-01',
     sistem_prompt: `Sen ANTI-A1 ajanısın. Aritmetik işlemlerde mükemmeliyetçi olmalısın.
@@ -606,7 +606,7 @@ const TUM_PROFILLER: AjanProfil[] = [
   ...L2_PROFILLER,
   ...L3_PROFILLER,
   ...DESTEK_PROFILLER,
-  ...STP_PROFILLER,
+  ...Sistem Takip Paneli_PROFILLER,
 ];
 
 /** Ajan ID'sine göre profil döndür — yoksa null */

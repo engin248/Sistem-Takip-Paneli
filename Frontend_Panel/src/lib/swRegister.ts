@@ -2,7 +2,7 @@
 // SERVICE WORKER KAYIT MODÜLÜ
 // ============================================================
 // Uygulama yüklendiğinde Service Worker'ı kaydeder.
-// Hata Kodu: ERR-STP001-001 (SYSTEM_GENERAL — SW kayıt hatası)
+// Hata Kodu: ERR-Sistem Takip Paneli001-001 (SYSTEM_GENERAL — SW kayıt hatası)
 // Doktrin: processError ile merkezi hata yönetimi
 // ============================================================
 

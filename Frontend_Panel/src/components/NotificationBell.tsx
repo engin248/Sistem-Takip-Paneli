@@ -29,7 +29,7 @@ export default function NotificationBell() {
     setPermission(getNotificationPermission());
   }, []);
 
-  const handleRequestPermission = useCallback(async () => {
+  const handleRequeSistem Takip Paneliermission = useCallback(async () => {
     const result = await requestNotificationPermission();
     setPermission(result);
   }, []);
@@ -39,7 +39,7 @@ export default function NotificationBell() {
     await sendLocalNotification(
       tr.notifTestTitle,
       tr.notifTestBody,
-      { tag: "stp-test" }
+      { tag: "Sistem Takip Paneli-test" }
     );
     setIsSending(false);
     setShowMenu(false);
@@ -123,7 +123,7 @@ export default function NotificationBell() {
               {permission === "default" && (
                 <button
                   id="notification-enable"
-                  onClick={handleRequestPermission}
+                  onClick={handleRequeSistem Takip Paneliermission}
                   className="w-full text-[10px] font-bold bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-2 rounded-lg hover:opacity-90 transition-all uppercase tracking-wider"
                 >
                   {tr.notifEnableButton}

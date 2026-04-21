@@ -1,6 +1,6 @@
 // ============================================================
-// STP-003-E1 | SUPABASE İSKELET YAPILANDIRMASI
-// İş Emri: STP-OPS-003
+// Sistem Takip Paneli-003-E1 | SUPABASE İSKELET YAPILANDIRMASI
+// İş Emri: Sistem Takip Paneli-OPS-003
 // Tarih: 2026-04-08
 // Doktrin: SIFIR İNİSİYATİF / KESİN KANIT İLKESİ
 // ============================================================

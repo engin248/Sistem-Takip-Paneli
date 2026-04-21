@@ -72,14 +72,14 @@ dirimler engellendi',
     notifEnableButton: 'BİLDİRİMLERİ AÇ',
     notifTestButton: 'TEST BİLDİRİMİ GÖNDER',
     notifSending: 'GÖNDERİLİYOR...',
-    notifTestTitle: 'STP Test Bildirimi',
+    notifTestTitle: 'Sistem Takip Paneli Test Bildirimi',
     notifTestBody: 'Bildirim sistemi başarıyla çalışıyor.',
     notifDeniedHint: 'Bildirimlere izin vermek için tarayıcı ayarlarından site izinlerini güncelleyin.',
     notifPwaHint: 'Ana ekrana ekleyerek tam uygulama deneyimi yaşayın.',
 
     // ── PWA Install ──────────────────────────────────────────
     pwaInstallTitle: 'Uygulamayı Kur',
-    pwaInstallDesc: 'STP Paneli ana ekranınıza ekleyin.',
+    pwaInstallDesc: 'Sistem Takip Paneli Paneli ana ekranınıza ekleyin.',
     pwaInstallButton: 'KUR',
     pwaLater: 'Sonra',
 
@@ -202,11 +202,11 @@ dirimler engellendi',
 
   ar: {
     // ── NavBar ────────────────────────────────────────────────
-    panelTitle: 'STP-لوحة',
+    panelTitle: 'Sistem Takip Paneli-لوحة',
     panelSubtitle: 'لوحة تتبع النظام',
 
     // ── Dashboard Başlık ─────────────────────────────────────
-    dashboardTitle: 'مركز عمليات STP',
+    dashboardTitle: 'مركز عمليات Sistem Takip Paneli',
     accessLocked: 'الوصول مقفل (فتح)',
     accessOpen: 'الوصول مفتوح (قفل)',
     systemOnline: 'النظام متصل',
@@ -252,14 +252,14 @@ dirimler engellendi',
     notifEnableButton: 'تفعيل الإشعارات',
     notifTestButton: 'إرسال إشعار تجريبي',
     notifSending: 'جاري الإرسال...',
-    notifTestTitle: 'إشعار تجريبي STP',
+    notifTestTitle: 'إشعار تجريبي Sistem Takip Paneli',
     notifTestBody: 'نظام الإشعارات يعمل بنجاح.',
     notifDeniedHint: 'لتفعيل الإشعارات، قم بتحديث إعدادات أذونات الموقع في المتصفح.',
     notifPwaHint: 'أضف إلى الشاشة الرئيسية للحصول على تجربة التطبيق الكاملة.',
 
     // ── PWA Install ──────────────────────────────────────────
     pwaInstallTitle: 'تثبيت التطبيق',
-    pwaInstallDesc: 'أضف لوحة STP إلى شاشتك الرئيسية.',
+    pwaInstallDesc: 'أضف لوحة Sistem Takip Paneli إلى شاشتك الرئيسية.',
     pwaInstallButton: 'تثبيت',
     pwaLater: 'لاحقاً',
 

@@ -24,6 +24,7 @@ import {
 import { ERR, processError } from '@/lib/errorCore';
 import { CONTROL } from '@/core/control_engine';
 import { gorevOnKontrol } from '@/core/ruleGuard';
+import { BrowserActionSchema, validateInput } from '@/lib/validation';
 
 type BrowserAction = 'navigate' | 'search' | 'screenshot' | 'extract' | 'health';
 
@@ -31,19 +32,24 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // ── L0 GATEKEEPER: CONTROL() ──────────────────────────────
-    const ctrl = CONTROL('BROWSER_API_PAYLOAD', body);
-    if (!ctrl.pass) {
+    // ── G-0 ZOD VALİDASYON (L0 + L1) ─────────────────────────
+    const validation = validateInput(BrowserActionSchema, body, {
+      kaynak: 'api/browser/route.ts',
+      islem: 'BROWSER_API_PAYLOAD',
+    });
+
+    if (!validation.success) {
       return NextResponse.json(
-        { success: false, error: `Geçersiz payload [${ctrl.reason}]`, proof: ctrl.proof },
+        { success: false, error: validation.errors?.join('; ') || 'Geçersiz payload' },
         { status: 400 }
       );
     }
 
-    const { action } = body as { action?: string };
+    const validatedData = validation.data!;
+    const { action } = validatedData;
 
     // ── SİSTEM KURALLARI: Giriş Kontrolü ───────────────────
-    const kontrol = gorevOnKontrol('BROWSER_API', 'L1', JSON.stringify(body));
+    const kontrol = gorevOnKontrol('BROWSER_API', 'L1', JSON.stringify(validatedData));
     if (!kontrol.gecti) {
       return NextResponse.json(
         { success: false, error: `Sistem Kuralları: ${kontrol.aciklama}`, kural_no: kontrol.kural_no },
@@ -51,17 +57,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!action) {
-      return NextResponse.json(
-        { success: false, error: 'action parametresi zorunludur. Geçerli: navigate, search, screenshot, extract, health' },
-        { status: 400 }
-      );
-    }
-
     switch (action as BrowserAction) {
       // ── NAVIGATE: URL'ye git, içerik çıkar ─────────────────
       case 'navigate': {
-        const { url } = body as { url?: string };
+        const { url } = validatedData as { url?: string };
         if (!url || !isValidUrl(url)) {
           return NextResponse.json(
             { success: false, error: 'Geçerli bir URL gereklidir.' },
@@ -75,7 +74,7 @@ export async function POST(request: NextRequest) {
 
       // ── SEARCH: Web araması yap ────────────────────────────
       case 'search': {
-        const { query, maxResults } = body as { query?: string; maxResults?: number };
+        const { query, maxResults } = validatedData as { query?: string; maxResults?: number };
         if (!query || typeof query !== 'string' || query.trim().length === 0) {
           return NextResponse.json(
             { success: false, error: 'Arama sorgusu (query) zorunludur.' },
@@ -89,7 +88,7 @@ export async function POST(request: NextRequest) {
 
       // ── SCREENSHOT: Ekran görüntüsü al ────────────────────
       case 'screenshot': {
-        const { url } = body as { url?: string };
+        const { url } = validatedData as { url?: string };
         if (!url || !isValidUrl(url)) {
           return NextResponse.json(
             { success: false, error: 'Geçerli bir URL gereklidir.' },
@@ -103,7 +102,7 @@ export async function POST(request: NextRequest) {
 
       // ── EXTRACT: CSS seçicilerle veri çıkar ────────────────
       case 'extract': {
-        const { url, selectors } = body as {
+        const { url, selectors } = validatedData as {
           url?: string;
           selectors?: Record<string, string>;
         };

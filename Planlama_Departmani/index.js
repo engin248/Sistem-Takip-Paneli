@@ -25,6 +25,7 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const fs   = require('fs');
 const path = require('path');
 const { promptEnjeksiyon, kuralKontrol, yanitDenetim, ihlalLog } = require('../shared/sistemKurallari');
+const AI = require('../shared/aiOrchestrator');
 
 // ── .env YÜKLE ──────────────────────────────────────────────
 function loadEnv() {
@@ -54,12 +55,6 @@ const LOG_FILE      = path.join(__dirname, 'ajanlar.log');
 // ── SUPABASE CLIENT ─────────────────────────────────────────
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ── GEMINI AI ───────────────────────────────────────────────
-let geminiModel = null;
-if (GEMINI_KEY) {
-  const genAI = new GoogleGenerativeAI(GEMINI_KEY);
-  geminiModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-}
 
 // ── LOG ─────────────────────────────────────────────────────
 function log(msg, level = 'INFO') {
@@ -78,68 +73,64 @@ const AJANLAR = {
   'L-2':  { isim: 'Denetçi',      rol: 'Kalite kontrol. Yapılan işi doğrular, hata arar.' },
 };
 
-// ── GÖREV YÖNLENDIRME ───────────────────────────────────────
-function routeTask(title) {
-  const lower = title.toLowerCase();
-  if (['veritabanı', 'sql', 'migration', 'tablo', 'supabase'].some(k => lower.includes(k))) return 'A-03';
-  if (['api', 'endpoint', 'servis', 'bağlantı'].some(k => lower.includes(k))) return 'A-05';
-  if (['kod', 'dosya', 'component', 'css', 'bug', 'hata'].some(k => lower.includes(k))) return 'A-01';
-  if (['test', 'kontrol', 'doğrula', 'denetle'].some(k => lower.includes(k))) return 'L-2';
-  return 'K-1'; // Varsayılan: stratejist
-}
-
-// ── AI ANALİZ ───────────────────────────────────────────────
-async function analyzeTask(task) {
-  if (!geminiModel) {
-    return { plan: 'Gemini bağlı değil — manuel analiz gerekli.', steps: [], risk: 'belirsiz' };
+async function routeTaskG2(task) {
+  const systemPrompt = `Sen Sistem Takip Paneli (STP) G-2 Otonom Görev Dağıtıcı'sısın. 
+  Görevi analiz et ve en uygun ajanı seç.
+  AJANLAR:
+  - A-01: İcracı-Kod (Frontend, Backend, Dosya İşlemleri)
+  - A-03: İcracı-DB (Supabase, SQL, Veritabanı Mantığı)
+  - A-05: İcracı-API (Dış bağlantılar, Entegrasyonlar)
+  - K-1: Stratejist (Genel planlama, analiz)
+  
+  Sadece AJAN_ID döndür (Örn: A-01). Başka bir şey yazma.`;
+  
+  try {
+    const response = await AI.chat(`Görev: ${task.title}\nAçıklama: ${task.description || ''}`, systemPrompt);
+    const ajanId = response.content.trim().toUpperCase();
+    if (AJANLAR[ajanId]) return ajanId;
+  } catch (e) {
+    log(`G-2 Rotalama Hatası: ${e.message}, fallback uygulanıyor.`, 'WARN');
   }
 
-  const agent = AJANLAR[routeTask(task.title)];
-  const prompt = `Sen "${agent.isim}" ajanısın. Rolün: ${agent.rol}
+  // Fallback (eski mantık)
+  const lower = task.title.toLowerCase();
+  if (['veritabanı', 'sql', 'migration', 'tablo', 'supabase'].some(k => lower.includes(k))) return 'A-03';
+  if (['api', 'endpoint', 'servis', 'bağlantı'].some(k => lower.includes(k))) return 'A-05';
+  return 'A-01';
+}
 
-${promptEnjeksiyon(routeTask(task.title))}
+async function analyzeTask(task, ajanId) {
+  const agent = AJANLAR[ajanId];
+  const systemPrompt = `Sen "${agent.isim}" ajanısın. STP L1 YAPICI (Execution Engine) olarak görevi planlamaktan sorumlusun.
+  
+  ${promptEnjeksiyon(ajanId)}
+  
+  Görevi atomik adımlara böl ve JSON formatında döndür.`;
 
-Görev: "${task.title}"
-Öncelik: ${task.priority}
-Atanan: ${task.assigned_to}
-
-Bu görevi analiz et ve şunları yap:
-1. Görevi 3-5 alt adıma böl
-2. Her adım için tahmini süre ver
-3. Risk seviyesini belirle (düşük/orta/yüksek)
-4. Önerini kısa ve net yaz (Türkçe, max 200 kelime)
-
-JSON formatında yanıt ver:
-{
-  "plan": "Genel plan özeti",
-  "steps": ["Adım 1", "Adım 2", "Adım 3"],
-  "risk": "düşük|orta|yüksek",
-  "tahmini_sure": "2 saat",
-  "ajan": "${agent.isim}"
-}`;
+  const userPrompt = `Görev: "${task.title}"\nÖncelik: ${task.priority}`;
 
   try {
-    const result = await geminiModel.generateContent(prompt);
-    const text = result.response.text();
+    const response = await AI.chat(userPrompt, systemPrompt, { temperature: 0.2 });
+    const text = response.content;
     
-    // JSON çıkarmaya çalış
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       return JSON.parse(jsonMatch[0]);
     }
     return { plan: text.substring(0, 500), steps: [], risk: 'belirsiz', ajan: agent.isim };
   } catch (err) {
-    log(`AI ANALİZ HATA: ${err.message}`, 'ERROR');
+    log(`L1 ANALİZ HATA: ${err.message}`, 'ERROR');
     return { plan: `Hata: ${err.message}`, steps: [], risk: 'yüksek', ajan: agent.isim };
   }
 }
 
 // ── GÖREV İŞLE ──────────────────────────────────────────────
 async function processTask(task) {
-  const ajanId = routeTask(task.title);
+  // G-2 Otonom Görev Atama
+  const ajanId = await routeTaskG2(task);
   const ajan = AJANLAR[ajanId];
   
-  log(`📋 Görev alındı: [${task.task_code}] "${task.title}" → ${ajan.isim} (${ajanId})`);
+  log(`📋 [G-2] Görev atandı: [${task.task_code}] → ${ajan.isim} (${ajanId})`);
 
   // SİSTEM KURALLARI: Giriş kontrolü
   const girisKontrol = kuralKontrol('GOREV_ISLEM', task.title);
@@ -158,9 +149,9 @@ async function processTask(task) {
     .update({ status: 'devam_ediyor', updated_at: new Date().toISOString() })
     .eq('id', task.id);
 
-  // 2. AI ile analiz et
-  log(`🧠 AI analiz başlıyor...`);
-  const analysis = await analyzeTask(task);
+  // 2. L1 YAPICI: Analiz ve Planlama
+  log(`🧠 [L1] Analiz başlıyor...`);
+  const analysis = await analyzeTask(task, ajanId);
   log(`✅ AI analiz tamamlandı: risk=${analysis.risk}, adım=${analysis.steps?.length || 0}`);
 
   // SİSTEM KURALLARI: AI yanıt denetimi
@@ -278,11 +269,7 @@ async function start() {
   }
   log('✅ Supabase bağlantısı doğrulandı.');
 
-  if (geminiModel) {
-    log('✅ Gemini AI bağlandı (gemini-2.0-flash).');
-  } else {
-    log('⚠️ Gemini API key yok — sadece lokal analiz yapılacak.', 'WARN');
-  }
+  log('✅ AI Bağlantısı (Orkestratör/Local-First) doğrulandı.');
 
   log(`⏱️  Görev tarama aralığı: ${POLL_INTERVAL / 1000}sn`);
   log(`🔄 Maksimum tekrar deneme: ${MAX_RETRIES}`);

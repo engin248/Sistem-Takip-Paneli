@@ -43,8 +43,8 @@ describe('i18n', () => {
 
     it('AR dilinde doğru sözlüğü döner', () => {
       const ar = t('ar');
-      expect(ar.panelTitle).toBe('STP-لوحة');
-      expect(ar.dashboardTitle).toBe('مركز عمليات STP');
+      expect(ar.panelTitle).toBe('Sistem Takip Paneli-لوحة');
+      expect(ar.dashboardTitle).toBe('مركز عمليات Sistem Takip Paneli');
     });
 
     it('kritik UI key\'leri mevcut', () => {

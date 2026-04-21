@@ -1,5 +1,5 @@
 // ============================================================
-// STP VERITABANI TİP TANIMLARI
+// Sistem Takip Paneli VERITABANI TİP TANIMLARI
 // ============================================================
 // Supabase public şemasındaki tabloların TypeScript tipleri.
 // Tüm servisler bu dosyayı referans almalıdır.

@@ -6,7 +6,7 @@
 // 2. Abonelik oluşturma / iptal etme
 // 3. Yerel bildirim gönderme (test + gerçek)
 // 4. Audit log entegrasyonu
-// Hata Kodları: ERR-STP001-001 (genel), ERR-STP001-006 (audit)
+// Hata Kodları: ERR-Sistem Takip Paneli001-001 (genel), ERR-Sistem Takip Paneli001-006 (audit)
 // ============================================================
 
 import { ERR, processError } from '@/lib/errorCore';
@@ -34,7 +34,7 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
   if (!('Notification' in window)) return 'unsupported';
 
   try {
-    const permission = await Notification.requestPermission();
+    const permission = await Notification.requeSistem Takip Paneliermission();
 
     // Audit log — izin sonucunu kaydet
     logAudit({
@@ -167,7 +167,7 @@ export async function sendLocalNotification(
       new Notification(title, {
         body,
         icon: options?.icon || '/icons/icon-192x192.png',
-        tag: options?.tag || 'stp-local',
+        tag: options?.tag || 'Sistem Takip Paneli-local',
       });
       return true;
     }
@@ -176,7 +176,7 @@ export async function sendLocalNotification(
       body,
       icon: options?.icon || '/icons/icon-192x192.png',
       badge: '/icons/icon-192x192.png',
-      tag: options?.tag || 'stp-local',
+      tag: options?.tag || 'Sistem Takip Paneli-local',
       data: { url: options?.url || '/' },
       requireInteraction: false,
     } as NotificationOptions);

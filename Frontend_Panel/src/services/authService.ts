@@ -8,7 +8,7 @@
 //   4. Oturum kontrolü (getSession)
 //   5. Kullanıcı bilgisi (getUser)
 //
-// Hata Kodu: ERR-STP001-001 (genel)
+// Hata Kodu: ERR-Sistem Takip Paneli001-001 (genel)
 // Bağımlılık: lib/supabase.ts, lib/errorCore.ts
 // ============================================================
 

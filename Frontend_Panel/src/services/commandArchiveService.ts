@@ -11,7 +11,7 @@
 //   3. G-8 motoru → getCommandStats() ile pattern analizi
 //   4. 45 gün sonra otomatik expire
 //
-// Hata Kodu: ERR-STP001-001 (genel)
+// Hata Kodu: ERR-Sistem Takip Paneli001-001 (genel)
 // ============================================================
 
 import { supabase, validateSupabaseConnection } from '@/lib/supabase';

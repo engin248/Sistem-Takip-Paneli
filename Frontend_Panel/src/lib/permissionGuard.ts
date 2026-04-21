@@ -10,9 +10,9 @@
 //   OPERATÖR          → sadece kendi görevlerine erişim
 //
 // Hata Kodları:
-//   ERR-STP001-023: Yazma yetkisi reddedildi
-//   ERR-STP001-024: Sahiplik doğrulanamadı
-//   ERR-STP001-025: Kilit ihlali tespit edildi
+//   ERR-Sistem Takip Paneli001-023: Yazma yetkisi reddedildi
+//   ERR-Sistem Takip Paneli001-024: Sahiplik doğrulanamadı
+//   ERR-Sistem Takip Paneli001-025: Kilit ihlali tespit edildi
 // ============================================================
 
 import { useOperatorStore, type Operator } from '@/store/useOperatorStore';
@@ -62,7 +62,7 @@ export function checkWritePermission(
 /**
  * Yazma operasyonu öncesi yetki kontrolü yapar.
  * İzin yoksa:
- *   1. ERR-STP001-023 hatası üretir
+ *   1. ERR-Sistem Takip Paneli001-023 hatası üretir
  *   2. Audit log'a ihlali kaydeder
  *   3. false döndürür (işlem engellenir)
  *

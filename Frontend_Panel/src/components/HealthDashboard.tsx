@@ -11,7 +11,7 @@ import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
 //
 // ÜST: /api/health-check endpoint'i
 // ALT: bridgeService + supabase validation
-// ÖN: Canlı sağlık kartları (STP DB + Dış DB + Dış Web)
+// ÖN: Canlı sağlık kartları (Sistem Takip Paneli DB + Dış DB + Dış Web)
 // ARKA: 60 saniyede bir otomatik polling
 // ============================================================
 

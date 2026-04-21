@@ -7,7 +7,7 @@ export default function Loading() {
           <div className="absolute inset-0 border-2 border-t-white rounded-full animate-spin" />
         </div>
         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em]">
-          STP YÜKLENİYOR
+          Sistem Takip Paneli YÜKLENİYOR
         </p>
       </div>
     </div>
