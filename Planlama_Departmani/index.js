@@ -163,6 +163,17 @@ async function processTask(task) {
   const analysis = await analyzeTask(task);
   log(`✅ AI analiz tamamlandı: risk=${analysis.risk}, adım=${analysis.steps?.length || 0}`);
 
+  // SİSTEM KURALLARI: AI yanıt denetimi
+  const yanitSonuc = yanitDenetim(analysis.plan || '', ajanId);
+  if (yanitSonuc.ihlal_var) {
+    const logMsg = ihlalLog('PLANLAMA_YANIT', yanitSonuc);
+    if (logMsg) log(logMsg, 'WARN');
+    if (yanitSonuc.iptal) {
+      log(`🚫 AI yanıtı kural ihlali nedeniyle reddedildi [${task.task_code}]`, 'WARN');
+      analysis.plan = '[SİSTEM KURALLARI] AI yanıtı filtrelendi: ' + yanitSonuc.ihlaller.map(i => i.aciklama).join(', ');
+    }
+  }
+
   // 3. Sonucu kaydet
   await supabase.from('tasks')
     .update({

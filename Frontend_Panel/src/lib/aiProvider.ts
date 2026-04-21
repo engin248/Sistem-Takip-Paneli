@@ -17,6 +17,8 @@ import { ERR, processError } from './errorCore';
 import { logAudit } from '@/services/auditService';
 import { cbSarici, getCBDurum } from '@/core/circuitBreaker';
 import { auditLog } from '@/core/localAudit';
+import { buildKuralPrompt } from '@/core/agentRules';
+import { yanitKontrol } from '@/core/ruleGuard';
 
 // ─── TİP TANIMLARI ──────────────────────────────────────────
 
@@ -250,6 +252,14 @@ export async function aiComplete(
 ): Promise<AICompletionResponse | null> {
   const config = { ...getDefaultConfig(), ...configOverride };
 
+  // ── SİSTEM KURALLARI: Prompt Enjeksiyonu ──────────────────
+  // Tüm AI çağrılarına kuralları otomatik olarak enjekte et
+  const kuralBlok = buildKuralPrompt('GENEL');
+  const korunanRequest: AICompletionRequest = {
+    ...request,
+    systemPrompt: `${request.systemPrompt}\n\n${kuralBlok}`,
+  };
+
   // ─── ADIM 1: OLLAMA (Circuit Breaker korumalı) ──────────────────
   if (!config.forceDisableOllama) {
     const ollamaHealthy = await checkOllamaHealth(config.ollamaBaseUrl);
@@ -258,7 +268,7 @@ export async function aiComplete(
     if (ollamaHealthy && cbDurum.state !== 'ACIK') {
       try {
         const result = await cbSarici(
-          () => ollamaCompletion(request, config),
+          () => ollamaCompletion(korunanRequest, config),
           undefined,
         );
 
@@ -278,6 +288,17 @@ export async function aiComplete(
             cost: 0,
           },
         }).catch(() => {});
+
+        // ── SİSTEM KURALLARI: Yanıt Denetimi ────────────────
+        const denetimSonuc = yanitKontrol('AI_PROVIDER', 'L1', result.content);
+        if (!denetimSonuc.gecti) {
+          auditLog('AI_PROVIDER', 'SISTEM_KURALLARI_IHLAL', {
+            provider: 'ollama', kural_no: denetimSonuc.kural_no,
+            aciklama: denetimSonuc.aciklama,
+          });
+          // İhlal durumunda içerik filtrelenir
+          result.content = `[SİSTEM KURALLARI İHLALİ] Yanıt filtrelendi: ${denetimSonuc.aciklama}`;
+        }
 
         return result;
       } catch (error) {
@@ -307,7 +328,17 @@ export async function aiComplete(
 
     if (hasKey) {
       try {
-        const result = await openaiCompletion(request, config);
+        const result = await openaiCompletion(korunanRequest, config);
+
+        // ── SİSTEM KURALLARI: Yanıt Denetimi ────────────────
+        const denetimSonucOai = yanitKontrol('AI_PROVIDER', 'L1', result.content);
+        if (!denetimSonucOai.gecti) {
+          auditLog('AI_PROVIDER', 'SISTEM_KURALLARI_IHLAL', {
+            provider: 'openai', kural_no: denetimSonucOai.kural_no,
+            aciklama: denetimSonucOai.aciklama,
+          });
+          result.content = `[SİSTEM KURALLARI İHLALİ] Yanıt filtrelendi: ${denetimSonucOai.aciklama}`;
+        }
 
         // Fallback bildirimi
         processError(ERR.AI_PROVIDER_FALLBACK, new Error('Ollama devre dışı, OpenAI kullanıldı'), {

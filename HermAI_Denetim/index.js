@@ -28,7 +28,7 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const crypto = require('crypto');
 const fs   = require('fs');
 const path = require('path');
-const { kuralKontrol, yanitDenetim, ihlalLog } = require('../shared/sistemKurallari');
+const { kuralKontrol, yanitDenetim, ihlalLog, promptEnjeksiyon } = require('../shared/sistemKurallari');
 
 // ── .env YÜKLE ──────────────────────────────────────────────
 function loadEnv() {
@@ -219,14 +219,21 @@ async function auditTask(task) {
   const failed = results.filter(r => !r.passed);
   const hash = sha256(JSON.stringify({ task_code: task.task_code, title: task.title, score, ts: Date.now() }));
 
-  // Gemini çift doğrulama
+  // Gemini çift doğrulama + SİSTEM KURALLARI enjeksiyonu
   let aiVerified = false;
   if (geminiModel && score >= PASS_THRESHOLD) {
     try {
-      const result = await geminiModel.generateContent(
-        `Görev: "${task.title}"\nÖncelik: ${task.priority}\nSkor: %${score}\n\nBu görev güvenli ve mantıklı mı? Sadece TRUE veya FALSE yaz.`
-      );
-      aiVerified = result.response.text().trim().toUpperCase().startsWith('TRUE');
+      const kuralBlok = promptEnjeksiyon('L2');
+      const prompt = `${kuralBlok}\n\nGörev: "${task.title}"\nÖncelik: ${task.priority}\nSkor: %${score}\n\nBu görev güvenli ve mantıklı mı? Sadece TRUE veya FALSE yaz.`;
+      const result = await geminiModel.generateContent(prompt);
+      const aiYanit = result.response.text();
+      aiVerified = aiYanit.trim().toUpperCase().startsWith('TRUE');
+      // SİSTEM KURALLARI: Yanıt denetimi
+      const denetimSonuc = yanitDenetim(aiYanit, 'L2');
+      if (denetimSonuc.ihlal_var) {
+        const logMsg = ihlalLog('HERMAI_YANIT', denetimSonuc);
+        if (logMsg) log(logMsg, 'WARN');
+      }
     } catch (e) {
       log(`AI doğrulama hatası: ${e.message}`, 'WARN');
       aiVerified = true; // AI hata → kural motoruna güven

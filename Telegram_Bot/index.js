@@ -89,11 +89,14 @@ function generateTaskCode() {
 
 // ── OLLAMA AI ÇAĞRISI ───────────────────────────────────────
 function ollamaChat(system, user) {
+  // SİSTEM KURALLARI: Prompt enjeksiyonu
+  const kuralBlok = promptEnjeksiyon('TELEGRAM');
+  const korunanSystem = `${system}\n\n${kuralBlok}`;
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({
       model: OLLAMA_MODEL,
       messages: [
-        { role: 'system', content: system },
+        { role: 'system', content: korunanSystem },
         { role: 'user',   content: user },
       ],
       stream: false,
@@ -107,7 +110,18 @@ function ollamaChat(system, user) {
       let data = '';
       res.on('data', c => data += c);
       res.on('end', () => {
-        try { resolve(JSON.parse(data).message?.content || 'Yanıt alınamadı.'); }
+        try {
+          const yanit = JSON.parse(data).message?.content || 'Yanıt alınamadı.';
+          // SİSTEM KURALLARI: Yanıt denetimi
+          const denetim = yanitDenetim(yanit, 'L1');
+          if (!denetim.gecti) {
+            const logMsg = ihlalLog('TELEGRAM_OLLAMA', denetim);
+            if (logMsg) log(logMsg, 'WARN');
+            resolve('[SİSTEM KURALLARI] Yanıt kural ihlali nedeniyle filtrelendi.');
+          } else {
+            resolve(yanit);
+          }
+        }
         catch { reject(new Error('parse hatası')); }
       });
     });

@@ -11,6 +11,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { CreateTaskSchema, UpdateTaskSchema, validateInput } from '@/lib/validation';
 import { ERR, processError } from '@/lib/errorCore';
+import { gorevOnKontrol } from '@/core/ruleGuard';
 
 async function verifyApiAuth(request: NextRequest): Promise<{ user: any; error?: string }> {
   try {
@@ -39,6 +40,17 @@ export async function handleTaskCreate(request: NextRequest) {
     if (!payload || valError) return NextResponse.json({ success: false, error: 'Validation Error', details: valError }, { status: 400 });
 
     const task_code = 'TSK-' + Math.floor(Math.random() * 9000 + 1000);
+
+    // ── SİSTEM KURALLARI: Giriş Kontrolü ─────────────────────
+    const kuralKontrol = gorevOnKontrol('API_CREATE', 'L1', payload.title);
+    if (!kuralKontrol.gecti) {
+      return NextResponse.json({
+        success: false,
+        error: 'Sistem Kuralları İhlali',
+        kural_no: kuralKontrol.kural_no,
+        aciklama: kuralKontrol.aciklama,
+      }, { status: 403 });
+    }
 
     const { data: newTask, error: dbError } = await supabase.from('tasks').insert([{
       task_code,
@@ -73,6 +85,19 @@ export async function handleTaskUpdate(request: NextRequest) {
     const body = await request.json();
     const { data: payload, errors: valError } = validateInput(UpdateTaskSchema, body, { kaynak: 'taskMutationHandler', islem: 'PUT_TASK' });
     if (!payload || valError) return NextResponse.json({ success: false, error: 'Validation Error' }, { status: 400 });
+
+    // ── SİSTEM KURALLARI: Güncelleme Kontrolü ────────────────
+    if ((payload as any).title) {
+      const kuralKontrol = gorevOnKontrol('API_UPDATE', 'L1', (payload as any).title);
+      if (!kuralKontrol.gecti) {
+        return NextResponse.json({
+          success: false,
+          error: 'Sistem Kuralları İhlali',
+          kural_no: kuralKontrol.kural_no,
+          aciklama: kuralKontrol.aciklama,
+        }, { status: 403 });
+      }
+    }
 
     const { data: updatedTask, error: dbError } = await supabase.from('tasks').update({
       ...payload,
