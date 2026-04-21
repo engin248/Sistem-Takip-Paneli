@@ -101,19 +101,25 @@ export async function GET() {
     }
 
     // ── 3. OLLAMA AI ───────────────────────────────────────────────
-    const ollamaHealthy = await checkOllamaHealth();
-    const cbDurum = getCBDurum();
-    systems.push({
-      name: 'Ollama AI (Yerel)',
-      status: ollamaHealthy ? 'healthy' : 'down',
-      latencyMs: Date.now() - startTime,
-      details: {
-        url  : process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
-        model: process.env.OLLAMA_MODEL    || 'llama3:latest',
-        circuit_breaker: cbDurum.state,
-        toplam_trip    : cbDurum.toplam_trip,
-      },
-    });
+    // Ollama SADECE lokal ortamda çalışır.
+    // Vercel/Production'da Ollama yoktur — kontrol edilmez.
+    // Planlama Departmanı kendi lokalinde Ollama kullanır, Frontend'in bilmesine gerek yok.
+    const isProduction = process.env.NODE_ENV === 'production' || !!process.env.VERCEL;
+    if (!isProduction) {
+      const ollamaHealthy = await checkOllamaHealth();
+      const cbDurum = getCBDurum();
+      systems.push({
+        name: 'Ollama AI (Yerel)',
+        status: ollamaHealthy ? 'healthy' : 'down',
+        latencyMs: Date.now() - startTime,
+        details: {
+          url  : process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
+          model: process.env.OLLAMA_MODEL    || 'llama3:latest',
+          circuit_breaker: cbDurum.state,
+          toplam_trip    : cbDurum.toplam_trip,
+        },
+      });
+    }
 
     // ── GENEL DURUM HESAPLAMA ──────────────────────────────────────
     // Kritik: Sadece STP DB. Ollama (Yerel) Vercelde her zaman ulaşılamaz olabilir, opsiyoneldir.
