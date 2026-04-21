@@ -265,16 +265,30 @@ client.on('message_create', async msg => {
       return;
     }
 
+    // ── KELİME KİLİDİ (TRİGGER KONTROLÜ) ───────────
+    // Botun sadece bu kelimelerle başlayan mesajlara yanıt vermesi için:
+    const TRIGGER_WORDS = ['nizam', 'sistem', 'görev', 'gorev', 'talimat'];
+    
+    function hasTrigger(text) {
+      if (!text) return false;
+      const firstWord = text.trim().toLowerCase().split(/[\s,.:;!?_]+/)[0];
+      return TRIGGER_WORDS.includes(firstWord);
+    }
+
     // ═══════════════════════════════════════════════════════════
     // 2. SESLİ MESAJ → Gemini STT → Onay Bekle
     // ═══════════════════════════════════════════════════════════
     if (type === 'ptt' || type === 'audio') {
-      await msg.reply('🎤 *Sesli mesaj alındı.* Yazıya çevriliyor...');
-
       try {
         const transcript = await transcribeVoice(msg);
+        
+        // Sesli mesajın başında tetikleyici kelime var mı?
+        if (!hasTrigger(transcript)) {
+          log(`SES YOKSAYILDI (Tetikleyici Yok): "${transcript.substring(0, 50)}"...`, 'INFO');
+          return; // Kişisel ses kaydı, bot sessizce yok sayar
+        }
 
-        // Sistem kuralları ön kontrol
+        // Tetikleyici varsa onaya sun
         const girisKontrol = kuralKontrol('WHATSAPP_SESLI_GOREV', transcript);
         if (!girisKontrol.gecti) {
           const logMsg = ihlalLog('WHATSAPP_BOT_VOICE', girisKontrol);
@@ -385,6 +399,12 @@ client.on('message_create', async msg => {
     if (metin.startsWith('/')) return; // bilinmeyen komutları atla
 
     // ── SERBEST METİN → GÖREV OLUŞTUR (/api/tasks üzerinden) ──
+    if (!hasTrigger(metin)) {
+      log(`METİN YOKSAYILDI (Tetikleyici Yok): "${metin.slice(0, 50)}"...`, 'INFO');
+      return; // Kişisel not, bot sessizce yok sayar
+    }
+
+    // Tetikleyici varsa işlem yap:
     // Sistem kuralları ön kontrol (WhatsApp tarafında hızlı filtre)
     const girisKontrol = kuralKontrol('WHATSAPP_GOREV', metin);
     if (!girisKontrol.gecti) {
