@@ -126,11 +126,11 @@ function HQScreen({
           <span className={`text-[22px] drop-shadow-[0_0_5px_currentColor] ${c.text}`}>{screen.icon}</span>
           <div>
             <div className="flex items-center gap-2 mb-0.5">
-              <span className={`text-[11px] font-black tracking-[0.2em] uppercase drop-shadow-[0_0_5px_currentColor] ${c.text}`}>
+              <span className={`text-[15px] font-black tracking-[0.15em] uppercase drop-shadow-[0_0_5px_currentColor] ${c.text}`}>
                 {screen.label}
               </span>
             </div>
-            <span className="text-[9px] font-mono text-slate-400 tracking-wider font-bold">{screen.id}</span>
+            <span className="text-[11px] font-mono text-slate-400 tracking-wider font-bold">{screen.id}</span>
           </div>
         </div>
         <div className="flex items-center gap-3">

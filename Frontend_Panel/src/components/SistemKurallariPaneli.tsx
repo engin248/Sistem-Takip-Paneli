@@ -119,9 +119,9 @@ export default function SİSTEM_KURALLARIPaneli() {
             { l: 'DUR',    v: data.dur,           c: '#f59e0b' },
             { l: 'UYARI',  v: data.uyari,         c: '#3b82f6' },
           ].map(s => (
-            <div key={s.l} style={{ borderRadius: 8, border: '1px solid rgba(100,116,139,0.2)', background: 'rgba(15,23,42,0.5)', padding: '6px 14px', textAlign: 'center', minWidth: 56 }}>
-              <div style={{ fontSize: 20, fontWeight: 900, fontFamily: 'monospace', color: s.c }}>{s.v}</div>
-              <div style={{ fontSize: 10, color: '#64748b', letterSpacing: '0.1em' }}>{s.l}</div>
+            <div key={s.l} style={{ borderRadius: 8, border: `1px solid ${s.c}44`, background: `${s.c}15`, padding: '8px 16px', textAlign: 'center', minWidth: 60 }}>
+              <div style={{ fontSize: 22, fontWeight: 900, fontFamily: 'monospace', color: s.c, textShadow: `0 0 8px ${s.c}60` }}>{s.v}</div>
+              <div style={{ fontSize: 11, color: '#94a3b8', letterSpacing: '0.12em', fontWeight: 700 }}>{s.l}</div>
             </div>
           ))}
         </div>
