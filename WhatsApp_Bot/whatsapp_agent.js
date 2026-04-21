@@ -57,7 +57,7 @@ loadEnv();
 // ── YAPILANDIRMA ─────────────────────────────────────────────
 const GEMINI_KEY       = process.env.GEMINI_API_KEY || '';
 const STP_API_BASE     = process.env.STP_API_URL || 'https://sistem-takip-paneli.vercel.app';
-const STP_SERVICE_TOKEN = process.env.STP_SERVICE_TOKEN || '';
+const STP_SERVICE_TOKEN = process.env.STP_API_KEY || process.env.STP_SERVICE_TOKEN || '';
 const BASE_DIR         = path.join(__dirname, 'arsiv');
 const FOTO_DIR         = path.join(BASE_DIR, 'fotograflar');
 const LOG_FILE         = path.join(__dirname, 'whatsapp_agent.log');
