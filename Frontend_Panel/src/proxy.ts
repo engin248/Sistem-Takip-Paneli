@@ -136,6 +136,7 @@ export async function proxy(request: NextRequest) {
               success: false,
               error: 'Sistem Kuralları İhlali',
               kural_no: kontrolSonuc.kural_no,
+              kural: kontrolSonuc.kural,
               aciklama: kontrolSonuc.aciklama,
               endpoint: pathname,
             },
@@ -178,18 +179,18 @@ const SK_SQL       = /('|--|union\s+select|or\s+1\s*=\s*1)/i;
 const SK_XSS       = /<script|onerror|javascript:/i;
 const SK_PROMPT    = /ignore.*previous|forget.*instructions|system.*prompt/i;
 
-function sistemKurallariKontrol(metin: string): { gecti: boolean; aciklama: string; kural_no: string } {
+function sistemKurallariKontrol(metin: string): { gecti: boolean; aciklama: string; kural_no: string; kural: string } {
   const lower = metin.toLowerCase();
 
   for (const k of SK_TEHLIKELI) {
-    if (lower.includes(k)) return { gecti: false, aciklama: `Tehlikeli komut: ${k}`, kural_no: 'C-004' };
+    if (lower.includes(k)) return { gecti: false, aciklama: `Tehlikeli komut tespit edildi: ${k}`, kural_no: 'K-001', kural: 'ZARAR VERME — Yıkıcı işlem yapma. Önce zarar verme.' };
   }
   for (const d of SK_KORUNAN) {
-    if (lower.includes(d)) return { gecti: false, aciklama: `Korunan dosya: ${d}`, kural_no: 'G-001' };
+    if (lower.includes(d)) return { gecti: false, aciklama: `Korunan dosya hedeflendi: ${d}`, kural_no: 'K-002', kural: 'TEMELİ KORU — Kritik altyapıya izinsiz dokunma.' };
   }
-  if (SK_SQL.test(metin))    return { gecti: false, aciklama: 'SQL injection girişimi', kural_no: 'G-001' };
-  if (SK_XSS.test(metin))    return { gecti: false, aciklama: 'XSS girişimi', kural_no: 'G-001' };
-  if (SK_PROMPT.test(metin))  return { gecti: false, aciklama: 'Prompt injection girişimi', kural_no: 'G-002' };
+  if (SK_SQL.test(metin))    return { gecti: false, aciklama: 'SQL injection girişimi tespit edildi', kural_no: 'K-003', kural: 'SALDIRIYI ENGELLE — Zararlı girdiyi filtrele.' };
+  if (SK_XSS.test(metin))    return { gecti: false, aciklama: 'XSS girişimi tespit edildi', kural_no: 'K-003', kural: 'SALDIRIYI ENGELLE — Zararlı girdiyi filtrele.' };
+  if (SK_PROMPT.test(metin))  return { gecti: false, aciklama: 'Prompt injection girişimi tespit edildi', kural_no: 'K-003', kural: 'SALDIRIYI ENGELLE — Zararlı girdiyi filtrele.' };
 
-  return { gecti: true, aciklama: '', kural_no: '' };
+  return { gecti: true, aciklama: '', kural_no: '', kural: '' };
 }
