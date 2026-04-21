@@ -2,6 +2,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createPlan, getPlans } from '@/services/planningService';
 import { pushToRedLine } from '@/services/hatBridge';
+import { gorevOnKontrol } from '@/core/ruleGuard';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,6 +19,17 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     if (!body?.title) return NextResponse.json({ success: false, message: 'title required' }, { status: 400 });
+
+    // ── SİSTEM KURALLARI: Giriş Kontrolü ───────────────────────
+    const kontrol = gorevOnKontrol('PLANNING_API', 'L1', String(body.title));
+    if (!kontrol.gecti) {
+      return NextResponse.json({
+        success: false,
+        message: `Sistem Kuralları İhlali: ${kontrol.aciklama}`,
+        kural_no: kontrol.kural_no,
+      }, { status: 403 });
+    }
+
     const plan = createPlan({ title: String(body.title), description: body.description, assignee: body.assignee, start_at: body.start_at, due_at: body.due_at });
 
     // RED_LINE_TASKS'a fırlat — manager.lpush('RED_LINE_TASKS', payload)

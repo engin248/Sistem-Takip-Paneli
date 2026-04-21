@@ -8,6 +8,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { toolCalistir, ARAC_SEMA, type ToolAdi } from '@/core/toolRunner';
 import { logAudit } from '@/services/auditService';
+import { aracKontrol } from '@/core/ruleGuard';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,6 +42,18 @@ export async function POST(request: NextRequest) {
       message : `Geçersiz araç: "${body.arac}"`,
       gecerli : GECERLI_ARACLAR,
     }, { status: 400 });
+  }
+
+  // ── SİSTEM KURALLARI: Araç Kontrol ───────────────────────────
+  const agentId = body.agent_id || 'API_TOOLS';
+  const katman = 'L1'; // API üzerinden gelen araç çağrıları L1 seviyesinde
+  const kontrol = aracKontrol(agentId, katman, body.arac as string, body.params || {});
+  if (!kontrol.gecti) {
+    return NextResponse.json({
+      success: false,
+      message: `Sistem Kuralları İhlali: ${kontrol.aciklama}`,
+      kural_no: kontrol.kural_no,
+    }, { status: 403 });
   }
 
   const sonuc = await toolCalistir({

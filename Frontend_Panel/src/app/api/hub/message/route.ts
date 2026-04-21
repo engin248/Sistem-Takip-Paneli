@@ -8,6 +8,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { publishMessage } from '@/lib/eventBus';
 import { logAudit } from '@/services/auditService';
+import { gorevOnKontrol } from '@/core/ruleGuard';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,6 +16,12 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     if (!body?.text) return NextResponse.json({ success: false, message: 'text required' }, { status: 400 });
+
+    // ── SİSTEM KURALLARI: Giriş Kontrolü ───────────────────
+    const kontrol = gorevOnKontrol('HUB_MSG', 'L1', String(body.text));
+    if (!kontrol.gecti) {
+      return NextResponse.json({ success: false, message: `Sistem Kuralları: ${kontrol.aciklama}`, kural_no: kontrol.kural_no }, { status: 403 });
+    }
     
     // publishMessage() artık kendi içinde DB persist yapıyor
     const msg = publishMessage({ source: body.source, target: body.target, text: String(body.text) });

@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { executePipeline } from '@/core';
 import type { CommandContext } from '@/core';
 import crypto from 'crypto';
+import { gorevOnKontrol } from '@/core/ruleGuard';
 
 export const runtime = 'nodejs'; // Z3 WASM için gerekli (Edge DEĞİL)
 
@@ -18,6 +19,15 @@ export async function POST(req: NextRequest) {
             return NextResponse.json(
                 { error: 'ERR-API-001: input alanı zorunlu (string)' },
                 { status: 400 }
+            );
+        }
+
+        // ── SİSTEM KURALLARI: Giriş Kontrolü ───────────────────
+        const kontrol = gorevOnKontrol('PIPELINE', 'L1', input);
+        if (!kontrol.gecti) {
+            return NextResponse.json(
+                { error: `Sistem Kuralları İhlali: ${kontrol.aciklama}`, kural_no: kontrol.kural_no },
+                { status: 403 }
             );
         }
 
