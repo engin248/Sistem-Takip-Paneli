@@ -216,6 +216,7 @@ function disiplinEnjekte(ajan) {
     ...ajan,
     disiplin: DAVRANIS_KURALLARI.disiplin,
     kimlik: DAVRANIS_KURALLARI.kimlik,
+    icra: DAVRANIS_KURALLARI.icra,
     davranis: DAVRANIS_KURALLARI.davranis,
     mantik: DAVRANIS_KURALLARI.mantik,
     yasak: DAVRANIS_KURALLARI.yasak,

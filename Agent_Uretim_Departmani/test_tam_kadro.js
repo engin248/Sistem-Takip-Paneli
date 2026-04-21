@@ -59,7 +59,7 @@ log('');
 
 // ─── TEST 3: HER AJANIN ZORUNLU ALAN KONTROLÜ ─────────────────
 log('═══ TEST 3: ZORUNLU ALAN KONTROLÜ (TEK TEK) ═══');
-const zorunluAlanlar = ['id', 'kod_adi', 'takim_kodu', 'uzmanlik_alani', 'beceriler'];
+const zorunluAlanlar = ['id', 'kod_adi', 'takim_kodu', 'uzmanlik_alani', 'beceriler', 'disiplin', 'kimlik', 'davranis', 'mantik', 'yasak', 'komuta', 'cikti', 'hafiza', 'dogrulama', 'hata_yonetimi'];
 let eksikAlan = 0;
 for (const ajan of TAM_KADRO) {
   for (const alan of zorunluAlanlar) {
@@ -160,16 +160,105 @@ if (eksikMotor === 0) log(`  ✅ 5 motor ajanının tamamı kadro'da mevcut`);
 log('');
 
 // ─── TEST 6: DİSİPLİN KONTROLÜ ───────────────────────────────
-log('═══ TEST 6: DİSİPLİN KONTROLÜ ═══');
-const { DISIPLIN } = require('./roster/types.js');
-if (!DISIPLIN || !DISIPLIN.SIFIR_INISIYATIF) {
-  hata('DISIPLIN sabiti bulunamadı veya SIFIR_INISIYATIF eksik');
-} else {
-  basari('DISIPLIN sabiti aktif');
-  log(`  ✅ SIFIR_INISIYATIF: ${DISIPLIN.SIFIR_INISIYATIF}`);
-  log(`  ✅ DETERMINIZM: ${DISIPLIN.DETERMINIZM}`);
-  log(`  ✅ KAPSAM_KILIDI: ${DISIPLIN.KAPSAM_KILIDI}`);
-  log(`  ✅ ${TAM_KADRO.length} ajan bu disipline tabi`);
+log('═══ TEST 6: MDS-160 DİSİPLİN KONTROLÜ (HER AJAN TEK TEK) ═══');
+const MDS_KONTROL = {
+  // I. KİMLİK VE KARAKTER
+  'kimlik.NOTR_DURUS': a => a.kimlik && a.kimlik.NOTR_DURUS === true,
+  'kimlik.SOHBET_YASAK': a => a.kimlik && a.kimlik.SOHBET_YASAK === true,
+  'kimlik.GOREV_ODAKLI': a => a.kimlik && a.kimlik.GOREV_ODAKLI === true,
+  'kimlik.PES_ETME_YOK': a => a.kimlik && a.kimlik.PES_ETME_YOK === true,
+  'kimlik.SIFIR_INISIYATIF': a => a.kimlik && a.kimlik.SIFIR_INISIYATIF === true,
+  'kimlik.VARSAYIM_YASAK': a => a.kimlik && a.kimlik.VARSAYIM_YASAK === true,
+  'kimlik.DETERMINIZM': a => a.kimlik && a.kimlik.DETERMINIZM === true,
+  'kimlik.RASTGELELIK_KAPALI': a => a.kimlik && a.kimlik.RASTGELELIK_KAPALI === true,
+  'kimlik.ONAY_PROTOKOLU': a => a.kimlik && a.kimlik.ONAY_PROTOKOLU === true,
+  // II. GİRİŞ VE KOMUTA
+  'komuta.ZORUNLU_ALANLAR': a => a.komuta && Array.isArray(a.komuta.ZORUNLU_ALANLAR),
+  'komuta.NORMALIZASYON': a => a.komuta && a.komuta.NORMALIZASYON === true,
+  'komuta.TIP_ZORLAMA': a => a.komuta && a.komuta.TIP_ZORLAMA === true,
+  'komuta.EK_VERI_REDDI': a => a.komuta && a.komuta.EK_VERI_REDDI === true,
+  'komuta.ACIK_ONAY': a => a.komuta && a.komuta.ACIK_ONAY === true,
+  // III. İCRA MOTORU
+  'icra.EXECUTION_LOCK': a => a.icra && a.icra.EXECUTION_LOCK === true,
+  'icra.ATOMIZASYON': a => a.icra && a.icra.ATOMIZASYON === true,
+  'icra.SANDBOX': a => a.icra && a.icra.SANDBOX === true,
+  'icra.ADIM_ATLAMA_YASAK': a => a.icra && a.icra.ADIM_ATLAMA_YASAK === true,
+  'icra.FAIL_SAFE': a => a.icra && a.icra.FAIL_SAFE === true,
+  // IV. HAFIZA PROTOKOLÜ
+  'hafiza.STATELESS': a => a.hafiza && a.hafiza.STATELESS === true,
+  'hafiza.DEGISMEZLIK': a => a.hafiza && a.hafiza.DEGISMEZLIK === true,
+  'hafiza.GOREVLER_ARASI_GECIS_YASAK': a => a.hafiza && a.hafiza.GOREVLER_ARASI_GECIS_YASAK === true,
+  'hafiza.OTURUM_IZOLASYONU': a => a.hafiza && a.hafiza.OTURUM_IZOLASYONU === true,
+  // V. DOĞRULAMA VE DENETİM
+  'dogrulama.CIFT_DOGRULAMA': a => a.dogrulama && a.dogrulama.CIFT_DOGRULAMA === true,
+  'dogrulama.LOGLAMA': a => a.dogrulama && a.dogrulama.LOGLAMA === true,
+  'dogrulama.IMMUTABLE_TRACE': a => a.dogrulama && a.dogrulama.IMMUTABLE_TRACE === true,
+  'dogrulama.YAPICI_DENETCI': a => a.dogrulama && a.dogrulama.YAPICI_DENETCI === true,
+  'dogrulama.AUDIT_ZORUNLU': a => a.dogrulama && a.dogrulama.AUDIT_ZORUNLU === true,
+  // VI. ÇIKTI VE TAHLİYE
+  'cikti.SERT_FORMAT': a => a.cikti && a.cikti.SERT_FORMAT === true,
+  'cikti.TOKEN_FILTRELEME': a => a.cikti && a.cikti.TOKEN_FILTRELEME === true,
+  'cikti.FINAL_GATE': a => a.cikti && a.cikti.FINAL_GATE === true,
+  'cikti.BOS_CIKTI_YASAK': a => a.cikti && a.cikti.BOS_CIKTI_YASAK === true,
+  // VII. MUTLAK YASAKLAR
+  'yasak.KURAL_USTU_YOK': a => a.yasak && a.yasak.KURAL_USTU_YOK === true,
+  'yasak.SIFIR_GUVEN': a => a.yasak && a.yasak.SIFIR_GUVEN === true,
+  'yasak.KAPALI_SISTEM': a => a.yasak && a.yasak.KAPALI_SISTEM === true,
+  'yasak.SAPMA_IMHA': a => a.yasak && a.yasak.SAPMA_IMHA === true,
+  'yasak.ANINDA_DURMA': a => a.yasak && a.yasak.ANINDA_DURMA === true,
+  'yasak.HALUSINASYON_YASAK': a => a.yasak && a.yasak.HALUSINASYON_YASAK === true,
+  // DİSİPLİN SABİTİ
+  'disiplin.SIFIR_INISIYATIF': a => a.disiplin && a.disiplin.SIFIR_INISIYATIF === true,
+  'disiplin.KAPSAM_KILIDI': a => a.disiplin && a.disiplin.KAPSAM_KILIDI === true,
+  'disiplin.DETERMINIZM': a => a.disiplin && a.disiplin.DETERMINIZM === true,
+  'disiplin.SAPMA_TOLERANSI': a => a.disiplin && a.disiplin.SAPMA_TOLERANSI === 0,
+  // MANTIK
+  'mantik.KARAR_VERME': a => a.mantik && a.mantik.KARAR_VERME === false,
+  'mantik.KURAL_UYGULAMA': a => a.mantik && a.mantik.KURAL_UYGULAMA === true,
+  'mantik.ESNEKLIK': a => a.mantik && a.mantik.ESNEKLIK === 0,
+  // DAVRANIS
+  'davranis.gorev_oncesi': a => a.davranis && a.davranis.gorev_oncesi && a.davranis.gorev_oncesi.ONAY_BEKLE === true,
+  'davranis.gorev_sirasi': a => a.davranis && a.davranis.gorev_sirasi && a.davranis.gorev_sirasi.ATLAMA_YASAK === true,
+  'davranis.gorev_sonrasi': a => a.davranis && a.davranis.gorev_sonrasi && a.davranis.gorev_sonrasi.LOG_YAZDIR === true,
+  // HATA YÖNETİMİ
+  'hata_yonetimi.HATA_KODLARI': a => a.hata_yonetimi && a.hata_yonetimi.HATA_KODLARI && a.hata_yonetimi.HATA_KODLARI.INVALID_COMMAND,
+  'hata_yonetimi.ESKALASYON_ZINCIRI': a => a.hata_yonetimi && Array.isArray(a.hata_yonetimi.ESKALASYON_ZINCIRI),
+  // MDS VERSİYON
+  '_mds_version': a => a._mds_version === '2.0',
+};
+
+const mdsKuralSayisi = Object.keys(MDS_KONTROL).length;
+let mdsBasarili = 0;
+let mdsBasarisiz = 0;
+
+for (const ajan of TAM_KADRO) {
+  for (const [kural, kontrol] of Object.entries(MDS_KONTROL)) {
+    if (!kontrol(ajan)) {
+      hata(`${ajan.id}: MDS-160 İHLAL → ${kural}`);
+      mdsBasarisiz++;
+    } else {
+      mdsBasarili++;
+    }
+  }
+}
+
+const toplamMdsKontrol = TAM_KADRO.length * mdsKuralSayisi;
+if (mdsBasarisiz === 0) {
+  basari(`MDS-160: ${mdsKuralSayisi} kural × ${TAM_KADRO.length} ajan = ${toplamMdsKontrol} kontrol TAMAM`);
+  log(`  ✅ I.  KİMLİK VE KARAKTER:     9 kural × ${TAM_KADRO.length} ajan`);
+  log(`  ✅ II. GİRİŞ VE KOMUTA:        5 kural × ${TAM_KADRO.length} ajan`);
+  log(`  ✅ III.İCRA MOTORU:             5 kural × ${TAM_KADRO.length} ajan`);
+  log(`  ✅ IV. HAFIZA PROTOKOLÜ:        4 kural × ${TAM_KADRO.length} ajan`);
+  log(`  ✅ V.  DOĞRULAMA VE DENETİM:    5 kural × ${TAM_KADRO.length} ajan`);
+  log(`  ✅ VI. ÇIKTI VE TAHLİYE:        4 kural × ${TAM_KADRO.length} ajan`);
+  log(`  ✅ VII.MUTLAK YASAKLAR:         6 kural × ${TAM_KADRO.length} ajan`);
+  log(`  ✅ DİSİPLİN SABİTİ:            4 kural × ${TAM_KADRO.length} ajan`);
+  log(`  ✅ MANTIK:                      3 kural × ${TAM_KADRO.length} ajan`);
+  log(`  ✅ DAVRANIŞ:                    3 kural × ${TAM_KADRO.length} ajan`);
+  log(`  ✅ HATA YÖNETİMİ:              2 kural × ${TAM_KADRO.length} ajan`);
+  log(`  ✅ MDS VERSİYON:               1 kural × ${TAM_KADRO.length} ajan`);
+  log(`  ══════════════════════════════════════════════`);
+  log(`  ✅ TOPLAM: ${toplamMdsKontrol} kontrol noktası BAŞARILI`);
 }
 log('');
 
