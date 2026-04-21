@@ -266,8 +266,8 @@ client.on('message_create', async msg => {
     }
 
     // ── KELİME KİLİDİ (TRİGGER KONTROLÜ) ───────────
-    // Botun sadece bu kelimelerle başlayan mesajlara yanıt vermesi için:
-    const TRIGGER_WORDS = ['nizam', 'sistem', 'görev', 'gorev', 'talimat'];
+    // Sadece "Sistem Takip Paneli" kimliğine saygılı tetikleyiciler:
+    const TRIGGER_WORDS = ['sistem', 'panel', 'takip', 'görev', 'gorev'];
     
     function hasTrigger(text) {
       if (!text) return false;
