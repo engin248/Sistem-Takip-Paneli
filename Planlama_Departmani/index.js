@@ -64,39 +64,67 @@ function log(msg, level = 'INFO') {
   fs.appendFileSync(LOG_FILE, line + '\n', 'utf-8');
 }
 
-// ── AJAN KADROSU ────────────────────────────────────────────
+// ── AJAN KADROSU (15 GÖREV MOTORU) ────────────────────────
 const AJANLAR = {
-  'K-1':  { isim: 'Stratejist',   rol: 'Görev analizi ve planlama. Görevi parçalara ayırır, öncelik belirler.' },
-  'A-01': { isim: 'İcracı-Kod',   rol: 'Kod yazma, dosya düzenleme, teknik uygulama.' },
-  'A-03': { isim: 'İcracı-DB',    rol: 'Veritabanı sorguları, migration, veri yönetimi.' },
-  'A-05': { isim: 'İcracı-API',   rol: 'API entegrasyonu, dış servis bağlantıları.' },
-  'L-2':  { isim: 'Denetçi',      rol: 'Kalite kontrol. Yapılan işi doğrular, hata arar.' },
+  // Strateji ve Analiz (K Serisi)
+  'K-1':  { isim: 'Stratejist',       rol: 'Görev analizi, projelendirme ve önceliklendirme.' },
+  'K-2':  { isim: 'Analist',          rol: 'Risk tespiti, gereksinim çıkarma ve yol haritası çizimi.' },
+
+  // İcracı Motorlar (A Serisi)
+  'A-01': { isim: 'İcracı-Frontend',  rol: 'Kullanıcı arayüzü, React/Next.js kod yazımı ve UI entegrasyonu.' },
+  'A-02': { isim: 'İcracı-Backend',   rol: 'Sunucu mantığı, API yazımı ve sistem entegrasyonları.' },
+  'A-03': { isim: 'İcracı-DB',        rol: 'Veritabanı tasarımı, Supabase RLS ve SQL sorguları.' },
+  'A-04': { isim: 'İcracı-Güvenlik',  rol: 'Token yetkilendirmesi, ihlal kapatma ve güvenlik yamaları.' },
+  'A-05': { isim: 'İcracı-Entegrasyon',rol: 'Dış API (Telegram/WhatsApp vb.) ve 3. parti servis bağlantıları.' },
+  'A-06': { isim: 'İcracı-DevOps',    rol: 'Sunucu ayarları, GitHub Actions, CI/CD ve dağıtım işlemleri.' },
+  'A-07': { isim: 'İcracı-Tasarım',   rol: 'CSS, Tailwind, estetik ve kullanıcı deneyimi geliştirmeleri.' },
+
+  // Denetim Motorları (L Serisi)
+  'L-1':  { isim: 'Hata Ayıklayıcı',  rol: 'Yazılan koddaki sözdizimi ve mantık hatalarını (Bug) tespit etme.' },
+  'L-2':  { isim: 'Sistem Denetçisi', rol: 'Sistem Kuralları (Nizam) doktrinine uygunluk kontrolü.' },
+  'L-3':  { isim: 'Güvenlik Denetçisi',rol: 'Sızma testleri, zero-day açık kontrolü ve risk denetimi.' },
+  'L-4':  { isim: 'Performans Optimizatörü', rol: 'Token maliyeti azaltma, hızlandırma ve kaynak optimizasyonu.' },
+
+  // Arşiv ve Kapanış (G Serisi)
+  'G-8':  { isim: 'Arşiv Uzmanı',     rol: 'Tamamlanan işlemlerin loglanması, dokümantasyonu ve mühürlenmesi.' }
 };
 
 async function routeTaskG2(task) {
   const systemPrompt = `Sen Sistem Takip Paneli (STP) G-2 Otonom Görev Dağıtıcı'sısın. 
-  Görevi analiz et ve en uygun ajanı seç.
-  AJANLAR:
-  - A-01: İcracı-Kod (Frontend, Backend, Dosya İşlemleri)
-  - A-03: İcracı-DB (Supabase, SQL, Veritabanı Mantığı)
-  - A-05: İcracı-API (Dış bağlantılar, Entegrasyonlar)
-  - K-1: Stratejist (Genel planlama, analiz)
+  Görevi analiz et ve işe en uygun ajanı (motoru) SEÇ. Toplam 15 uzman ajanımız var:
   
-  Sadece AJAN_ID döndür (Örn: A-01). Başka bir şey yazma.`;
+  AJANLAR LİSTESİ:
+  K-1 (Strateji), K-2 (Analiz/Risk)
+  A-01 (Frontend), A-02 (Backend), A-03 (Veritabanı), A-04 (Güvenlik), A-05 (Dış API), A-06 (DevOps), A-07 (UI/UX)
+  L-1 (Bug Tespiti), L-2 (Ana Denetçi), L-3 (Sızma/Güvenlik Açığı Türleri), L-4 (Performans Uzmanı)
+  G-8 (Arşiv ve Evrak Dokümantasyonu)
+  
+  Görev metnine en uygun olan sadece TEK BİR AJAN_ID döndür (Örn: A-01 veya L-3). 
+  JSON veya başka bir şey yazma, KESİNLİKLE sadece ID yaz.`;
   
   try {
-    const response = await AI.chat(`Görev: ${task.title}\nAçıklama: ${task.description || ''}`, systemPrompt);
-    const ajanId = response.content.trim().toUpperCase();
-    if (AJANLAR[ajanId]) return ajanId;
+    const response = await AI.chat(`Görev Başlığı: ${task.title}\nAçıklama: ${task.description || ''}`, systemPrompt);
+    const textOut = response.content.trim().toUpperCase();
+    
+    // Düzenli ifade ile sadece uygun ajan ID'sini ayıkla
+    const idMatch = textOut.match(/([KkAaLlGg]-\d{1,2})/);
+    if (idMatch) {
+        const ajanId = idMatch[1].toUpperCase();
+        if (AJANLAR[ajanId]) return ajanId;
+    }
   } catch (e) {
     log(`G-2 Rotalama Hatası: ${e.message}, fallback uygulanıyor.`, 'WARN');
   }
 
-  // Fallback (eski mantık)
+  // Fallback Zekası (Manuel yedekleme)
   const lower = task.title.toLowerCase();
-  if (['veritabanı', 'sql', 'migration', 'tablo', 'supabase'].some(k => lower.includes(k))) return 'A-03';
-  if (['api', 'endpoint', 'servis', 'bağlantı'].some(k => lower.includes(k))) return 'A-05';
-  return 'A-01';
+  if (['veritabanı', 'sql', 'migration', 'supabase'].some(k => lower.includes(k))) return 'A-03';
+  if (['api', 'webhook', 'servis'].some(k => lower.includes(k))) return 'A-05';
+  if (['arayüz', 'görsel', 'css', 'tasarım'].some(k => lower.includes(k))) return 'A-07';
+  if (['güvenlik', 'hack', 'yetki', 'token'].some(k => lower.includes(k))) return 'A-04';
+  if (['hata', 'bug', 'düzelt'].some(k => lower.includes(k))) return 'L-1';
+  if (['denetle', 'kontrol', 'test'].some(k => lower.includes(k))) return 'L-2';
+  return 'A-02'; // En genel teknik fallback: Backend
 }
 
 async function analyzeTask(task, ajanId) {

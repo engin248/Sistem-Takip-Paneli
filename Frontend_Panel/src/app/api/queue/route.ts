@@ -6,6 +6,7 @@
 import { NextResponse } from 'next/server';
 import { getJobHistory, getQueueStats } from '@/core/taskQueue';
 import { logAudit } from '@/services/auditService';
+import { alarmUret, ALARM_SEVIYE } from '@/services/alarmService';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,8 +29,16 @@ export async function GET() {
     });
 
   } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    void alarmUret({
+      modul: 'JOB_MONITOR',
+      baslik: 'Queue API Sorgu Hatası',
+      aciklama: 'Kuyruk durumu API üzerinden sorgulanırken hata oluştu: ' + errorMessage,
+      seviye: ALARM_SEVIYE.CRITICAL,
+    }).catch(() => {});
+
     return NextResponse.json(
-      { success: false, error: err instanceof Error ? err.message : String(err) },
+      { success: false, error: errorMessage },
       { status: 500 }
     );
   }

@@ -69,8 +69,14 @@ function loadFromDisk(): QueueJob[] {
         return parsed.slice(-MAX_HISTORY); // son MAX_HISTORY kadar al
       }
     }
-  } catch {
-    // Dosya okunamadı — sessiz fail, boş dizi dön
+  } catch (err) {
+    // Dosya okunamadı — alarm üret
+    void alarmUret({
+      modul: 'JOB_MONITOR',
+      baslik: 'Kuyruk Belleği Okuma Hatası',
+      aciklama: 'Kuyruk geçmişi diskten okunamadı: ' + (err instanceof Error ? err.message : String(err)),
+      seviye: ALARM_SEVIYE.CRITICAL,
+    }).catch(() => {});
   }
   return [];
 }
@@ -82,8 +88,14 @@ function persistToDisk(jobs: QueueJob[]): void {
       fs.mkdirSync(PERSIST_DIR, { recursive: true });
     }
     fs.writeFileSync(PERSIST_FILE, JSON.stringify(jobs), 'utf-8');
-  } catch {
-    // Dosya yazılamadı — sessiz fail (Vercel read-only, vb.)
+  } catch (err) {
+    // Dosya yazılamadı — alarm üret
+    void alarmUret({
+      modul: 'JOB_MONITOR',
+      baslik: 'Kuyruk Belleği Yazma Hatası',
+      aciklama: 'Kuyruk geçmişi diske yazılamadı: ' + (err instanceof Error ? err.message : String(err)),
+      seviye: ALARM_SEVIYE.CRITICAL,
+    }).catch(() => {});
   }
 }
 
