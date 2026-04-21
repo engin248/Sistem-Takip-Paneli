@@ -46,10 +46,13 @@ export async function handleTaskCreate(request: NextRequest) {
       assigned_to: payload.assigned_to || null,
       due_date: payload.due_date || null,
       status: 'beklemede', 
-      created_by: user.id
+      created_by: user.role === 'service' ? null : user.id
     }]).select().single();
 
-    if (dbError) throw dbError;
+    if (dbError) {
+      console.error("[POST TASK] Supabase dbError:", dbError);
+      throw dbError;
+    }
 
     return NextResponse.json({
       success: true,
@@ -57,6 +60,7 @@ export async function handleTaskCreate(request: NextRequest) {
       task: newTask,
     });
   } catch (error) {
+    console.error("[POST TASK] Catch error:", error);
     processError(ERR.SYSTEM_GENERAL, error, { kaynak: 'taskMutationHandler', islem: 'POST' });
     return NextResponse.json({ success: false, error: 'Error adding task' }, { status: 500 });
   }
