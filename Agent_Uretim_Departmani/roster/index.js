@@ -25,20 +25,27 @@ const { DOGRULAMA } = require('./phase_4_dogrulama');
 const { YAYINLAMA } = require('./phase_5_yayinlama');
 const { YASATMA } = require('./phase_6_yasatma');
 const { eskiKadroyuDonustur } = require('./legacy_converter');
+const { kadroyaEnjekte, DAVRANIS_KURALLARI } = require('./discipline_injector');
 
 // ── ESKİ KADRO DÖNÜŞTÜR ──────────────────────────────────────
 const ESKI_KADRO = eskiKadroyuDonustur(); // 39 ajan
 
-// ── BİRLEŞİK KADRO ──────────────────────────────────────────
-const TAM_KADRO = [
+// ── BİRLEŞİK KADRO (Önce birleştir, sonra disiplin enjekte et) ───
+const HAM_KADRO = [
   ...YAPIM_ONCESI,   // 25 ajan
   ...TASARIM,        // 30 ajan
   ...INSA,           // 30 ajan
   ...DOGRULAMA,      // 20 ajan
   ...YAYINLAMA,      // 15 ajan
   ...YASATMA,        // 40 ajan
-  ...ESKI_KADRO,     // 39 ajan (eski kadro, yeni takımlara entegre)
+  ...ESKI_KADRO,     // 63 ajan (eski kadro, yeni takımlara entegre)
 ];
+
+// ── DİSİPLİN ENJEKSİYONU ───────────────────────────────────
+// Tüm 223 ajana MDS-160 kural paketi yükleniyor:
+//   disiplin, kimlik, davranis, mantik, yasak,
+//   komuta, cikti, hafiza, dogrulama, hata_yonetimi
+const TAM_KADRO = kadroyaEnjekte(HAM_KADRO);
 
 // ── DOĞRULAMA ─────────────────────────────────────────────────
 const YENI_KADRO_SAYISI = 160;
@@ -116,6 +123,7 @@ function kadroOzet() {
 module.exports = {
   TAM_KADRO,
   DISIPLIN,
+  DAVRANIS_KURALLARI,
   ASAMALAR,
   TAKIM_KODLARI,
   tumKadro,
