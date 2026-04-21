@@ -1,7 +1,7 @@
 // ============================================================
 // ESKİ KADRO → YENİ KADRO ENTEGRATÖRÜ
 // ============================================================
-// 39 eski ajanı MilitaryAgent formatına çevirip takımlarına ekler.
+// 58 eski ajanı MilitaryAgent formatına çevirip takımlarına ekler.
 // Eski ajanlar silinmez — yeni takımın ek üyeleri olarak katılır.
 // ============================================================
 
@@ -9,7 +9,7 @@ const { ESKI_YENI_ESLESTIRME } = require('./legacy_bridge.js');
 const { DISIPLIN, RUTBELER } = require('./types.js');
 
 /**
- * 39 eski ajanı MilitaryAgent formatına çevirir.
+ * Tüm eski ajanları MilitaryAgent formatına çevirir.
  * @returns {Array} - MilitaryAgent formatında eski ajan listesi
  */
 function eskiKadroyuDonustur() {
@@ -62,8 +62,32 @@ function _beceriCikar(eskiId, bilgi) {
     'C-02': ['mimari_degerlendirme', 'teknik_borc', 'uzun_vadeli_etki'],
     'D-01': ['sha256', 'audit_zincir', 'butunluk_dogrulama', 'muhur'],
     'D-02': ['cron', 'webhook', 'event_trigger', 'batch_islem'],
+    'D-03': ['arge', 'deney', 'prototip', 'arastirma'],
+    'D-04': ['servis_kopruleme', 'baglanti', 'adaptasyon', 'ceviri'],
+    'D-05': ['canli_izleme', 'nobet', 'alarm_yonetimi', 'uptime'],
+    'D-06': ['otomatik_dokuman', 'sema_belgeleme', 'changelog'],
+    'D-07': ['baglam_hafiza', 'veri_saklama', 'session', 'cache'],
+    'D-08': ['bildirim', 'mesaj_iletimi', 'rapor_gonderme'],
     'D-09': ['veri_analiz', 'trend_tespiti', 'kpi_hesaplama', 'tahminleme'],
     'D-10': ['proje_planlama', 'timeline', 'onceliklendirme', 'kaynak_tahsis'],
+    'D-11': ['format_cevirme', 'dil_donusumu', 'lokalizasyon'],
+    'D-12': ['yedekleme', 'snapshot', 'kurtarma', 'replikasyon'],
+    'D-13': ['cache_yonetimi', 'onbellek', 'hiz_optimizasyon'],
+    'D-14': ['kaynak_optimizasyon', 'performans_iyilestirme', 'tuning'],
+    'D-15': ['kok_neden', 'sorusturma', 'iz_surme', 'analiz'],
+    'D-16': ['koordinasyon', 'is_dagitimi', 'surec_yonetimi'],
+    'D-17': ['sinyal', 'event_tetikleme', 'alarm', 'bildirim'],
+    'D-18': ['kural_motoru', 'doktrin', 'politika_uygulama'],
+    'D-19': ['rapor_uretimi', 'ozet_cikarma', 'veri_gorsellestirme'],
+    'D-20': ['kod_formatlama', 'veri_formatlama', 'standart_uygulama'],
+    'D-21': ['trigger', 'pipeline_tetikleme', 'event_yonetimi'],
+    'D-22': ['uzlastirma', 'cakisma_cozumu', 'arabuluculuk'],
+    'D-23': ['altyapi_muhendisligi', 'sistem_konfigurasyonu', 'devops'],
+    'D-24': ['kesif', 'firsat_tespiti', 'pazar_analizi'],
+    'D-25': ['soru_uretme', 'eksik_tespit', 'gereksinim_cikarma'],
+    'D-26': ['uyumluluk', 'standart_kontrol', 'regulator'],
+    'D-27': ['metrik_olcme', 'degerlendirme', 'kpi'],
+    'D-28': ['egitim', 'rehberlik', 'adaptasyon', 'onboarding'],
     'ANTI-01': ['aritmetik', 'saglama', 'dogruluk_kontrolu'],
     'ANTI-02': ['aritmetik', 'saglama', 'dogruluk_kontrolu'],
     'IVDE-01': ['codex_motor', 'hassas_hesaplama', 'deterministik'],

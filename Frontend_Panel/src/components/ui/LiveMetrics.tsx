@@ -17,21 +17,7 @@ interface Metric {
   icon    : string;
 }
 
-function GaugeBar({ val, max, color }: { val: number; max: number; color: string }) {
-  const pct = Math.min(100, Math.round((val / max) * 100));
-  return (
-    <div style={{ position:'relative', height:6, borderRadius:4, background:'#1e293b', overflow:'hidden' }}>
-      <div style={{
-        position:'absolute', left:0, top:0, bottom:0,
-        width:`${pct}%`,
-        background:`linear-gradient(90deg, ${color}80, ${color})`,
-        borderRadius:4,
-        transition:'width 0.8s ease',
-        boxShadow:`0 0 8px ${color}60`,
-      }} />
-    </div>
-  );
-}
+// Bar Göstergeleri UI'dan çıkartıldığı için fonksiyona gerek kalmadı.
 
 function RadialGauge({ val, max, color, label, unit }: {
   val: number; max: number; color: string; label: string; unit: string;
@@ -69,7 +55,7 @@ function RadialGauge({ val, max, color, label, unit }: {
 
 export default function LiveMetrics() {
   const [metrics, setMetrics] = useState<Metric[]>([
-    { label:'AKTİF AJAN',   val:0,  max:50,   unit:'/ 50',  color:'#06b6d4', icon:'◈' },
+    { label:'AKTİF AJAN',   val:0,  max:100,  unit:'/ 100', color:'#06b6d4', icon:'◈' },
     { label:'TAMAMLANAN',   val:0,  max:1000, unit:'görev', color:'#4ade80', icon:'✓' },
     { label:'HATA',         val:0,  max:100,  unit:'adet',  color:'#f87171', icon:'✕' },
     { label:'ORT YANIT',    val:0,  max:5000, unit:'ms',    color:'#a78bfa', icon:'⟳' },
@@ -99,7 +85,7 @@ export default function LiveMetrics() {
       const ortSure      = queueData.stats?.ort_sure_ms  ?? 0;
 
       setMetrics([
-        { label:'AKTİF AJAN',   val:aktif,       max:50,   unit:'/ 50',  color:'#06b6d4', icon:'◈' },
+        { label:'AKTİF AJAN',   val:aktif,       max:100,  unit:'/ 100', color:'#06b6d4', icon:'◈' },
         { label:'TAMAMLANAN',   val:toplamGorev, max:1000, unit:'görev', color:'#4ade80', icon:'✓' },
         { label:'HATA',         val:toplamHata,  max:100,  unit:'adet',  color:'#f87171', icon:'✕' },
         { label:'ORT YANIT',    val:ortSure,     max:5000, unit:'ms',    color:'#a78bfa', icon:'⟳' },
@@ -126,7 +112,7 @@ export default function LiveMetrics() {
   }, [fetchMetrics]);
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+    <div style={{ display:'flex', flexDirection:'column', gap:16, height:'100%' }}>
 
       {/* BAşLIK */}
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
@@ -163,23 +149,7 @@ export default function LiveMetrics() {
         ))}
       </div>
 
-      {/* BAR GÖSTERGELERİ */}
-      <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-        {metrics.map(m => (
-          <div key={m.label}>
-            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
-              <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-                <span style={{ color:m.color, fontSize:10 }}>{m.icon}</span>
-                <span style={{ color:'#94a3b8', fontSize:9, fontFamily:'monospace', letterSpacing:'0.1em' }}>{m.label}</span>
-              </div>
-              <span style={{ color:m.color, fontSize:10, fontFamily:'monospace', fontWeight:700 }}>
-                {Math.round(m.val)} {m.unit}
-              </span>
-            </div>
-            <GaugeBar val={m.val} max={m.max} color={m.color} />
-          </div>
-        ))}
-      </div>
+      {/* BAR GÖSTERİMLERİ İPTAL EDİLMİŞTİR (VERİ TEKRARI VE BOŞ KALABALIK ENGELLENDİ) */}
 
       {/* ── DATA_LINE RAPORLARI (Hat-3) ─────────────────────── */}
       {hatStats && (hatStats.red_line_push > 0 || hatStats.log_line_toplam > 0) && (
