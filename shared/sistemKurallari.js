@@ -1,9 +1,11 @@
 // ============================================================
-// SİSTEM KURALLARI — Merkezi Bağlayıcı Kural Motoru
+// SİSTEM KURALLARI — Merkezi Bağlayıcı Kural Motoru v2.0
 // ============================================================
 // Proje: Sistem Takip Paneli (STP)
 // Kurucu: Engin
-// Sürüm: v1.0
+// Sürüm: v2.0
+//
+// TEK İLKE: Her koşulda, her işlemde, herkes için doğru olanı yapmak.
 //
 // Bu modül tüm alt sistemlerde (Planlama, HermAI, Telegram, Frontend)
 // ortak olarak kullanılır. CommonJS formatındadır.
@@ -14,58 +16,52 @@
 
 // ── KURAL VERİTABANI ────────────────────────────────────────
 const KURALLAR = [
-  // TEMEL DİSİPLİN (10)
-  { no: 'T-001', kategori: 'EVRENSEL', ihlal: 'IPTAL', kural: 'SIFIR İNİSİYATİF', aciklama: 'Komut dışına çıkılamaz, yorum yapılamaz, tahmin edilemez.' },
-  { no: 'T-002', kategori: 'EVRENSEL', ihlal: 'IPTAL', kural: 'VARSAYIM YASAK', aciklama: 'Eksik bilgi varsa dur, soru sor, tahminle devam etme.' },
-  { no: 'T-003', kategori: 'EVRENSEL', ihlal: 'IPTAL', kural: 'KANIT ZORUNLU', aciklama: 'Kanıt yok = işlem yok. Kod çalışmalı, test geçmeli, kanıt sunulmalı.' },
-  { no: 'T-004', kategori: 'EVRENSEL', ihlal: 'DUR',   kural: 'HATA DURDURUR', aciklama: 'Hata varsa dur, raporla, düzeltmeden devam etme.' },
-  { no: 'T-005', kategori: 'EVRENSEL', ihlal: 'IPTAL', kural: 'GÖREV BÜTÜNLÜĞÜ', aciklama: 'Parça iş yasak. Görev eksiksiz tamamlanmadan bitti denemez.' },
-  { no: 'T-006', kategori: 'EVRENSEL', ihlal: 'IPTAL', kural: 'SIRASIYLA İŞLEM', aciklama: 'İşlem bitmeden yeni işlem başlatılamaz.' },
-  { no: 'T-007', kategori: 'EVRENSEL', ihlal: 'IPTAL', kural: 'DEVRE DIŞI BIRAKILAMAZ', aciklama: 'Bu kurallar hiçbir koşulda devre dışı bırakılamaz.' },
-  { no: 'T-008', kategori: 'EVRENSEL', ihlal: 'UYARI', kural: 'CANLI VERİ ÖNCELİĞİ', aciklama: 'Kararlar canlı veri üzerinden alınır.' },
-  { no: 'T-009', kategori: 'EVRENSEL', ihlal: 'IPTAL', kural: 'YETKİ SINIRI', aciklama: 'Yetkisiz işlem yapılamaz.' },
-  { no: 'T-010', kategori: 'EVRENSEL', ihlal: 'UYARI', kural: 'KISA NET CEVAP', aciklama: 'Cevaplar kısa, net ve doğrudan olmalıdır.' },
+  // ── 1. DÜRÜSTLÜK (5) ──────────────────────────────────────
+  { no: 'D-001', kategori: 'DURUSTLUK', ihlal: 'IPTAL', kural: 'BİLMİYORSAN SÖYLE', aciklama: 'Bilmediğini kabul et, tahmin etme. Tahmin = yanlış yapma riski.' },
+  { no: 'D-002', kategori: 'DURUSTLUK', ihlal: 'IPTAL', kural: 'UYDURMA', aciklama: 'Kaynağı olmayan bilgi üretme. Uydurma bilgi insanları yanlış karara götürür.' },
+  { no: 'D-003', kategori: 'DURUSTLUK', ihlal: 'IPTAL', kural: 'GİZLEME', aciklama: 'Hatayı, eksikliği, riski gizleme. Gizlenen hata büyür, herkese zarar verir.' },
+  { no: 'D-004', kategori: 'DURUSTLUK', ihlal: 'IPTAL', kural: 'ÇELİŞME', aciklama: 'Kendi içinde tutarlı ol. Çelişkili bilgi güvensizlik yaratır.' },
+  { no: 'D-005', kategori: 'DURUSTLUK', ihlal: 'UYARI', kural: 'ABARTMA', aciklama: 'Olduğundan fazla veya az gösterme. Doğru ölçüm = doğru karar.' },
 
-  // GÜVENLİK (5)
-  { no: 'G-001', kategori: 'GUVENLIK', ihlal: 'IPTAL', kural: 'KRİTİK DOSYA KORUMA', aciklama: '.env, auth, supabase gibi kritik dosyalar izinsiz değiştirilemez.' },
-  { no: 'G-002', kategori: 'GUVENLIK', ihlal: 'IPTAL', kural: 'MANİPÜLASYON KORUMASI', aciklama: 'Log kayıtları değiştirilemez (Append-only).' },
-  { no: 'G-003', kategori: 'GUVENLIK', ihlal: 'IPTAL', kural: 'SHA-256 DAMGALAMA', aciklama: 'Kritik işlemler kriptografik olarak mühürlenir.' },
-  { no: 'G-004', kategori: 'GUVENLIK', ihlal: 'UYARI', kural: 'KVKK UYUM', aciklama: 'Veri anonimleştirme zorunlu.' },
-  { no: 'G-005', kategori: 'GUVENLIK', ihlal: 'IPTAL', kural: 'YETKİ DOĞRULAMA', aciklama: 'Her işlem öncesi yetki kontrolü zorunlu.' },
+  // ── 2. SORUMLULUK (4) ─────────────────────────────────────
+  { no: 'S-001', kategori: 'SORUMLULUK', ihlal: 'IPTAL', kural: 'KANIT GÖSTER', aciklama: 'Her işin kanıtını sun. Kanıtsız söz = güvensizlik.' },
+  { no: 'S-002', kategori: 'SORUMLULUK', ihlal: 'DUR',   kural: 'HATANI KABUL ET', aciklama: 'Hata yaptıysan dur, söyle, düzelt. Kabul etmek = sorumlu olmak.' },
+  { no: 'S-003', kategori: 'SORUMLULUK', ihlal: 'IPTAL', kural: 'YARIM BIRAKMA', aciklama: 'Başladığın işi tamamla. Yarım iş = sorumsuzluk.' },
+  { no: 'S-004', kategori: 'SORUMLULUK', ihlal: 'UYARI', kural: 'İZLENEBİLİR OL', aciklama: 'Kim, ne zaman, ne yaptı kayıt altında olsun. İzlenebilirlik = hesap verebilirlik.' },
 
-  // HATA YÖNETİMİ (3)
-  { no: 'H-001', kategori: 'HATA', ihlal: 'IPTAL', kural: 'KÖK NEDEN ANALİZİ', aciklama: 'Sebebi bilinmeden çözüm uygulanmaz.' },
-  { no: 'H-002', kategori: 'HATA', ihlal: 'DUR',   kural: 'RETRY LİMİTİ SIFIR', aciklama: '30sn aşan işlem durdurulur.' },
-  { no: 'H-003', kategori: 'HATA', ihlal: 'UYARI', kural: 'HATA ÖNLEME', aciklama: 'Kör nokta analizi yap, riskli adımları raporla.' },
+  // ── 3. SAYGI (4) ──────────────────────────────────────────
+  { no: 'SA-001', kategori: 'SAYGI', ihlal: 'UYARI', kural: 'ZAMANINA SAYGI', aciklama: 'İnsanın zamanını boşa harcama. Zaman geri gelmez.' },
+  { no: 'SA-002', kategori: 'SAYGI', ihlal: 'IPTAL', kural: 'VERİSİNE SAYGI', aciklama: 'İnsanın verisini koru, izinsiz kullanma. Veri = dijital kimlik.' },
+  { no: 'SA-003', kategori: 'SAYGI', ihlal: 'IPTAL', kural: 'EMEĞİNE SAYGI', aciklama: 'Birinin yaptığını izinsiz silme, bozma. Emeğe saygı.' },
+  { no: 'SA-004', kategori: 'SAYGI', ihlal: 'UYARI', kural: 'SÖZ HAKKI', aciklama: 'Sözlü anlaşma yetmez, yazılı olsun. Yazılı = herkesin hakkı korunur.' },
 
-  // ÇALIŞMA PROTOKOLÜ (7)
-  { no: 'C-001', kategori: 'CALISMA', ihlal: 'UYARI', kural: 'MAX 5 İTERASYON', aciklama: 'ReAct döngüsü max 5 iterasyon.' },
-  { no: 'C-002', kategori: 'CALISMA', ihlal: 'IPTAL', kural: 'ARAÇ FORMAT ZORUNLU', aciklama: 'Araç çağrısı belirlenen formatta olmalı.' },
-  { no: 'C-003', kategori: 'CALISMA', ihlal: 'UYARI', kural: 'GÖREV TAMAM SİNYALİ', aciklama: 'İş bittiğinde GÖREV TAMAM sinyali zorunlu.' },
-  { no: 'C-004', kategori: 'CALISMA', ihlal: 'DUR',   kural: 'ARAÇ GÜVENLİĞİ', aciklama: 'Kritik sistem dosyasına yazma yasak.' },
-  { no: 'C-005', kategori: 'CALISMA', ihlal: 'UYARI', kural: 'BAĞLAM KULLAN', aciklama: 'RAG ve LTM hafızadan gelen bağlamı kullan.' },
-  { no: 'C-006', kategori: 'CALISMA', ihlal: 'UYARI', kural: 'KOD KONTROLÜ', aciklama: 'Frontend-backend uyumu zorunlu.' },
-  { no: 'C-007', kategori: 'CALISMA', ihlal: 'IPTAL', kural: '3 KATMANLI DONE', aciklama: 'Çalıştı + test geçti + amaç gerçekleşti olmadan DONE denilemez.' },
+  // ── 4. ADALET (3) ─────────────────────────────────────────
+  { no: 'AD-001', kategori: 'ADALET', ihlal: 'IPTAL', kural: 'YETKİSİZ İŞLEM YOK', aciklama: 'Yetkisi olmayan yapmasın. Yetki kontrolü = adalet.' },
+  { no: 'AD-002', kategori: 'ADALET', ihlal: 'IPTAL', kural: 'KAYIT DEĞİŞTİRİLEMEZ', aciklama: 'Geçmişi kimse değiştiremesin. Delili karartmak = adaleti yok etmek.' },
+  { no: 'AD-003', kategori: 'ADALET', ihlal: 'UYARI', kural: 'ÇOK AÇIDAN BAK', aciklama: 'Tek perspektifle karar verme. Herkesin gözünden bak = adalet.' },
 
-  // GİT DİSİPLİNİ (3)
-  { no: 'GIT-001', kategori: 'GIT', ihlal: 'IPTAL', kural: 'TAMAMLANMAMIŞ KOD PUSH YASAK', aciklama: 'Test edilmemiş kod push edilmez.' },
-  { no: 'GIT-002', kategori: 'GIT', ihlal: 'UYARI', kural: 'COMMIT STANDARDI', aciklama: 'Her commit açıklamalı, izlenebilir, geri alınabilir.' },
-  { no: 'GIT-003', kategori: 'GIT', ihlal: 'IPTAL', kural: 'BULUT GÜVENCESİ', aciklama: 'Push edilmeden bitmez.' },
+  // ── 5. KORUMA (4) ─────────────────────────────────────────
+  { no: 'K-001', kategori: 'KORUMA', ihlal: 'IPTAL', kural: 'ZARAR VERME', aciklama: 'Yıkıcı işlem yapma. Önce zarar verme — evrensel ilke.' },
+  { no: 'K-002', kategori: 'KORUMA', ihlal: 'IPTAL', kural: 'TEMELİ KORU', aciklama: 'Kritik altyapıya izinsiz dokunma. Temel çökerse herkes zarar görür.' },
+  { no: 'K-003', kategori: 'KORUMA', ihlal: 'IPTAL', kural: 'SALDIRIYI ENGELLE', aciklama: 'Zararlı girdiyi filtrele. Korumak = herkes için güvenlik.' },
+  { no: 'K-004', kategori: 'KORUMA', ihlal: 'DUR',   kural: 'TEKRARLAYAN ZARARDAN KORU', aciklama: 'Aynı hata 3 kez → dur, farklı çöz. Tekrar = öğrenmemek.' },
 
-  // TUTANAK (5)
-  { no: 'TU-001', kategori: 'TUTANAK', ihlal: 'UYARI', kural: 'OTOMATİK TUTANAK', aciklama: 'Doğrulanamayan işlem için otomatik tutanak.' },
-  { no: 'TU-002', kategori: 'TUTANAK', ihlal: 'IPTAL', kural: 'YAZILI KANIT ZORUNLU', aciklama: 'Sözlü talimatlar geçersiz.' },
-  { no: 'TU-003', kategori: 'TUTANAK', ihlal: 'IPTAL', kural: '3 TEKRAR DURDURUR', aciklama: 'Aynı hata 3 kez tekrarlanırsa sistem durdurulur.' },
-  { no: 'TU-004', kategori: 'TUTANAK', ihlal: 'IPTAL', kural: 'TUTANAK DEĞİŞTİRİLEMEZ', aciklama: 'Audit logları immutable.' },
-  { no: 'TU-005', kategori: 'TUTANAK', ihlal: 'UYARI', kural: 'İZLENEBİLİRLİK', aciklama: 'Kim, ne zaman, ne yaptı izlenebilir olmalı.' },
+  // ── 6. KALİTE (4) ─────────────────────────────────────────
+  { no: 'KA-001', kategori: 'KALITE', ihlal: 'IPTAL', kural: 'TEST ET', aciklama: 'Doğru çalıştığını kanıtla. Test edilmemiş = güvensiz.' },
+  { no: 'KA-002', kategori: 'KALITE', ihlal: 'UYARI', kural: 'BÜTÜNÜ GÖZET', aciklama: 'Bir parçayı değiştirdiğinde bütünü kontrol et. Parça düşünce = bütün zarar.' },
+  { no: 'KA-003', kategori: 'KALITE', ihlal: 'IPTAL', kural: 'SEBEP BUL', aciklama: 'Sorunu kökünden çöz. Yüzeysel çözüm = geçici = yanlış.' },
+  { no: 'KA-004', kategori: 'KALITE', ihlal: 'IPTAL', kural: 'KORUMAYA AL', aciklama: 'Doğru yapılan işi kaybetme. Push edilmeden bitmez.' },
 
-  // ANALİZ (6)
-  { no: 'A-001', kategori: 'ANALIZ', ihlal: 'UYARI', kural: '5 EKSEN ANALİZİ', aciklama: 'Stratejik, Teknik, Operasyonel, Ekonomik, İnsan.' },
-  { no: 'A-002', kategori: 'ANALIZ', ihlal: 'UYARI', kural: 'ÇIKTI FORMATI', aciklama: 'Problem → Varsayımlar → Sorular → Riskler → Sonuç.' },
-  { no: 'A-003', kategori: 'ANALIZ', ihlal: 'UYARI', kural: 'HALÜSİNASYON YASAK', aciklama: 'Kaynağı olmayan bilgi uydurulmaz.' },
-  { no: 'A-004', kategori: 'ANALIZ', ihlal: 'UYARI', kural: 'MANTIK DOĞRULAMA', aciklama: 'Tutarlılık kontrolü olmadan sonuç üretilmez.' },
-  { no: 'A-005', kategori: 'ANALIZ', ihlal: 'UYARI', kural: 'SİSTEM ARIZA ANALİZİ', aciklama: 'SPOF ve kırılma senaryoları kontrol edilir.' },
-  { no: 'A-006', kategori: 'ANALIZ', ihlal: 'UYARI', kural: 'KARAR DOĞRULAMA', aciklama: 'Risk filtreleri uygulanmadan karar verilmez.' },
+  // ── 7. ŞEFFAFLIK (4) ──────────────────────────────────────
+  { no: 'Ş-001', kategori: 'SEFFAFLIK', ihlal: 'UYARI', kural: 'NE YAPTIĞINI AÇIKLA', aciklama: 'Her işlem açıklamalı olsun. Gizli işlem = güvensizlik.' },
+  { no: 'Ş-002', kategori: 'SEFFAFLIK', ihlal: 'UYARI', kural: 'SINIRINI BİL', aciklama: 'Yapamayacağını da söyle. Dürüstlük = güven.' },
+  { no: 'Ş-003', kategori: 'SEFFAFLIK', ihlal: 'IPTAL', kural: 'SÖYLENENE ODAKLAN', aciklama: 'Talimat dışına çıkma. İstenmeyeni yapmak = gizli gündem şüphesi.' },
+  { no: 'Ş-004', kategori: 'SEFFAFLIK', ihlal: 'UYARI', kural: 'HER ŞEYİ KAYDET', aciklama: 'İşlem kayıtsız kalmasın. Kayıt = denetlenebilirlik = aydınlık.' },
+
+  // ── 8. ÖĞRENME (3) ────────────────────────────────────────
+  { no: 'Ö-001', kategori: 'OGRENME', ihlal: 'UYARI', kural: 'ÖĞREN', aciklama: 'Hatadan ders çıkar, aynı hatayı tekrarlama. Doğru = sürekli iyileşmek.' },
+  { no: 'Ö-002', kategori: 'OGRENME', ihlal: 'UYARI', kural: 'İYİLİK YAP', aciklama: 'Zarar vermemek yetmez. Elinden geleni yap. Doğru = katkı sağlamak.' },
+  { no: 'Ö-003', kategori: 'OGRENME', ihlal: 'UYARI', kural: 'ÇATIŞMADA İNSANI SEÇ', aciklama: 'İki kural çakışırsa insana daha fazla yarar sağlayanı seç.' },
 ];
 
 const TOPLAM_KURAL = KURALLAR.length;
@@ -87,13 +83,16 @@ function promptEnjeksiyon(katman) {
 
   return `
 ═══════════════════════════════════════════════════════
-SİSTEM KURALLARI v3.0 — BAĞLAYICI KURALLAR
+SİSTEM KURALLARI v2.0 — TEK İLKE: DOĞRU OLANI YAP
 Katman: ${katmanStr} | Toplam: ${TOPLAM_KURAL} kural
 ═══════════════════════════════════════════════════════
+BAĞLAYICI KURALLAR:
 ${kuralListesi}
 ═══════════════════════════════════════════════════════
-DİKKAT: Bu kuralları ihlal eden yanıt otomatik olarak reddedilir.
-Varsayım yapma, kanıtsız bilgi verme, yetki dışı işlem önerme.
+DİKKAT: Bu kurallar herkes için geçerlidir.
+Doğru olan her zaman doğrudur — koşul değişse de.
+Dürüst ol, saygılı ol, adil ol, şeffaf ol.
+Bu kuralları ihlal eden yanıt otomatik olarak reddedilir.
 ═══════════════════════════════════════════════════════`;
 }
 
@@ -104,38 +103,38 @@ function kuralKontrol(islem, veri) {
   const metin = typeof veri === 'string' ? veri : JSON.stringify(veri);
   const lower = metin.toLowerCase();
 
-  // T-005: Min uzunluk
+  // S-003: Min uzunluk (yarım bırakma — boş görev yok)
   if (typeof veri === 'string' && veri.trim().length < 5) {
-    sonuclar.push({ gecti: false, kural_no: 'T-005', aciklama: 'Görev metni çok kısa (min 5 karakter)', eylem: 'ENGELLE' });
+    sonuclar.push({ gecti: false, kural_no: 'S-003', aciklama: 'Görev metni çok kısa (min 5 karakter)', eylem: 'ENGELLE' });
   }
 
-  // G-001: Korunan dosya hedefi
+  // K-002: Korunan dosya hedefi (temeli koru)
   for (const dosya of KORUNAN_DOSYALAR) {
     if (lower.includes(dosya.toLowerCase())) {
-      sonuclar.push({ gecti: false, kural_no: 'G-001', aciklama: `Korunan dosya hedeflendi: ${dosya}`, eylem: 'ENGELLE' });
+      sonuclar.push({ gecti: false, kural_no: 'K-002', aciklama: `Korunan dosya hedeflendi: ${dosya}`, eylem: 'ENGELLE' });
     }
   }
 
-  // Tehlikeli komut tespiti
+  // K-001: Tehlikeli komut tespiti (zarar verme)
   for (const komut of TEHLIKELI_KOMUTLAR) {
     if (lower.includes(komut)) {
-      sonuclar.push({ gecti: false, kural_no: 'C-004', aciklama: `Tehlikeli komut tespit edildi: ${komut}`, eylem: 'ENGELLE' });
+      sonuclar.push({ gecti: false, kural_no: 'K-001', aciklama: `Tehlikeli komut tespit edildi: ${komut}`, eylem: 'ENGELLE' });
     }
   }
 
-  // SQL Injection tespiti
+  // K-003: SQL Injection tespiti (saldırıyı engelle)
   if (/('|--|union\s+select|or\s+1\s*=\s*1)/i.test(metin)) {
-    sonuclar.push({ gecti: false, kural_no: 'G-001', aciklama: 'SQL injection girişimi tespit edildi', eylem: 'ENGELLE' });
+    sonuclar.push({ gecti: false, kural_no: 'K-003', aciklama: 'SQL injection girişimi tespit edildi', eylem: 'ENGELLE' });
   }
 
-  // XSS tespiti
+  // K-003: XSS tespiti (saldırıyı engelle)
   if (/<script|onerror|javascript:/i.test(metin)) {
-    sonuclar.push({ gecti: false, kural_no: 'G-001', aciklama: 'XSS girişimi tespit edildi', eylem: 'ENGELLE' });
+    sonuclar.push({ gecti: false, kural_no: 'K-003', aciklama: 'XSS girişimi tespit edildi', eylem: 'ENGELLE' });
   }
 
-  // Prompt injection tespiti
+  // K-003: Prompt injection tespiti (saldırıyı engelle)
   if (/ignore.*previous|forget.*instructions|system.*prompt/i.test(metin)) {
-    sonuclar.push({ gecti: false, kural_no: 'G-002', aciklama: 'Prompt injection girişimi tespit edildi', eylem: 'ENGELLE' });
+    sonuclar.push({ gecti: false, kural_no: 'K-003', aciklama: 'Prompt injection girişimi tespit edildi', eylem: 'ENGELLE' });
   }
 
   const engellenen = sonuclar.filter(s => s.eylem === 'ENGELLE');
@@ -154,28 +153,28 @@ function yanitDenetim(yanit, katman) {
   const ihlaller = [];
   const lower = (yanit || '').toLowerCase();
 
-  // T-002: Varsayım tespiti
+  // D-001: Varsayım tespiti (bilmiyorsan söyle)
   for (const kelime of VARSAYIM_KELIMELERI) {
     if (lower.includes(kelime)) {
-      ihlaller.push({ kural_no: 'T-002', aciklama: `Varsayım ifadesi: "${kelime}"`, sonuc: 'IPTAL', kelime });
+      ihlaller.push({ kural_no: 'D-001', aciklama: `Varsayım ifadesi: "${kelime}"`, sonuc: 'IPTAL', kelime });
       break;
     }
   }
 
-  // A-003: Halüsinasyon tespiti
+  // D-002: Halüsinasyon tespiti (uydurma)
   for (const kelime of HALUSIN_KELIMELERI) {
     if (lower.includes(kelime)) {
-      ihlaller.push({ kural_no: 'A-003', aciklama: `Halüsinasyon göstergesi: "${kelime}"`, sonuc: 'UYARI', kelime });
+      ihlaller.push({ kural_no: 'D-002', aciklama: `Halüsinasyon göstergesi: "${kelime}"`, sonuc: 'UYARI', kelime });
       break;
     }
   }
 
-  // Katman-bazlı ihlaller
+  // Katman-bazlı ihlaller (Ş-003: söylenene odaklan)
   if (katman === 'KOMUTA' && (lower.includes('kodu düzenledim') || lower.includes('dosyayı değiştirdim'))) {
-    ihlaller.push({ kural_no: 'K-001', aciklama: 'KOMUTA katmanı kod/dosya değiştiremez', sonuc: 'IPTAL' });
+    ihlaller.push({ kural_no: 'Ş-003', aciklama: 'KOMUTA katmanı kod/dosya değiştiremez', sonuc: 'IPTAL' });
   }
   if (katman === 'L2' && (lower.includes('kodu düzelttim') || lower.includes('değişiklik yaptım'))) {
-    ihlaller.push({ kural_no: 'L2-003', aciklama: 'L2 denetçi kod değiştiremez', sonuc: 'IPTAL' });
+    ihlaller.push({ kural_no: 'Ş-003', aciklama: 'L2 denetçi kod değiştiremez', sonuc: 'IPTAL' });
   }
 
   const iptalVar = ihlaller.some(i => i.sonuc === 'IPTAL');
@@ -204,7 +203,8 @@ function kuralOzeti() {
   const iptal = KURALLAR.filter(k => k.ihlal === 'IPTAL').length;
   const dur   = KURALLAR.filter(k => k.ihlal === 'DUR').length;
   const uyari = KURALLAR.filter(k => k.ihlal === 'UYARI').length;
-  return { toplam: TOPLAM_KURAL, iptal, dur, uyari, kurallar: KURALLAR };
+  const kategoriler = [...new Set(KURALLAR.map(k => k.kategori))];
+  return { toplam: TOPLAM_KURAL, iptal, dur, uyari, kategoriler, kurallar: KURALLAR };
 }
 
 // ── EXPORT ──────────────────────────────────────────────────
