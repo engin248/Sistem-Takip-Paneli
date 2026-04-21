@@ -111,7 +111,7 @@ function kuralKontrol(islem, veri) {
 
   // G-001: Korunan dosya hedefi
   for (const dosya of KORUNAN_DOSYALAR) {
-    if (lower.includes(dosya)) {
+    if (lower.includes(dosya.toLowerCase())) {
       sonuclar.push({ gecti: false, kural_no: 'G-001', aciklama: `Korunan dosya hedeflendi: ${dosya}`, eylem: 'ENGELLE' });
     }
   }
