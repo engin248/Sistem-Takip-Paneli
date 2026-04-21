@@ -1,6 +1,5 @@
 "use client";
 import { useEffect } from "react";
-import { processError, ERR } from "@/lib/errorCore";
 
 export default function GlobalError({
   error,
@@ -10,31 +9,28 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    processError(ERR.UNIDENTIFIED_COLLAPSE, error, {
-      kaynak: "app/error.tsx",
-      islem: "GLOBAL_ERROR_BOUNDARY",
-      digest: error.digest,
-    }, "FATAL");
+    // Sistem motoru arındırıldığı için sadece konsola log bırakıyoruz
+    console.error("KRİTİK SİSTEM HATASI:", error);
   }, [error]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white p-8">
       <div className="max-w-md text-center space-y-6">
-        <div className="text-6xl">⚠️</div>
-        <h1 className="text-2xl font-black tracking-tight">SİSTEM HATASI</h1>
+        <div className="text-6xl text-red-500 animate-pulse">⚠️</div>
+        <h1 className="text-2xl font-black tracking-tight uppercase">SİSTEM HATASI</h1>
         <p className="text-sm text-slate-400 leading-relaxed">
-          Beklenmeyen bir hata oluştu. Sistem bu hatayı otomatik olarak kayıt altına aldı.
+          Beklenmeyen bir arayüz hatası oluştu. Lütfen yeniden deneyin veya sistem yöneticisine başvurun.
         </p>
-        {error.digest && (
-          <p className="text-[10px] font-mono text-slate-600 bg-slate-900 px-3 py-1.5 rounded-lg inline-block">
-            HATA KODU: {error.digest}
+        <div className="bg-slate-900/50 p-4 border border-red-500/20">
+          <p className="text-[10px] font-mono text-red-400 leading-tight break-all">
+            {error.message || "Bilinmeyen Hata"}
           </p>
-        )}
+        </div>
         <button
           onClick={reset}
-          className="bg-white text-slate-900 text-xs font-bold px-6 py-3 rounded-xl hover:bg-slate-200 transition-all uppercase tracking-widest"
+          className="bg-cyan-500 text-white text-[10px] font-black px-8 py-3 rounded-none hover:bg-cyan-600 transition-all uppercase tracking-widest shadow-[0_0_15px_rgba(6,182,212,0.3)]"
         >
-          YENİDEN DENE
+          SİSTEMİ YENİLE
         </button>
       </div>
     </div>

@@ -389,7 +389,7 @@ export interface AIProviderStatus {
   activeProvider: AIProviderType;
   ollama: { enabled: boolean; healthy: boolean; model: string; baseUrl: string };
   openai: { enabled: boolean; hasKey: boolean; model: string };
-  coSistem Takip PanelierRequest: string;
+  costPerRequest: string;
 }
 
 export async function getProviderStatus(): Promise<AIProviderStatus> {
@@ -398,14 +398,14 @@ export async function getProviderStatus(): Promise<AIProviderStatus> {
   const hasOpenAIKey = !!(config.openaiApiKey && config.openaiApiKey !== '' && !config.openaiApiKey.includes('your-api-key'));
 
   let activeProvider: AIProviderType = 'local';
-  let coSistem Takip PanelierRequest = '0₺ (Lokal Kurallar)';
+  let costPerRequest = '0₺ (Lokal Kurallar)';
 
   if (!config.forceDisableOllama && ollamaHealthy) {
     activeProvider = 'ollama';
-    coSistem Takip PanelierRequest = '0₺ (Ollama Yerel)';
+    costPerRequest = '0₺ (Ollama Yerel)';
   } else if (!config.forceDisableOpenAI && hasOpenAIKey) {
     activeProvider = 'openai';
-    coSistem Takip PanelierRequest = '~$0.002/istek (OpenAI)';
+    costPerRequest = '~$0.002/istek (OpenAI)';
   }
 
   return {
@@ -421,7 +421,7 @@ export async function getProviderStatus(): Promise<AIProviderStatus> {
       hasKey: hasOpenAIKey,
       model: config.openaiModel,
     },
-    coSistem Takip PanelierRequest,
+    costPerRequest,
   };
 }
 

@@ -72,7 +72,7 @@ describe('AI Provider', () => {
       mockFetch.mockResolvedValueOnce({ ok: true });
       const status = await getProviderStatus();
       expect(status.activeProvider).toBe('ollama');
-      expect(status.coSistem Takip PanelierRequest).toContain('0₺');
+      expect(status.costPerRequest).toContain('0₺');
     });
 
     it('Ollama kapalı + OpenAI key yoksa provider=local döner', async () => {
@@ -80,7 +80,7 @@ describe('AI Provider', () => {
       vi.stubEnv('FORCE_DISABLE_OPENAI', 'true');
       const status = await getProviderStatus();
       expect(status.activeProvider).toBe('local');
-      expect(status.coSistem Takip PanelierRequest).toContain('Lokal');
+      expect(status.costPerRequest).toContain('Lokal');
     });
 
     it('Ollama kapalı + OpenAI key varsa bile provider=local döner (OpenAI devre dışı)', async () => {
@@ -89,7 +89,7 @@ describe('AI Provider', () => {
       const status = await getProviderStatus();
       // OpenAI tüm sistemde devre dışı — her zaman local'a düşer
       expect(status.activeProvider).toBe('local');
-      expect(status.coSistem Takip PanelierRequest).toContain('Lokal');
+      expect(status.costPerRequest).toContain('Lokal');
     });
   });
 });

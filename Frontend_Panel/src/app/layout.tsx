@@ -2,9 +2,9 @@ import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 
-import NavBar from "@/components/NavBar";
-import DirProvider from "@/components/DirProvider";
-import AuthProvider from "@/components/AuthProvider";
+import NavBar from "@/components/layout/NavBar";
+import DirProvider from "@/components/layout/DirProvider";
+import AuthProvider from "@/components/auth/AuthProvider";
 import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -37,12 +37,10 @@ export default function RootLayout({
               Auth kapalıyken doğrudan dashboard gösterilir. */}
           {process.env.NEXT_PUBLIC_SUPABASE_AUTH_ENABLED === 'true' ? (
             <AuthProvider>
-              <NavBar />
               {children}
             </AuthProvider>
           ) : (
             <>
-              <NavBar />
               {children}
             </>
           )}

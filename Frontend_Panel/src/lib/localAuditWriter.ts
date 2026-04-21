@@ -11,17 +11,17 @@
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
 
-const AUDIT_DIR = process.env.Sistem Takip Paneli_AUDIT_DIR ?? join(process.cwd(), '.agent_audit');
-const IS_PROD   = process.env.NODE_ENV === 'production';
+const AUDIT_DIR = process.env.STP_AUDIT_DIR ?? join(process.cwd(), '.agent_audit');
+const IS_PROD = process.env.NODE_ENV === 'production';
 
 export interface LocalAuditEntry {
-  eventType:  string;
-  module:     string;
-  severity:   'info' | 'warning' | 'error' | 'critical';
+  eventType: string;
+  module: string;
+  severity: 'info' | 'warning' | 'error' | 'critical';
   commandId?: string;
-  userId?:    string;
-  hash?:      string;
-  payload:    Record<string, unknown>;
+  userId?: string;
+  hash?: string;
+  payload: Record<string, unknown>;
 }
 
 /**
@@ -38,16 +38,16 @@ export function writeLocalAudit(entry: LocalAuditEntry): void {
       mkdirSync(AUDIT_DIR, { recursive: true });
     }
 
-    const now      = new Date();
-    const dateStr  = now.toISOString().split('T')[0]; // YYYY-MM-DD
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
     const filename = `Sistem Takip Paneli_AUDIT_${dateStr}.jsonl`;
     const filepath = join(AUDIT_DIR, filename);
 
     const record = {
       ...entry,
       timestamp: now.toISOString(),
-      seq:       Date.now(),         // Benzersiz sıra no (Kural #46)
-      pid:       process.pid,        // İzlenebilirlik (Kural #15)
+      seq: Date.now(),         // Benzersiz sıra no (Kural #46)
+      pid: process.pid,        // İzlenebilirlik (Kural #15)
     };
 
     // APPEND-ONLY — flag:'a' ile eski kayıtlar korunur (Kural #53)
@@ -62,7 +62,7 @@ export function writeLocalAudit(entry: LocalAuditEntry): void {
  * Kural #47: Otomatik raporlama için kullanılır.
  */
 export function getAuditFilePath(date?: Date): string {
-  const d       = date ?? new Date();
+  const d = date ?? new Date();
   const dateStr = d.toISOString().split('T')[0];
   return join(AUDIT_DIR, `Sistem Takip Paneli_AUDIT_${dateStr}.jsonl`);
 }
