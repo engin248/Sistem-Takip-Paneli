@@ -9,3 +9,70 @@
 [2026-04-15T23:09:08.319Z] [INFO] QR KOD OLUŞTURULDU — Terminalde tarın:
 [2026-04-15T23:09:28.333Z] [INFO] QR KOD OLUŞTURULDU — Terminalde tarın:
 [2026-04-15T23:09:48.347Z] [INFO] QR KOD OLUŞTURULDU — Terminalde tarın:
+[2026-04-21T03:00:00.380Z] [INFO] ✅ Gemini AI bağlandı (SADECE ses→yazı için).
+[2026-04-21T03:00:00.383Z] [INFO] ══════════════════════════════════════════════
+[2026-04-21T03:00:00.383Z] [INFO]   WHATSAPP ↔ STP KÖPRÜSÜ v3                  
+[2026-04-21T03:00:00.383Z] [INFO]   Gemini STT + /api/tasks (15 kontrol)        
+[2026-04-21T03:00:00.383Z] [INFO]   Ollama YOK — Doğrudan Supabase YOK          
+[2026-04-21T03:00:00.383Z] [INFO] ══════════════════════════════════════════════
+[2026-04-21T03:00:44.701Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:01:44.578Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:02:04.585Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:02:24.590Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:02:44.598Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:03:04.606Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:04:15.765Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:05:15.774Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:05:35.787Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:05:55.791Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:06:15.794Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:06:35.808Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:07:46.786Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:08:46.792Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:09:06.802Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:09:26.817Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:09:46.823Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:10:06.827Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:11:17.819Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:12:17.835Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:12:37.840Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:12:57.842Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:13:17.845Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:13:37.858Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:14:49.012Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:15:49.019Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:16:09.025Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:16:29.032Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:16:49.034Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:17:09.046Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:18:20.094Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:19:20.101Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:19:40.103Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:20:00.107Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:20:20.121Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:20:40.128Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:21:51.678Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:22:51.690Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:23:11.699Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:23:31.705Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:23:51.713Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:24:11.718Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:25:23.065Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:26:23.071Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:26:43.076Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:27:03.082Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:27:23.099Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:27:43.110Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:28:54.013Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:29:54.019Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:30:14.021Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:30:34.036Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:30:54.045Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:31:14.055Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:32:24.680Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:33:24.685Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:33:44.689Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:34:04.693Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:34:24.708Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:34:44.713Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara
+[2026-04-21T03:35:55.960Z] [INFO] QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara

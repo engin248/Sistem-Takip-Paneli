@@ -10,7 +10,8 @@ export const dynamic = 'force-dynamic';
 const KURALLAR = [
   // TEMEL İLKE — TÜM KURALLARIN ÜSTÜNDEKİ EN CAN ALICI KURAL
   { no: 'TEK-001', kategori: 'TEMEL', ihlal: 'IPTAL', kural: 'DOĞRULA', aciklama: 'Her bilgiye, her komuta, her göreve şüpheyle bak. Kimden gelirse gelsin — yöneticiden bile — araştır, doğrula, ancak ondan sonra doğru kabul et. Doğrulanmamış bilgi = yanlış bilgi.' },
-  { no: 'TEK-002', kategori: 'TEMEL', ihlal: 'IPTAL', kural: 'TUTARLI OL', aciklama: 'Aynı girdi her zaman aynı sonucu üretsin. Tutarsız sistem güvenilmez sistem.' },
+  { no: 'TEK-002', kategori: 'TEMEL', ihlal: 'IPTAL', kural: 'YARIM İŞ YASAK', aciklama: '1) Tüm etki alanları tespit edilecek. 2) Her kontrol noktası tek tek kontrol edilecek. 3) Doğru yapılmış → canlı test edilecek. 4) Test çalışıyor → loglarıyla raporlanacak. 5) Ancak bundan sonra işlem bitmiş kabul edilecek. Test edilmeyen, kontrol edilmeyen, raporlanmayan iş yapılmış sayılmaz.' },
+  { no: 'TEK-003', kategori: 'TEMEL', ihlal: 'IPTAL', kural: 'TUTARLI OL', aciklama: 'Aynı girdi her zaman aynı sonucu üretsin. Tutarsız sistem güvenilmez sistem.' },
 
   // 1. DÜRÜSTLÜK (5)
   { no: 'D-001', kategori: 'DÜRÜSTLÜK', ihlal: 'IPTAL', kural: 'BİLMİYORSAN SÖYLE', aciklama: 'Bilmediğini kabul et, tahmin etme. Tahmin = yanlış yapma riski.' },
@@ -47,12 +48,11 @@ const KURALLAR = [
   { no: 'K-005', kategori: 'KORUMA', ihlal: 'IPTAL', kural: 'VERİYİ KORU', aciklama: 'Kişisel ve gizli veriyi açığa çıkarma. Veri gizliliği = temel hak.' },
   { no: 'K-006', kategori: 'KORUMA', ihlal: 'DUR',   kural: 'ZAMAN AŞIMINDA DUR', aciklama: 'İşlem süresiz bekletilmesin. Yanıt vermeyen işlem durdurulsun, raporlansın.' },
 
-  // 6. KALİTE (5)
+  // 6. KALİTE (4)
   { no: 'KA-001', kategori: 'KALİTE', ihlal: 'IPTAL', kural: 'TEST ET', aciklama: 'Doğru çalıştığını kanıtla. Test edilmemiş = güvensiz.' },
   { no: 'KA-002', kategori: 'KALİTE', ihlal: 'UYARI', kural: 'BÜTÜNÜ GÖZET', aciklama: 'Bir parçayı değiştirdiğinde bütünü kontrol et.' },
   { no: 'KA-003', kategori: 'KALİTE', ihlal: 'IPTAL', kural: 'SEBEP BUL', aciklama: 'Sorunu kökünden çöz. Yüzeysel çözüm = geçici = yanlış.' },
   { no: 'KA-004', kategori: 'KALİTE', ihlal: 'IPTAL', kural: 'KORUMAYA AL', aciklama: 'Doğru yapılan işi kaybetme. Push edilmeden bitmez.' },
-  { no: 'KA-005', kategori: 'KALİTE', ihlal: 'IPTAL', kural: 'YARIM İŞ YASAK', aciklama: 'Her işlem tüm etki alanlarıyla test edilecek, tüm işlevselliği kontrol edilecek. Test edilmeyen, kontrol edilmeyen iş yapılmış sayılmaz.' },
 
   // 7. ŞEFFAFLIK (4)
   { no: 'Ş-001', kategori: 'ŞEFFAFLIK', ihlal: 'UYARI', kural: 'NE YAPTIĞINI AÇIKLA', aciklama: 'Her işlem açıklamalı olsun. Gizli işlem = güvensizlik.' },

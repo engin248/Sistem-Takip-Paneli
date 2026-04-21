@@ -46,7 +46,7 @@ assert('SORUMLULUK: 5 kural', say('SORUMLULUK') === 5);
 assert('SAYGI: 4 kural', say('SAYGI') === 4);
 assert('ADALET: 5 kural', say('ADALET') === 5);
 assert('KORUMA: 6 kural', say('KORUMA') === 6);
-assert('KALITE: 5 kural', say('KALITE') === 5);
+assert('KALITE: 4 kural', say('KALITE') === 4);
 assert('SEFFAFLIK: 4 kural', say('SEFFAFLIK') === 4);
 assert('OGRENME: 4 kural', say('OGRENME') === 4);
 
