@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: Frontend_Panel
+        working-directory: 02_is_alani
 
     steps:
       - name: Checkout
@@ -22,7 +22,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: Frontend_Panel/package-lock.json
+          cache-dependency-path: 02_is_alani/package-lock.json
 
       - name: Install dependencies
         run: npm ci
