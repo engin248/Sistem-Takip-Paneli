@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 // NEXT.JS 16+ PROXY — BIRLESIK GUVENLIK KATMANI
 // ============================================================
 import { NextRequest, NextResponse } from 'next/server';
@@ -51,7 +51,7 @@ function isRateLimited(ip: string): boolean {
   return entry.count > RATE_LIMIT_MAX_REQUESTS;
 }
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith('/_next/')) {
@@ -118,6 +118,34 @@ export function proxy(request: NextRequest) {
     } else if (process.env.NODE_ENV === 'production') {
       return NextResponse.json({ success: false, error: 'CSRF: Origin header eksik.' }, { status: 403 });
     }
+
+    // ══════════════════════════════════════════════════════════
+    // SİSTEM KURALLARI — MERKEZİ BODY FİLTRESİ
+    // ══════════════════════════════════════════════════════════
+    // Bu blok TÜM POST/PUT/PATCH/DELETE isteklerini yakalar.
+    // Hangi endpoint olursa olsun, kural denetimi buradan geçer.
+    // ══════════════════════════════════════════════════════════
+    try {
+      const clonedReq = request.clone();
+      const bodyText = await clonedReq.text();
+      if (bodyText && bodyText.length > 0) {
+        const kontrolSonuc = sistemKurallariKontrol(bodyText);
+        if (!kontrolSonuc.gecti) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: 'Sistem Kuralları İhlali',
+              kural_no: kontrolSonuc.kural_no,
+              aciklama: kontrolSonuc.aciklama,
+              endpoint: pathname,
+            },
+            { status: 403 }
+          );
+        }
+      }
+    } catch {
+      // Body okunamazsa geç
+    }
   }
 
   return addSecurityHeaders(NextResponse.next());
@@ -135,3 +163,33 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
 export const config = {
   matcher: ['/((?!_next/static|_next/image|_next/webpack-hmr|favicon.ico).*)'],
 };
+
+// ══════════════════════════════════════════════════════════════
+// SİSTEM KURALLARI — EDGE RUNTIME UYUMLU KONTROL MOTORU
+// ══════════════════════════════════════════════════════════════
+// Bu fonksiyon proxy.ts içinde inline tanımlıdır çünkü
+// Edge Runtime Node.js modüllerini (fs, path, require) kullanamaz.
+// Aynı kurallar shared/sistemKurallari.js ile senkrondur.
+// ══════════════════════════════════════════════════════════════
+
+const SK_TEHLIKELI = ['rm -rf', 'drop table', 'delete --force', 'truncate', 'chmod 777', 'sudo'];
+const SK_KORUNAN   = ['.env.local', '.env', '.env.production', 'supabase.ts', 'authservice.ts', 'middleware.ts'];
+const SK_SQL       = /('|--|union\s+select|or\s+1\s*=\s*1)/i;
+const SK_XSS       = /<script|onerror|javascript:/i;
+const SK_PROMPT    = /ignore.*previous|forget.*instructions|system.*prompt/i;
+
+function sistemKurallariKontrol(metin: string): { gecti: boolean; aciklama: string; kural_no: string } {
+  const lower = metin.toLowerCase();
+
+  for (const k of SK_TEHLIKELI) {
+    if (lower.includes(k)) return { gecti: false, aciklama: `Tehlikeli komut: ${k}`, kural_no: 'C-004' };
+  }
+  for (const d of SK_KORUNAN) {
+    if (lower.includes(d)) return { gecti: false, aciklama: `Korunan dosya: ${d}`, kural_no: 'G-001' };
+  }
+  if (SK_SQL.test(metin))    return { gecti: false, aciklama: 'SQL injection girişimi', kural_no: 'G-001' };
+  if (SK_XSS.test(metin))    return { gecti: false, aciklama: 'XSS girişimi', kural_no: 'G-001' };
+  if (SK_PROMPT.test(metin))  return { gecti: false, aciklama: 'Prompt injection girişimi', kural_no: 'G-002' };
+
+  return { gecti: true, aciklama: '', kural_no: '' };
+}
