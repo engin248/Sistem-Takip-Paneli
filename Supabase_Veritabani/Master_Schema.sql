@@ -1202,7 +1202,7 @@ CREATE TABLE IF NOT EXISTS commands (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
-CREATE TABLE IF NOT EXISTS hermai_outputs (
+CREATE TABLE IF NOT EXISTS stp_outputs (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   command_id UUID REFERENCES commands(id),
   reason TEXT,
@@ -1686,19 +1686,19 @@ ORDER BY table_name;
 
 -- END SOURCE
 
--- BEGIN SOURCE: C:\Users\Esisya\Desktop\Sistem-Takip-Paneli\02_is_alani\supabase_migration_005_hermai_outputs.sql
+-- BEGIN SOURCE: C:\Users\Esisya\Desktop\Sistem-Takip-Paneli\02_is_alani\supabase_migration_005_stp_outputs.sql
 -- ============================================================
--- STP Migration 005: HermAI Ã‡Ä±ktÄ± Tablosu
+-- STP Migration 005: STP Ã‡Ä±ktÄ± Tablosu
 -- Tarih: 15 Nisan 2026
--- Tablo: hermai_outputs
--- Referans: src/core/hermAI/analysisEngine.ts â€” runHermAIAnalysis()
+-- Tablo: stp_outputs
+-- Referans: src/core/hermAI/analysisEngine.ts â€” runSTPAnalysis()
 -- ============================================================
--- K2.1 HermAI analiz sonuÃ§larÄ±nÄ± arÅŸivler.
+-- K2.1 STP analiz sonuÃ§larÄ±nÄ± arÅŸivler.
 -- A6 aksiyomu gereÄŸi her analiz kaydedilir.
 -- commands.id ile baÄŸlantÄ±lÄ±dÄ±r (L0 â†’ K2.1 zinciri).
 -- ============================================================
 
-CREATE TABLE IF NOT EXISTS hermai_outputs (
+CREATE TABLE IF NOT EXISTS stp_outputs (
   id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
 
   -- L0 ile baÄŸlantÄ± (replay-safe zincir)
@@ -1736,25 +1736,25 @@ CREATE TABLE IF NOT EXISTS hermai_outputs (
 );
 
 -- Ä°ndeksler
-CREATE INDEX IF NOT EXISTS idx_hermai_outputs_command   ON hermai_outputs(command_id);
-CREATE INDEX IF NOT EXISTS idx_hermai_outputs_proof     ON hermai_outputs(proof_level);
-CREATE INDEX IF NOT EXISTS idx_hermai_outputs_entropy   ON hermai_outputs(entropy_class);
-CREATE INDEX IF NOT EXISTS idx_hermai_outputs_created   ON hermai_outputs(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_stp_outputs_command   ON stp_outputs(command_id);
+CREATE INDEX IF NOT EXISTS idx_stp_outputs_proof     ON stp_outputs(proof_level);
+CREATE INDEX IF NOT EXISTS idx_stp_outputs_entropy   ON stp_outputs(entropy_class);
+CREATE INDEX IF NOT EXISTS idx_stp_outputs_created   ON stp_outputs(created_at DESC);
 
 -- RLS
-ALTER TABLE hermai_outputs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE stp_outputs ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "hermai_outputs_select" ON hermai_outputs
+CREATE POLICY "stp_outputs_select" ON stp_outputs
   FOR SELECT USING (true);
 
-CREATE POLICY "hermai_outputs_insert" ON hermai_outputs
+CREATE POLICY "stp_outputs_insert" ON stp_outputs
   FOR INSERT WITH CHECK (true);
 
 -- â”€â”€â”€ DOÄRULAMA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 SELECT table_name FROM information_schema.tables
 WHERE table_schema = 'public'
-  AND table_name = 'hermai_outputs';
--- Beklenen: hermai_outputs
+  AND table_name = 'stp_outputs';
+-- Beklenen: stp_outputs
 
 -- END SOURCE
 
@@ -1764,7 +1764,7 @@ WHERE table_schema = 'public'
 -- Tarih: 15 Nisan 2026
 -- Referans: V-FINAL Doktrin â€” 21 yeni tablo
 -- ============================================================
--- commands, immutable_logs, hermai_outputs â†’ MEVCUT, ATLANDÄ°
+-- commands, immutable_logs, stp_outputs â†’ MEVCUT, ATLANDÄ°
 -- Bu migration SADECE eksik tablolarÄ± ekler.
 -- ============================================================
 
@@ -2030,7 +2030,7 @@ CREATE POLICY "proofs_update" ON proofs FOR UPDATE USING (true);
 SELECT table_name FROM information_schema.tables
 WHERE table_schema = 'public'
   AND table_name IN (
-    'commands','immutable_logs','hermai_outputs',
+    'commands','immutable_logs','stp_outputs',
     'detection_results','formal_specs','proofs','refutations',
     'gate_results','executions','snapshots','proof_chain',
     'alerts','health_status','global_rules','rule_triggers',

@@ -50,7 +50,7 @@
 ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 
-🏛️ NİZAM STRATEJİK PLANLAMA VE KOLEKTİF AKIL PROTOKOLÜ
+🏛️ STP STRATEJİK PLANLAMA VE KOLEKTİF AKIL PROTOKOLÜ
 I. Bilişsel ve Kavramsal Aşama (Zihinsel İnşa)
 Düşünür: Görevin kök mantığını ve felsefesini kurar.
 
@@ -108,7 +108,7 @@ Karar Güven Skoru Üretir: Seçilen kararın isabet oranını meclis puanıyla 
 
 Kararı Gerekçelendirir: Seçimin mantığını teknik ve felsefi olarak raporlar.
 
-Reddedilen Alternatifleri Açıklar: Diğer yolların neden "Nizam"a uygun olmadığını ispatlar.
+Reddedilen Alternatifleri Açıklar: Diğer yolların neden "STP"a uygun olmadığını ispatlar.
 
 VI. Teknoloji ve Kaynak Yönetimi (Lojistik)
 Teknoloji Alternatiflerini Çıkarır: Kullanılabilecek güncel kütüphane ve araçları listeler.
@@ -141,7 +141,7 @@ Plan B Oluşturur: Ana yol tıkanırsa saniyeler içinde devreye girecek yedek r
 
 Plan C Oluşturur: Sistemsel çöküş senaryoları için "Hayatta Kalma" rotasını belirler.
 
-Uyumluluk Kontrolü Yapar: Planın Nizamnameye ve sizin etik kırmızı çizgilerinize uyumunu onaylar.
+Uyumluluk Kontrolü Yapar: Planın STPnameye ve sizin etik kırmızı çizgilerinize uyumunu onaylar.
 
 Geçmiş Öğrenmeden Beslenir: Arşivden gelen tecrübeleri plana son bir süzgeç olarak uygular.
 

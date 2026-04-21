@@ -7,7 +7,7 @@
 //
 // TEK İLKE: Her koşulda, her işlemde, herkes için doğru olanı yapmak.
 //
-// Bu modül tüm alt sistemlerde (Planlama, HermAI, Telegram, Frontend)
+// Bu modül tüm alt sistemlerde (Planlama, STP, Telegram, Frontend)
 // ortak olarak kullanılır. CommonJS formatındadır.
 //
 // Kullanım:

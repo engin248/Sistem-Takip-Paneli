@@ -58,6 +58,8 @@ export const CreateTaskSchema = z.object({
 
 // ─── GÖREV DÜZENLEME ŞEMASI (PUT/PATCH) ─────────────────────
 export const UpdateTaskSchema = z.object({
+  id: z.string().uuid().optional(),
+  task_code: z.string().optional(),
   title: z
     .string()
     .min(3, 'Görev başlığı en az 3 karakter olmalı')

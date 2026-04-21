@@ -34,7 +34,7 @@ export interface L0Result {
     channel: Channel;
 }
 
-export const HermAIAnalysisSchema = z.object({
+export const STPAnalysisSchema = z.object({
     reasoning: z.string(),
     methodology: z.string(),
     alternatives: z.array(z.string()),
@@ -47,7 +47,7 @@ export const HermAIAnalysisSchema = z.object({
     entropyClass: z.enum(['low', 'medium', 'high']),
     proofLevel: z.enum(['PROVEN', 'VALIDATED', 'BOUNDED_VERIFIED', 'GODEL_LIMIT']),
 });
-export type HermAIAnalysis = z.infer<typeof HermAIAnalysisSchema>;
+export type STPAnalysis = z.infer<typeof STPAnalysisSchema>;
 
 export type CriteriaCategory = 'functional' | 'logical' | 'performance' | 'security' | 'data';
 export type CriteriaPriority = 'critical' | 'high' | 'standard';
@@ -57,7 +57,7 @@ export interface CriterionRule {
     name: string;
     category: CriteriaCategory;
     priority: CriteriaPriority;
-    fn: (input: string, analysis: HermAIAnalysis) => boolean;
+    fn: (input: string, analysis: STPAnalysis) => boolean;
 }
 
 export interface CriteriaResult {

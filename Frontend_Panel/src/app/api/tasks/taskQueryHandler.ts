@@ -11,8 +11,13 @@ import { ERR, processError } from '@/lib/errorCore';
 import { analyzeLocalPriority } from '@/services/aiManager';
 import { agentRegistry } from '@/services/agentRegistry';
 import { analyzeKapasite } from '@/services/agentCloner';
+import { verifyApiAuth } from '@/lib/apiAuth';
+
 
 export async function handleTaskQuery(request: NextRequest): Promise<NextResponse> {
+  const { user, error: authError } = await verifyApiAuth(request);
+  if (authError || !user) return NextResponse.json({ success: false, error: authError }, { status: 401 });
+
   const url = new URL(request.url);
   const action = url.searchParams.get('action');
 
@@ -23,6 +28,8 @@ export async function handleTaskQuery(request: NextRequest): Promise<NextRespons
         const limit = Math.min(parseInt(url.searchParams.get('limit') ?? '50', 10) || 50, 100);
         const priorityParam = url.searchParams.get('priority');
         const statusParam = url.searchParams.get('status');
+        const taskCodeParam = url.searchParams.get('task_code');
+        const searchParam = url.searchParams.get('search');
 
         let query = supabase
           .from('tasks')
@@ -33,6 +40,10 @@ export async function handleTaskQuery(request: NextRequest): Promise<NextRespons
 
         if (priorityParam) query = query.eq('priority', priorityParam);
         if (statusParam) query = query.eq('status', statusParam);
+        if (taskCodeParam) query = query.eq('task_code', taskCodeParam.toUpperCase());
+        if (searchParam) {
+          query = query.or(`title.ilike.%${searchParam}%,task_code.ilike.%${searchParam}%`);
+        }
 
         const { data, error } = await query;
         if (error) {

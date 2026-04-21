@@ -204,7 +204,7 @@ export default function PipelineDashboard() {
                                         {[
                                             { id: 'K0',  name: 'Bootstrap',     task: 'Sistem açılış kontrolü' },
                                             { id: 'K1',  name: 'L0 Gatekeeper', task: 'Sanitize + yetki + replay' },
-                                            { id: 'K2.1',name: 'HermAI Analiz', task: "6'lı analiz (Ollama)" },
+                                            { id: 'K2.1',name: 'STP Analiz', task: "6'lı analiz (Ollama)" },
                                             { id: 'K2.3',name: 'Kriter Motoru', task: '92 kriter × 3 mod' },
                                             { id: 'K3',  name: 'Formal Spec',   task: 'Pre/post condition' },
                                             { id: 'K5',  name: 'Proof Engine',  task: 'Constraint solve + verify' },

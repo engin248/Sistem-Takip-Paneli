@@ -6,9 +6,9 @@
 // Tarih   : 2026-04-19
 //
 // MİMARİ:
-//   ESKİ NİZAM  → basla(), durdur(), durumRaporu(), on()
+//   ESKİ STP  → basla(), durdur(), durumRaporu(), on()
 //                  stp_baslat.js ve UI uyumluluğu korunur
-//   YENİ NİZAM  → lpush(), brpop() — Redis/TCP tabanlı
+//   YENİ STP  → lpush(), brpop() — Redis/TCP tabanlı
 //                  Ajanlar ve Planlama için görev hatları
 //
 // HATLAR:
@@ -22,7 +22,7 @@
 const net = require('net');
 const { EventEmitter } = require('events');
 
-// ── GÖZETLEME VE SAĞLIK İZLEME (ESKİ NİZAM KORUMASI) ───────
+// ── GÖZETLEME VE SAĞLIK İZLEME (ESKİ STP KORUMASI) ───────
 class ConnectionManager extends EventEmitter {
 
   constructor() {
@@ -167,7 +167,7 @@ class ConnectionManager extends EventEmitter {
   }
 
   // ══════════════════════════════════════════════════════════
-  // YENİ NİZAM: YÜKSEK HIZLI GÖREV HATLARI (REDIS/TCP)
+  // YENİ STP: YÜKSEK HIZLI GÖREV HATLARI (REDIS/TCP)
   // ══════════════════════════════════════════════════════════
 
   // Protokol Gümrüğü (Hatalı paketleri engeller)

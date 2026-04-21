@@ -13,6 +13,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { alarmUret, ALARM_SEVIYE } from '@/services/alarmService';
 
 export type JobStatus =
   | 'bekliyor'
@@ -95,8 +96,34 @@ export function pushJobHistory(job: QueueJob): void {
     jobHistory.shift(); // en eskiyi çıkar
   }
   jobHistory.push({ ...job });
+  
   // Dosyaya persist
   persistToDisk(jobHistory);
+
+  // ── ALARM MERKEZİ ENTEGRASYONU (SCR-16) ───────────────────
+  // İş hata aldıysa veya reddedildiyse alarm üret
+  if (job.status === 'hata' || job.status === 'reddedildi') {
+    const seviye = job.priority >= 4 ? ALARM_SEVIYE.CRITICAL : ALARM_SEVIYE.WARNING;
+    void alarmUret({
+      modul: 'JOB_MONITOR',
+      baslik: `İŞ HATASI: ${job.agent_kod_adi}`,
+      aciklama: `[${job.job_id}] ${job.agent_kod_adi} (${job.agent_katman}) görevde hata aldı.\n` +
+                `Hata: ${job.error || 'Belirtilmedi'}\n` +
+                `Görev: ${job.task.slice(0, 50)}...`,
+      seviye,
+    });
+  }
+
+  // Başarı oranı denetimi — Circuit Breaker Mantığı
+  const stats = getQueueStats();
+  if (stats.toplam >= 5 && stats.basari_orani < 70) {
+    void alarmUret({
+      modul: 'JOB_MONITOR',
+      baslik: 'KRİTİK BAŞARI DÜŞÜŞÜ',
+      aciklama: `Sistem başarı oranı %${stats.basari_orani}'e düştü! (Toplam: ${stats.toplam}, Hata: ${stats.hata})\nOperasyonel risk tespiti.`,
+      seviye: ALARM_SEVIYE.EMERGENCY,
+    });
+  }
 }
 
 export function getJobHistory(): QueueJob[] {
@@ -144,4 +171,5 @@ export function generateJobId(agentId: string): string {
   const rnd = Math.random().toString(36).slice(2, 5).toUpperCase();
   return `JOB-${agentId}-${ts}-${rnd}`;
 }
+
 

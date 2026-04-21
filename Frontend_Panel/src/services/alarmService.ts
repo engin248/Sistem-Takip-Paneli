@@ -1,8 +1,8 @@
 // ============================================================
-// ALARM SERVİSİ — STP İÇ ALARM SİSTEMİ
+// ALARM SERVİSİ — SİSTEM TAKİP PANELİ İÇ ALARM SİSTEMİ
 // ============================================================
-// STP'nin kendi alarm mekanizması.
-// SKM'deki skm_alarmlar tablosundan MODEL alınmıştır:
+// Sistem Takip Paneli'nin kendi alarm mekanizması.
+// Model, kurumsal alarm standartlarından alınmıştır:
 //   - Tekrar sayacı (3 tekrar → EMERGENCY seviyesi)
 //   - Seviye eskalasyonu
 //   - Telegram bildirim entegrasyonu
@@ -12,7 +12,7 @@
 //   - Her alarm değişikliği hem Map hem DB'ye yazılır
 //   - Supabase yoksa in-memory only olarak devam eder
 //
-// Hata Kodu: ERR-STP001-001 (genel)
+// Hata Kodu: ERR-ALARM001-001 (genel)
 // ============================================================
 
 import { supabase, validateSupabaseConnection } from '@/lib/supabase';

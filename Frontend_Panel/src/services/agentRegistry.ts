@@ -639,7 +639,7 @@ const DEFAULT_ROSTER: AgentCard[] = [
   },
 
   // ===========================================================================
-  // SİSTEM TAKİP PANELİ / NİZAM ÖZEL EKİBİ (8) — 4 İŞlem & Denetim Grubu
+  // SİSTEM TAKİP PANELİ / STP ÖZEL EKİBİ (8) — 4 İŞlem & Denetim Grubu
   // ===========================================================================
   {
     id: 'ANTI-01', kod_adi: 'ANTI-A1',

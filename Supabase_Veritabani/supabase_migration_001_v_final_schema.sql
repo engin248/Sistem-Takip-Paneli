@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS commands (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
-CREATE TABLE IF NOT EXISTS hermai_outputs (
+CREATE TABLE IF NOT EXISTS stp_outputs (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   command_id UUID REFERENCES commands(id),
   reason TEXT,

@@ -159,7 +159,7 @@ export async function goreviPlanla(gorev: string): Promise<GorevPlani> {
       const systemSteps = applySistemDiscipline(sonucPlan.alt_gorevler);
       sonucPlan.alt_gorevler = systemSteps;
       validateSistemPlan(systemSteps.map((s: any) => s.ajan_kodu).join(','));
-      sonucPlan.ozet = `[NİZAM DİSİPLİNİ] OTONOM EK DENETİM → +8 EKİP ÜYESİ`;
+      sonucPlan.ozet = `[STP DİSİPLİNİ] OTONOM EK DENETİM → +8 EKİP ÜYESİ`;
     }
     return sonucPlan;
   };
@@ -201,7 +201,7 @@ MUTLAKA TEMİZ VE SADECE JSON ÇIKART. Başka metin yazma!`;
                 const systemSteps = applySistemDiscipline(parsedPlan.alt_gorevler);
                 parsedPlan.alt_gorevler = systemSteps;
                 validateSistemPlan(systemSteps.map((s: any) => s.ajan_kodu).join(','));
-                parsedPlan.ozet = `[NİZAM DİSİPLİNİ ONAYLI] OTONOM DAG SIRALAMASI: ` + parsedPlan.alt_gorevler.length + ` AşAMA.`;
+                parsedPlan.ozet = `[STP DİSİPLİNİ ONAYLI] OTONOM DAG SIRALAMASI: ` + parsedPlan.alt_gorevler.length + ` AşAMA.`;
              } else {
                 parsedPlan.ozet = `[ALGORİTMA DAG ONAYLI] OTONOM SIRALAMA: ` + parsedPlan.alt_gorevler.map(a => a.ajan_kodu).join(' → ');
              }

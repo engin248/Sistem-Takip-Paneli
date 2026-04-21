@@ -15,7 +15,7 @@
 ## 2. TEKNİK KISITLAR
 - Dış API bağımlılığı kesinlikle olmayacak.
 - Tüm loglar `audit_logs` tablosuna yazılacak.
-- Hata anında süreç durdurulacak (NİZAM #5).
+- Hata anında süreç durdurulacak (STP #5).
 
 ## 3. DOĞRULAMA (VALIDATION)
 - L2 Denetçi, her adımın loglarını inceleyerek `Kontrol_Sayfasi` raporu verecektir.

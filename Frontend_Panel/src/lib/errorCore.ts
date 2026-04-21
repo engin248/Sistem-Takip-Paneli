@@ -159,8 +159,8 @@ export const ERR_DESCRIPTIONS: Record<ErrorCode, string> = {
 
   // ── HERMAİ / PROOF MOTORU ───────────────────────────────────
   'ERR-STP001-050': 'Girdi eksik veya boş — işlem durdu',
-  'ERR-STP001-051': 'Niyet analizi bozuk — HermAI çıktısı geçersiz',
-  'ERR-STP001-052': 'HermAI analizi başarısız',
+  'ERR-STP001-051': 'Niyet analizi bozuk — STP çıktısı geçersiz',
+  'ERR-STP001-052': 'STP analizi başarısız',
   'ERR-STP001-053': 'Tespit motoru başarısız — kriter taraması durdu',
   'ERR-STP001-054': '92 kriter tamamlanamadı — eksik doğrulama',
   'ERR-STP001-055': 'Veri doğrulaması başarısız',
@@ -171,7 +171,7 @@ export const ERR_DESCRIPTIONS: Record<ErrorCode, string> = {
   'ERR-STP001-060': 'Doğrulayıcı başarısız',
   'ERR-STP001-061': 'Çift doğrulayıcı uyuşmazlığı — kural ≠ AI kararı',
   'ERR-STP001-062': 'Çürütme motoru başarısız',
-  'ERR-STP001-063': 'HermAI konsensüs başarısız',
+  'ERR-STP001-063': 'STP konsensüs başarısız',
   'ERR-STP001-064': 'Güvenli çalıştırma başarısız',
   'ERR-STP001-065': 'Runtime invariant ihlali tespit edildi',
   'ERR-STP001-999': 'TABLO ÇÖKMESI — TANIMLANAMAYAN HATA',

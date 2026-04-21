@@ -1,0 +1,10 @@
+[2026-04-20T06:07:05.397Z] [INFO] ══════════════════════════════════════════════
+[2026-04-20T06:07:05.399Z] [INFO]   STP DENETİM — 92 Kriter Motoru v1       
+[2026-04-20T06:07:05.399Z] [INFO]   Supabase + Gemini + SHA-256 Proof           
+[2026-04-20T06:07:05.399Z] [INFO] ══════════════════════════════════════════════
+[2026-04-20T06:07:05.400Z] [INFO] 🧪 TEST MODU BAŞLIYOR...
+[2026-04-20T06:07:05.400Z] [INFO] 🔍 Denetim: [TSK-20260420-TEST] "Test görevi oluştur"
+[2026-04-20T06:07:06.664Z] [WARN] AI doğrulama hatası: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent: [503 Service Unavailable] This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.
+[2026-04-20T06:07:06.665Z] [INFO] 📊 Skor: %100 (92/92) | AI: ✅ | Sonuç: ONAY ✅
+[2026-04-20T06:07:07.063Z] [INFO] 🧪 TEST SONUCU: Skor=%100 Geçen=92/92 Başarısız=0 Sonuç=ONAY
+[2026-04-20T06:07:07.064Z] [INFO] 🧪 Hash: 3295b375dad2a6b97a1c9dd85b991abc478c29230d91744c0df3460159c56d28

@@ -2,7 +2,7 @@ import { enforceSanityAST, calculateTextSimilarity } from './src/core/algorithms
 import { enforceTopologicalDiscipline, DAGTask } from './src/core/algorithms/dagSorter';
 
 console.log("=================================================");
-console.log("🛠️ NİZAM OTONOM SİSTEM ALGORİTMA VAKUM TESTİ BAŞLIYOR...");
+console.log("🛠️ STP OTONOM SİSTEM ALGORİTMA VAKUM TESTİ BAŞLIYOR...");
 console.log("=================================================");
 
 async function testSanity() {

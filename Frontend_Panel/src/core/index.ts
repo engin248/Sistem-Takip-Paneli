@@ -4,15 +4,15 @@
 // Tipler
 export type {
     Channel, SystemMode, CommandStatus, CommandContext,
-    L0Result, HermAIAnalysis, CriteriaResult, ProofResult,
+    L0Result, STPAnalysis, CriteriaResult, ProofResult,
     CriteriaCategory, CriteriaPriority, CriterionRule,
 } from './types';
-export { CommandContextSchema, HermAIAnalysisSchema } from './types';
+export { CommandContextSchema, STPAnalysisSchema } from './types';
 
 // K1.2 — L0 Gatekeeper
 export { L0_GATEKEEPER } from './control_engine';
 
-// K2.1 - HermAI Analiz (Silindi, dis servise aktarildi)
+// K2.1 - STP Analiz (Silindi, dis servise aktarildi)
 // K2.3 - 92 Kriter Motoru (Silindi, dis servise aktarildi)
 
 // K3 — Formal Spesifikasyon

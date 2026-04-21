@@ -90,7 +90,7 @@ export default function JobMonitorPanel() {
   if (loading) return (
     <div className="flex items-center gap-2 justify-center py-10">
       <div className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
-      <span className="text-[9px] font-mono text-indigo-400 tracking-[0.2em]">JOB MONITOR YÜKLENİYOR...</span>
+      <span className="text-[9px] font-mono text-indigo-400 tracking-[0.2em]">İŞ KUYRUĞU YÜKLENİYOR...</span>
     </div>
   );
 
@@ -110,7 +110,7 @@ export default function JobMonitorPanel() {
         <div className="flex items-center gap-2">
           <span className="text-xl">📋</span>
           <div>
-            <div className="text-[10px] font-black tracking-[0.2em] uppercase text-indigo-400">JOB MONITOR</div>
+            <div className="text-[10px] font-black tracking-[0.2em] uppercase text-indigo-400">İŞ KUYRUĞU TAKİBİ</div>
             <div className="text-[8px] font-mono text-slate-500">5sn oto-yenileme • tick:{tick}</div>
           </div>
         </div>

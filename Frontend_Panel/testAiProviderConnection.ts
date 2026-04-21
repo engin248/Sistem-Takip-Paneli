@@ -5,7 +5,7 @@ import { aiComplete, checkOllamaHealth, getProviderStatus } from './src/lib/aiPr
 
 async function runTest() {
     console.log("=================================================");
-    console.log("🛠️ NİZAM OTO-DENETİM: ORİJİNAL AI_PROVIDER TESTİ");
+    console.log("🛠️ STP OTO-DENETİM: ORİJİNAL AI_PROVIDER TESTİ");
     console.log("=================================================");
 
     console.log("\n[1] DURUM KONTROLÜ ÇEKİLİYOR...");

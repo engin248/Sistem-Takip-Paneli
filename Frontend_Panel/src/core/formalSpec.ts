@@ -1,9 +1,9 @@
 // src/core/formalSpec.ts
 // K3 — Formal Spesifikasyon Üreteci
-// HermAI analizinden pre/post condition ve invariant çıkarır
+// STP analizinden pre/post condition ve invariant çıkarır
 
 import { supabase } from '@/lib/supabase';
-import type { HermAIAnalysis } from './types';
+import type { STPAnalysis } from './types';
 
 export interface FormalSpec {
     commandId:       string;
@@ -17,7 +17,7 @@ export interface FormalSpec {
 export async function generateFormalSpec(
     commandId: string,
     input:     string,
-    analysis:  HermAIAnalysis
+    analysis:  STPAnalysis
 ): Promise<FormalSpec> {
     // Pre-conditions
     const preConditions: string[] = [

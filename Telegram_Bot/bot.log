@@ -28,3 +28,9 @@
 [2026-04-21T02:14:38.969Z] [INFO]   Supabase + Gemini AI + Görev Yönetimi       
 [2026-04-21T02:14:38.969Z] [INFO] ══════════════════════════════════════════════
 [2026-04-21T02:14:39.261Z] [INFO] ✅ Telegram bot başlatıldı (POLLING modu).
+[2026-04-21T03:58:48.749Z] [INFO] ✅ Gemini AI bağlandı (gemini-2.5-flash).
+[2026-04-21T03:58:48.785Z] [INFO] ══════════════════════════════════════════════
+[2026-04-21T03:58:48.785Z] [INFO]   STP TELEGRAM BOT — Bağımsız Modül v2       
+[2026-04-21T03:58:48.785Z] [INFO]   Supabase + Gemini AI + Görev Yönetimi       
+[2026-04-21T03:58:48.785Z] [INFO] ══════════════════════════════════════════════
+[2026-04-21T03:58:49.038Z] [INFO] ✅ Telegram bot başlatıldı (POLLING modu).

@@ -1,7 +1,7 @@
 import { supabase, validateSupabaseConnection } from './src/lib/supabase';
 
 async function runMetadataTest() {
-  console.log("=== THE ORDER: METADATA ENJEKSİYON TESTİ BAŞLIYOR ===");
+  console.log("=== SİSTEM TAKİP PANELİ: METADATA ENJEKSİYON TESTİ BAŞLIYOR ===");
 
   const { isValid } = validateSupabaseConnection();
   if (!isValid) {

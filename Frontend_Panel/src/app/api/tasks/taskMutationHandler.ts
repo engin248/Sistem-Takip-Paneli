@@ -12,39 +12,8 @@ import { supabase } from '@/lib/supabase';
 import { CreateTaskSchema, UpdateTaskSchema, validateInput } from '@/lib/validation';
 import { ERR, processError } from '@/lib/errorCore';
 import { gorevOnKontrol } from '@/core/ruleGuard';
+import { verifyApiAuth } from '@/lib/apiAuth';
 
-async function verifyApiAuth(request: NextRequest): Promise<{ user: any; error?: string }> {
-  try {
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return { user: null, error: 'Unauthorized: Bearer token is missing' };
-    }
-    const token = authHeader.split('Bearer ')[1];
-
-    // ── SERVİS TOKEN KONTROLÜ (WhatsApp, Telegram bot'ları için) ──
-    // Servis token SADECE auth yapar — 15 kontrol noktasını ATLAMAZ.
-    // gorevOnKontrol, validateInput, ruleGuard hepsi çalışmaya devam eder.
-    const serviceToken = process.env.STP_SERVICE_TOKEN;
-    if (serviceToken && token === serviceToken) {
-      return {
-        user: {
-          id: 'SERVICE_BOT',
-          email: 'bot@stp.internal',
-          role: 'service',
-        },
-      };
-    }
-
-    // ── KULLANICI JWT KONTROLÜ (Panel UI için) ───────────────────
-    const { data, error } = await supabase.auth.getUser(token);
-    if (error || !data.user) {
-      return { user: null, error: `Auth Error: ${error?.message || 'Invalid token'}` };
-    }
-    return { user: data.user };
-  } catch {
-    return { user: null, error: 'Internal Auth Error' };
-  }
-}
 
 export async function handleTaskCreate(request: NextRequest) {
   try {
@@ -115,10 +84,22 @@ export async function handleTaskUpdate(request: NextRequest) {
       }
     }
 
-    const { data: updatedTask, error: dbError } = await supabase.from('tasks').update({
-      ...payload,
+    const { id, task_code, ...updateData } = payload as any;
+    
+    let query = supabase.from('tasks').update({
+      ...updateData,
       updated_at: new Date().toISOString()
-    }).eq('id', (payload as any).id).select().single();
+    });
+
+    if (id) {
+      query = query.eq('id', id);
+    } else if (task_code) {
+      query = query.eq('task_code', task_code.toUpperCase());
+    } else {
+      return NextResponse.json({ success: false, error: 'Missing ID or task_code' }, { status: 400 });
+    }
+
+    const { data: updatedTask, error: dbError } = await query.select().single();
 
     if (dbError) throw dbError;
 

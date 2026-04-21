@@ -100,7 +100,7 @@ console.log('\n=== KATMAN 2: BACKEND MODÜLLER ===');
 
 const moduls = [
   ['Planlama_Departmani/index.js', 'Planlama'],
-  ['HermAI_Denetim/index.js', 'HermAI'],
+  ['STP_Denetim/index.js', 'STP'],
   ['Telegram_Bot/index.js', 'Telegram'],
 ];
 for (const [dosya, ad] of moduls) {

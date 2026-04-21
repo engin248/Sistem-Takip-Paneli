@@ -168,7 +168,7 @@ function writeVaultAudit(dbRow: any) {
     const isFail = dbRow.details?.status === 'basarisiz' || dbRow.details?.error_code;
     const statusEmoji = isFail ? 'âŒ' : 'âœ…';
 
-    const mdContent = `# ğŸ›¡ï¸ SİSTEM TAKİP PANELİ (NİZAM) KESİN KANIT TUTANAÄI\n\n` +
+    const mdContent = `# ğŸ›¡ï¸ SİSTEM TAKİP PANELİ (STP) KESİN KANIT TUTANAÄI\n\n` +
                       `**Tarih:** \`${new Date().toISOString()}\`\n\n` +
                       `**Log ID:** \`${logCode}\`\n\n` +
                       `**İŞlem (Action):** \`${dbRow.action_code}\`\n\n` +

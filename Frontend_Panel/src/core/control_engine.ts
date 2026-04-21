@@ -111,7 +111,7 @@ export async function L0_GATEKEEPER(
        throw new Error(
          `ERR-STP011: L0 Komut Kontrol Kapısından RET. 
 Sebep: ${regexZirh.reason}. 
-Açıklama: Sistemin kelime/harf düzenine ve bağlam bütünlüğüne müdahale veya yasaklı inisiyatif (silme/anlamsız döngü) tespit edildi. HermAI Algoritma Devresi iptal etti.`
+Açıklama: Sistemin kelime/harf düzenine ve bağlam bütünlüğüne müdahale veya yasaklı inisiyatif (silme/anlamsız döngü) tespit edildi. STP Algoritma Devresi iptal etti.`
        );
   }
 

@@ -1,5 +1,5 @@
 ermAI: Hermenötik Açıklanabilir Yapay Zeka
-HermAI	:	Hermeneutic	Explainable	Artificial	Intelligence
+STP	:	Hermeneutic	Explainable	Artificial	Intelligence
 Sadi Evren SEKER*
 OptiWisdom Inc. , evren@optiwisdom.com
 Makine öğrenmesi modellerinin, özellikle de derin sinir ağlarının, karar alma süreçlerindeki içsel karmaşıklık, "kara kutu" olarak
@@ -226,18 +226,18 @@ Dolayısıyla, Hermai döngüsü, sadece iki farklı açıklama türü sunan bir
 köprü kurarak, kullanıcının daha derin, eleştirel ve bütüncül bir anlayışa ulaşmasını sağlayan yapılandırılmış bir diyalog
 mekanizmasıdır. Bu sürecin nihai hedefi, şemanın en altında belirtildiği gibi, İnsan-Merkezli Yorumlama'ya ulaşmaktır.
 3.4 Kütüphane Olarak Hermai: Pratik Uygulama ve Kullanım Senaryosu
-Teorik çerçeveyi somut bir araca dönüştüren hermai Python kütüphanesi, PyPI (Python Package Index) üzerinden
+Teorik çerçeveyi somut bir araca dönüştüren stp Python kütüphanesi, PyPI (Python Package Index) üzerinden
 standart pip komutu ile kolayca kurulabilir:
-pip install hermai
+pip install stp
 Kütüphanenin kullanımı, Yorumlayıcı Döngü'nün adımlarını takip edecek şekilde tasarlanmıştır. Aşağıdaki kod örneği,
 Titanic veri seti üzerinde eğitilmiş bir RandomForestClassifier modelini yorumlama senaryosunu göstermektedir.
 9
-ALGORİTMA 1: HermAI Python Kod Örneği
+ALGORİTMA 1: STP Python Kod Örneği
 import seaborn	as sns
 from sklearn.ensemble	import RandomForestClassifier
 #	Hermai	kütüphanesinden	gerekli	sınıfları	import	edelim
-from hermai.explainers	import LocalExplainer,	GeneralExplainer
-from hermai.perturbations	import TabularPerturbationGenerator
+from stp.explainers	import LocalExplainer,	GeneralExplainer
+from stp.perturbations	import TabularPerturbationGenerator
 #	...	(Veri	yükleme	ve	model	eğitme	adımları	varsayılıyor)	...
 #	black_box_model,	X_train	ve	X_test	hazır.
 #	--- Adım	1:	Yorumlayıcı	Döngüye	Giriş	("Parça"	Analizi)	---

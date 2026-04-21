@@ -1,8 +1,8 @@
 // ============================================================
 // PIPELINE ENGINE — (KÖPRÜ/STUB BAĞLANTISI)
 // ============================================================
-// DİKKAT: Bu dosya artık işlem yapmaz. Tüm HermAI ve Planlama
-// yükleri dışarıdaki `HermAI_Denetim` ve `Planlama_Departmani`
+// DİKKAT: Bu dosya artık işlem yapmaz. Tüm STP ve Planlama
+// yükleri dışarıdaki `STP_Denetim` ve `Planlama_Departmani`
 // sunucularına taşınmıştır.
 // ============================================================
 

@@ -1,6 +1,6 @@
 // src/core/SİSTEMReporter.ts
 // ============================================================
-// NİZAM RAPORLAMA KATMANI — Süreç İzleme ve Bildirim
+// STP RAPORLAMA KATMANI — Süreç İzleme ve Bildirim
 // ============================================================
 
 import { logAudit } from '@/services/auditService';
@@ -8,7 +8,7 @@ import { logAudit } from '@/services/auditService';
 export type SİSTEMStage = 'ANALIZ' | 'PLANLAMA' | 'ICRA' | 'DENETIM' | 'ONAY';
 
 /**
- * NİZAM Süreç Raporu Gönderir.
+ * STP Süreç Raporu Gönderir.
  * @param stage İlgili aşama
  * @param description İŞlem açıklaması
  * @param details Teknik detaylar
@@ -18,7 +18,7 @@ export async function reportSistemProcess(
   description: string,
   details: Record<string, unknown> = {}
 ): Promise<void> {
-  const SİSTEMDescription = `[NİZAM-CONTROL] [${stage}] ${description}`;
+  const SİSTEMDescription = `[STP-CONTROL] [${stage}] ${description}`;
   
   await logAudit({
     operation_type: 'SYSTEM',
@@ -36,7 +36,7 @@ export async function reportSistemProcess(
 }
 
 /**
- * NİZAM Kritik Uyarı Raporu.
+ * STP Kritik Uyarı Raporu.
  */
 export async function reportSistemAnomaly(
   description: string,
@@ -45,7 +45,7 @@ export async function reportSistemAnomaly(
   await logAudit({
     operation_type: 'ERROR',
     performed_by: 'SISTEM_TAKIP_PANELI',
-    action_description: `[NİZAM-ANOMALI] ${description}`,
+    action_description: `[STP-ANOMALI] ${description}`,
     error_severity: severity === 'CRITICAL' ? 'CRITICAL' : 'WARNING',
     status: 'basarisiz',
     metadata: {

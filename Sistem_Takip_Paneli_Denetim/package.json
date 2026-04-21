@@ -1,0 +1,14 @@
+{
+  "name": "stp-stp-denetim",
+  "version": "1.0.0",
+  "description": "STP Denetim — 92 Kriter Doğrulama ve Proof Motoru",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node index.js --test"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.0",
+    "@supabase/supabase-js": "^2.49.0"
+  }
+}

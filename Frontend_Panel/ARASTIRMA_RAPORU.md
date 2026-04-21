@@ -165,7 +165,7 @@ YENİ YAKLAŞIM: OBSERVABİLİTY (Gözlemlenebilirlik)
 | Güvenlik denetimi | ❌ | ⚠️ | ❌ | ✅ SHA-256 + RLS |
 | Komut pipeline | ❌ | ❌ | ❌ | ✅ 9 katman (K0-K9) |
 | Otonom karar | ❌ | ❌ | ❌ | ✅ Konsensüs motoru |
-| Kural motoru | ❌ | ⚠️ | ✅ | ✅ Nizamname + RuleGuard |
+| Kural motoru | ❌ | ⚠️ | ✅ | ✅ STPname + RuleGuard |
 | Self-healing | ❌ | ⚠️ | ⚠️ | ⚠️ Circuit Breaker |
 | Maliyet | 0₺ | $$$$ | 0₺ | 0₺ |
 

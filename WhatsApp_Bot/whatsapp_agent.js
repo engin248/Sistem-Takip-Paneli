@@ -29,7 +29,8 @@
 // ============================================================
 
 const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
-const qrcode = require('qrcode-terminal');
+const qrcodeTerminal = require('qrcode-terminal');
+const QRCode = require('qrcode');
 const fs     = require('fs');
 const path   = require('path');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
@@ -55,7 +56,7 @@ loadEnv();
 // ── YAPILANDIRMA ─────────────────────────────────────────────
 const GEMINI_KEY       = process.env.GEMINI_API_KEY || '';
 const STP_API_BASE     = process.env.STP_API_URL || 'https://sistem-takip-paneli.vercel.app';
-const STP_API_KEY      = process.env.STP_API_KEY || '';
+const STP_SERVICE_TOKEN = process.env.STP_SERVICE_TOKEN || '';
 const BASE_DIR         = path.join(__dirname, 'arsiv');
 const FOTO_DIR         = path.join(BASE_DIR, 'fotograflar');
 const LOG_FILE         = path.join(__dirname, 'whatsapp_agent.log');
@@ -98,8 +99,11 @@ function isAuthorized(from) {
 // Doğrudan Supabase'e yazmaz! /api/tasks endpoint'i 15 kontrol noktasından geçirir.
 async function createTaskViaAPI(title, senderName, source = 'whatsapp_text') {
   const url = `${STP_API_BASE}/api/tasks`;
-  const headers = { 'Content-Type': 'application/json' };
-  if (STP_API_KEY) headers['Authorization'] = `Bearer ${STP_API_KEY}`;
+  const headers = { 
+    'Content-Type': 'application/json',
+    'Origin': STP_API_BASE
+  };
+  if (STP_SERVICE_TOKEN) headers['Authorization'] = `Bearer ${STP_SERVICE_TOKEN}`;
 
   const body = JSON.stringify({
     title: title.substring(0, 200),
@@ -129,7 +133,7 @@ async function getSystemHealth() {
 async function getActiveTasks() {
   try {
     const headers = {};
-    if (STP_API_KEY) headers['Authorization'] = `Bearer ${STP_API_KEY}`;
+    if (STP_SERVICE_TOKEN) headers['Authorization'] = `Bearer ${STP_SERVICE_TOKEN}`;
     const res = await fetch(`${STP_API_BASE}/api/tasks`, { headers });
     const data = await res.json();
     return data;
@@ -196,9 +200,25 @@ const client = new Client({
   },
 });
 
-client.on('qr', qr => {
+client.on('qr', async (qr) => {
   log('QR KOD — WhatsApp → Bağlı Cihazlar → Cihaz Bağla → Tara', 'INFO');
-  qrcode.generate(qr, { small: true });
+
+  // Terminal QR (yedek)
+  qrcodeTerminal.generate(qr, { small: true });
+
+  // PNG dosyasına kaydet ve tarayıcıda aç
+  try {
+    const qrPath = path.join(__dirname, 'whatsapp_qr.png');
+    await QRCode.toFile(qrPath, qr, { width: 512, margin: 2 });
+    log(`✅ QR kod kaydedildi: ${qrPath}`, 'INFO');
+
+    // Tarayıcıda otomatik aç
+    const { exec } = require('child_process');
+    exec(`start "" "${qrPath}"`);
+    log('📱 QR kod tarayıcıda açıldı — telefondan tara!', 'INFO');
+  } catch (err) {
+    log(`QR PNG hatası: ${err.message}`, 'WARN');
+  }
 });
 
 client.on('authenticated', () => log('✅ Kimlik doğrulandı.', 'INFO'));

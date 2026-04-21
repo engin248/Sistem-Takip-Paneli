@@ -4,7 +4,7 @@ import { readFileSync, statSync } from 'fs';
 import { join } from 'path';
 
 async function runVerification() {
-  console.log("=== THE ORDER: FİZİKSEL OPERASYON DENETİMİ BAŞLIYOR ===");
+  console.log("=== SİSTEM TAKİP PANELİ: FİZİKSEL OPERASYON DENETİMİ BAŞLIYOR ===");
 
   // 1. Snapshot Test
   try {

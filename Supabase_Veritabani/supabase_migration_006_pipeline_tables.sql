@@ -3,7 +3,7 @@
 -- Tarih: 15 Nisan 2026
 -- Referans: V-FINAL Doktrin — 21 yeni tablo
 -- ============================================================
--- commands, immutable_logs, hermai_outputs → MEVCUT, ATLANDİ
+-- commands, immutable_logs, stp_outputs → MEVCUT, ATLANDİ
 -- Bu migration SADECE eksik tabloları ekler.
 -- ============================================================
 
@@ -269,7 +269,7 @@ CREATE POLICY "proofs_update" ON proofs FOR UPDATE USING (true);
 SELECT table_name FROM information_schema.tables
 WHERE table_schema = 'public'
   AND table_name IN (
-    'commands','immutable_logs','hermai_outputs',
+    'commands','immutable_logs','stp_outputs',
     'detection_results','formal_specs','proofs','refutations',
     'gate_results','executions','snapshots','proof_chain',
     'alerts','health_status','global_rules','rule_triggers',
