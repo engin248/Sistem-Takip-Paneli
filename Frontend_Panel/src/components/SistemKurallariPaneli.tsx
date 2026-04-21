@@ -38,6 +38,7 @@ const IHLAL_RENK = {
 };
 
 const KAT_RENK: Record<string, string> = {
+  'TEMEL'     : '#ffd700',
   'DÜRÜSTLÜK' : '#f472b6',
   'SORUMLULUK': '#a78bfa',
   'SAYGI'     : '#34d399',

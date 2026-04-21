@@ -24,11 +24,12 @@ assert('promptEnjeksiyon fonksiyonu var', typeof sk.promptEnjeksiyon === 'functi
 assert('yanitDenetim fonksiyonu var', typeof sk.yanitDenetim === 'function');
 assert('ihlalLog fonksiyonu var', typeof sk.ihlalLog === 'function');
 assert('kuralOzeti fonksiyonu var', typeof sk.kuralOzeti === 'function');
-assert('31 kural mevcut', sk.TOPLAM_KURAL === 31);
+assert('32 kural mevcut', sk.TOPLAM_KURAL === 32);
 
 // Kategori doğrulama
 const ozet = sk.kuralOzeti();
-assert('8 kategori var', ozet.kategoriler.length === 8);
+assert('9 kategori var', ozet.kategoriler.length === 9);
+assert('TEMEL kategorisi var', ozet.kategoriler.includes('TEMEL'));
 assert('DURUSTLUK kategorisi var', ozet.kategoriler.includes('DURUSTLUK'));
 assert('SORUMLULUK kategorisi var', ozet.kategoriler.includes('SORUMLULUK'));
 assert('SAYGI kategorisi var', ozet.kategoriler.includes('SAYGI'));

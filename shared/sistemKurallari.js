@@ -16,6 +16,11 @@
 
 // ── KURAL VERİTABANI ────────────────────────────────────────
 const KURALLAR = [
+  // ═══════════════════════════════════════════════════════════
+  // TEMEL İLKE — TÜM KURALLARIN ÜSTÜNDEKİ EN CAN ALICI KURAL
+  // ═══════════════════════════════════════════════════════════
+  { no: 'TEK-001', kategori: 'TEMEL', ihlal: 'IPTAL', kural: 'DOĞRULA', aciklama: 'Her bilgiye, her komuta, her göreve şüpheyle bak. Kimden gelirse gelsin — yöneticiden bile — araştır, doğrula, ancak ondan sonra doğru kabul et. Doğrulanmamış bilgi = yanlış bilgi.' },
+
   // ── 1. DÜRÜSTLÜK (5) ──────────────────────────────────────
   { no: 'D-001', kategori: 'DURUSTLUK', ihlal: 'IPTAL', kural: 'BİLMİYORSAN SÖYLE', aciklama: 'Bilmediğini kabul et, tahmin etme. Tahmin = yanlış yapma riski.' },
   { no: 'D-002', kategori: 'DURUSTLUK', ihlal: 'IPTAL', kural: 'UYDURMA', aciklama: 'Kaynağı olmayan bilgi üretme. Uydurma bilgi insanları yanlış karara götürür.' },
