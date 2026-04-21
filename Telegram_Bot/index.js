@@ -23,6 +23,7 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const http = require('http');
 const fs   = require('fs');
 const path = require('path');
+const { promptEnjeksiyon, kuralKontrol, yanitDenetim, ihlalLog } = require('../shared/sistemKurallari');
 
 // ── .env YÜKLE ──────────────────────────────────────────────
 function loadEnv() {
@@ -119,9 +120,19 @@ function ollamaChat(system, user) {
 // ── GEMINI AI ÇAĞRISI ───────────────────────────────────────
 async function geminiChat(system, user) {
   if (!geminiModel) throw new Error('Gemini API key tanımlı değil');
-  const prompt = `${system}\n\nKullanıcı mesajı: ${user}`;
+  // SİSTEM KURALLARI: Prompt enjeksiyonu
+  const kuralBlok = promptEnjeksiyon('TELEGRAM');
+  const prompt = `${system}\n\n${kuralBlok}\n\nKullanıcı mesajı: ${user}`;
   const result = await geminiModel.generateContent(prompt);
-  return result.response.text();
+  const yanit = result.response.text();
+  // SİSTEM KURALLARI: Yanıt denetimi
+  const denetim = yanitDenetim(yanit, 'L1');
+  if (!denetim.gecti) {
+    const logMsg = ihlalLog('TELEGRAM_BOT', denetim);
+    if (logMsg) log(logMsg, 'WARN');
+    return '[SİSTEM KURALLARI] Yanıt kural ihlali nedeniyle filtrelendi.';
+  }
+  return yanit;
 }
 
 // ── AI ÇAĞRISI (Gemini öncelikli, Ollama yedek) ─────────────
@@ -422,6 +433,15 @@ bot.on('message:text', async (ctx) => {
   const analysis = analyzeLocalPriority(text);
 
   await ctx.reply(`📥 <b>Görev alındı.</b> Analiz ediliyor...`, { parse_mode: 'HTML' });
+
+  // SİSTEM KURALLARI: Giriş kontrolü
+  const girisKontrol = kuralKontrol('TELEGRAM_GOREV', text);
+  if (!girisKontrol.gecti) {
+    const logMsg = ihlalLog('TELEGRAM_BOT', girisKontrol);
+    if (logMsg) log(logMsg, 'WARN');
+    await ctx.reply(`🚫 <b>Görev reddedildi</b>\n\nSistem kuralları ihlali:\n${girisKontrol.ihlaller.map(i => `• [${i.kural_no}] ${i.aciklama}`).join('\n')}`, { parse_mode: 'HTML' });
+    return;
+  }
 
   // Görev oluştur
   const taskCode = generateTaskCode();

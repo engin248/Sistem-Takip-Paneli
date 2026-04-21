@@ -1,6 +1,6 @@
-﻿// src/core/agentRules.ts
+// src/core/agentRules.ts
 // ============================================================
-// AJAN NİZAMNAMESİ v3.0 — SISTEM_KURALLARI.md'den türetildi
+// SİSTEM KURALLARI v3.0 — SISTEM_KURALLARI.md'den türetildi
 // ============================================================
 // Kaynak: SISTEM_KURALLARI.md (110 madde + 188 kriter)
 // Kurucu: Engin | Sistem: Sistem Takip Paneli
@@ -384,7 +384,7 @@ export function buildKuralPrompt(katman: string): string {
 
   return `
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-AJAN NİZAMNAMESİ v3.0 — BAĞLAYICI KURALLAR
+SİSTEM KURALLARI v3.0 — BAĞLAYICI KURALLAR
 Kaynak: SISTEM_KURALLARI.md (110 Madde) | Katman: ${katman}
 Toplam kural: ${TOPLAM_KURAL_SAYISI} | İhlal: IPTAL=iptal, DUR=bekle, UYARI=log+devam
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•

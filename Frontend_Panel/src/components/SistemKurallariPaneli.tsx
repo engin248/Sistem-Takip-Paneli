@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
 
-// SCR-15 NİZAMNAME PANELİ — gerçek agentRules Şemasına uygun
+// SCR-15 SİSTEM KURALLARI PANELİ — gerçek agentRules Şemasına uygun
 // Alan: no | kategori | ihlal | kaynak | kural | aciklama
 
 interface Kural {
@@ -62,7 +62,7 @@ export default function SİSTEM_KURALLARIPaneli() {
   if (loading) return (
     <div className="flex items-center gap-2 py-8 justify-center">
       <div className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
-      <span className="text-[9px] font-mono text-purple-400 tracking-[0.2em]">NİZAMNAME YÜKLENİYOR...</span>
+      <span className="text-[9px] font-mono text-purple-400 tracking-[0.2em]">SİSTEM KURALLARI YÜKLENİYOR...</span>
     </div>
   );
   if (error) return (
@@ -108,8 +108,8 @@ export default function SİSTEM_KURALLARIPaneli() {
         <div className="flex items-center gap-2">
           <span className="text-xl">📜</span>
           <div>
-            <div className="text-[10px] font-black tracking-[0.2em] uppercase text-purple-400">NİZAMNAME</div>
-            <div className="text-[8px] font-mono text-slate-500">Ajan Disiplin Kural Sistemi</div>
+            <div className="text-[10px] font-black tracking-[0.2em] uppercase text-purple-400">SİSTEM KURALLARI</div>
+            <div className="text-[8px] font-mono text-slate-500">Sistem Geneli Bağlayıcı Kural Motoru</div>
           </div>
         </div>
         <div className="ml-auto flex gap-2 flex-wrap">

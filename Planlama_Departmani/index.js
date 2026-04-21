@@ -24,6 +24,7 @@ const { createClient } = require('@supabase/supabase-js');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const fs   = require('fs');
 const path = require('path');
+const { promptEnjeksiyon, kuralKontrol, yanitDenetim, ihlalLog } = require('../shared/sistemKurallari');
 
 // ── .env YÜKLE ──────────────────────────────────────────────
 function loadEnv() {
@@ -96,6 +97,8 @@ async function analyzeTask(task) {
   const agent = AJANLAR[routeTask(task.title)];
   const prompt = `Sen "${agent.isim}" ajanısın. Rolün: ${agent.rol}
 
+${promptEnjeksiyon(routeTask(task.title))}
+
 Görev: "${task.title}"
 Öncelik: ${task.priority}
 Atanan: ${task.assigned_to}
@@ -137,6 +140,18 @@ async function processTask(task) {
   const ajan = AJANLAR[ajanId];
   
   log(`📋 Görev alındı: [${task.task_code}] "${task.title}" → ${ajan.isim} (${ajanId})`);
+
+  // SİSTEM KURALLARI: Giriş kontrolü
+  const girisKontrol = kuralKontrol('GOREV_ISLEM', task.title);
+  if (!girisKontrol.gecti) {
+    const logMsg = ihlalLog('PLANLAMA', girisKontrol);
+    if (logMsg) log(logMsg, 'WARN');
+    log(`🚫 Görev engellendi [${task.task_code}]: ${girisKontrol.ihlaller.map(i => i.aciklama).join(', ')}`, 'WARN');
+    await supabase.from('tasks')
+      .update({ status: 'reddedildi', updated_at: new Date().toISOString(), metadata: { ...task.metadata, sistem_kurallari_red: girisKontrol } })
+      .eq('id', task.id);
+    return { plan: 'Sistem kuralları tarafından reddedildi', steps: [], risk: 'yüksek' };
+  }
 
   // 1. Durumu "devam_ediyor" yap
   await supabase.from('tasks')

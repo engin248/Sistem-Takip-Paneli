@@ -28,6 +28,7 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const crypto = require('crypto');
 const fs   = require('fs');
 const path = require('path');
+const { kuralKontrol, yanitDenetim, ihlalLog } = require('../shared/sistemKurallari');
 
 // ── .env YÜKLE ──────────────────────────────────────────────
 function loadEnv() {
@@ -188,6 +189,18 @@ const CRITERIA = [
 // ── GÖREV DENETLE ───────────────────────────────────────────
 async function auditTask(task) {
   log(`🔍 Denetim: [${task.task_code}] "${task.title}"`);
+
+  // SİSTEM KURALLARI: Giriş kontrolü
+  const girisKontrol = kuralKontrol('HERMAI_DENETIM', task.title);
+  if (!girisKontrol.gecti) {
+    const logMsg = ihlalLog('HERMAI', girisKontrol);
+    if (logMsg) log(logMsg, 'WARN');
+    log(`🚫 Görev sistem kuralları tarafından reddedildi: [${task.task_code}]`, 'WARN');
+    await supabase.from('tasks')
+      .update({ status: 'reddedildi', updated_at: new Date().toISOString(), metadata: { ...task.metadata, sistem_kurallari_red: girisKontrol } })
+      .eq('id', task.id);
+    return { score: 0, passed: 0, total: CRITERIA.length, failed: CRITERIA.length, verdict: false, hash: 'REJECTED_BY_RULES' };
+  }
 
   const results = [];
   let passed = 0;

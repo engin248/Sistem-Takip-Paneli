@@ -67,7 +67,7 @@ const HQ_SCREENS = [
   { id: 'SCR-12', label: 'AKTİVİTE AKIŞI',      icon: '◈',   color: 'cyan',   status: 'AKTİF' },
   { id: 'SCR-13', label: 'CANLI METRİKLER',     icon: '◇',   color: 'blue',   status: 'AKTİF' },
   { id: 'SCR-14', label: 'SİSTEM KALKAN',        icon: '🛡️ ', color: 'red',    status: 'AKTİF' },
-  { id: 'SCR-15', label: 'NİZAMNAME',            icon: '📙',  color: 'purple', status: 'AKTİF' },
+  { id: 'SCR-15', label: 'SİSTEM KURALLARI',      icon: '📙',  color: 'purple', status: 'AKTİF' },
   { id: 'SCR-16', label: 'JOB MONITOR',           icon: '📋',  color: 'indigo', status: 'AKTİF' },
 ] as const;
 
@@ -800,7 +800,7 @@ export default function Dashboard() {
               <ShieldPanel />
             </HQScreen>
 
-            {/* ── EKRAN 15: NİZAMNAME ──────────────────────────── */}
+            {/* ── EKRAN 15: SİSTEM KURALLARI ───────────────────── */}
             <HQScreen
               screen={HQ_SCREENS[15]!}
               isActive={activeScreen === 'SCR-15'}
