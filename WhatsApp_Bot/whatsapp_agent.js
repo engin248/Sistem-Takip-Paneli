@@ -83,8 +83,16 @@ function log(msg, level = 'INFO') {
 }
 
 // ── YETKİ KONTROL ───────────────────────────────────────────
-function isAuthorized(from) {
-  if (AUTHORIZED_NUMBERS.length === 0) return true;
+function isAuthorized(msg) {
+  const from = msg.from;
+  
+  // 1. Kendi gönderiniz (Kendinize Gönderilenler veya Botun sahibi)
+  if (msg.fromMe) return true;
+
+  // 2. Yetkili listesi boşsa, dışarıdan gelen (arkadaşlar, gruplar) HİÇBİR mesaja cevap VERME!
+  if (AUTHORIZED_NUMBERS.length === 0) return false;
+
+  // 3. Gönderen numara yetkili listesinde var mı?
   return AUTHORIZED_NUMBERS.includes(from);
 }
 
@@ -237,7 +245,7 @@ client.on('message', async msg => {
     const type = msg.type;
 
     // Yetki kontrol
-    if (!isAuthorized(from)) return;
+    if (!isAuthorized(msg)) return;
 
     const senderName = msg._data?.notifyName || from.replace('@c.us', '');
 
