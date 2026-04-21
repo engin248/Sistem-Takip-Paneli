@@ -27,3 +27,6 @@ yarn-debug.log*
 # ============================================================
 **/middleware.ts
 **/middleware.js
+
+WhatsApp_Bot/.wwebjs_auth/
+WhatsApp_Bot/.wwebjs_cache/
