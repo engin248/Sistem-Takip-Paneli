@@ -433,6 +433,173 @@ bot.command('rapor', async (ctx) => {
   }
 });
 
+// ── BEKLEYEN SESLİ GÖREVLER (In-memory) ─────────────────────
+// Sesli mesaj → yazıya çevrilir → kullanıcı onay verene kadar burada bekler
+const _pendingVoiceTasks = new Map();
+
+// ── SESLİ MESAJ → YAZIYA ÇEVİR → ONAY BEKLE ────────────────
+bot.on('message:voice', async (ctx) => {
+  if (!isAuthorized(ctx.chat?.id)) return;
+
+  const senderName = ctx.from?.first_name
+    ? `${ctx.from.first_name}${ctx.from.last_name ? ' ' + ctx.from.last_name : ''}`
+    : 'Bilinmeyen';
+
+  await ctx.reply('🎤 <b>Sesli mesaj alındı.</b> Yazıya çevriliyor...', { parse_mode: 'HTML' });
+
+  try {
+    // 1. Gemini kontrolü
+    if (!geminiModel) {
+      await ctx.reply('⚠️ Gemini AI bağlı değil — sesli mesaj çevrilemez. Lütfen yazılı gönderin.');
+      return;
+    }
+
+    // 2. Ses dosyasını Telegram API'den indir
+    const file = await ctx.getFile();
+    const fileUrl = `https://api.telegram.org/file/bot${BOT_TOKEN}/${file.file_path}`;
+    const response = await fetch(fileUrl);
+    if (!response.ok) throw new Error('Ses dosyası indirilemedi');
+    const audioBuffer = Buffer.from(await response.arrayBuffer());
+
+    log(`SESLİ MESAJ: ${audioBuffer.length} byte, dosya: ${file.file_path}`, 'INFO');
+
+    // 3. Gemini ile ses → yazı dönüşümü (multimodal)
+    const result = await geminiModel.generateContent([
+      {
+        inlineData: {
+          mimeType: 'audio/ogg',
+          data: audioBuffer.toString('base64'),
+        },
+      },
+      { text: 'Bu ses kaydını Türkçe olarak yazıya çevir. Sadece çevrilen metni döndür, başka bir şey ekleme.' },
+    ]);
+
+    const transcript = result.response.text()?.trim();
+    if (!transcript || transcript.length < 3) {
+      await ctx.reply('⚠️ Ses anlaşılamadı. Lütfen daha net konuşun veya yazılı gönderin.');
+      return;
+    }
+
+    // 4. Kullanıcıya çevrilen metni göster — ONAY BEKLE
+    await ctx.reply([
+      `🎤 <b>SES → YAZI DÖNÜŞÜMÜ:</b>`,
+      ``,
+      `<code>${transcript.substring(0, 300)}</code>`,
+      ``,
+      `Bu metin ile görev oluşturulsun mu?`,
+      `✅ /onayla — Görevi bu metin ile oluştur`,
+      `✏️ Doğrudan yazarak düzeltebilirsiniz`,
+      `❌ /iptal_ses — Vazgeç`,
+    ].join('\n'), { parse_mode: 'HTML' });
+
+    // 5. Geçici olarak transcript'i sakla (onay komutu için)
+    _pendingVoiceTasks.set(String(ctx.chat.id), {
+      transcript,
+      senderName,
+      timestamp: Date.now(),
+    });
+
+    // 10 dakika sonra otomatik temizle (bellekte kalmasın)
+    setTimeout(() => {
+      _pendingVoiceTasks.delete(String(ctx.chat.id));
+    }, 10 * 60 * 1000);
+
+    log(`SES→YAZI BAŞARILI: "${transcript.substring(0, 80)}" — ${senderName}`, 'INFO');
+
+  } catch (err) {
+    log(`SESLİ MESAJ HATA: ${err.message}`, 'ERROR');
+    await ctx.reply(`❌ Sesli mesaj işlenemedi: ${err.message}`);
+  }
+});
+
+// ── /onayla — Sesli mesaj onayı → Görev oluştur ─────────────
+bot.command('onayla', async (ctx) => {
+  if (!isAuthorized(ctx.chat?.id)) return;
+  const chatId = String(ctx.chat.id);
+  const pending = _pendingVoiceTasks.get(chatId);
+
+  if (!pending) {
+    await ctx.reply('⚠️ Onaylanacak sesli görev bulunamadı. Önce sesli mesaj gönderin.');
+    return;
+  }
+
+  const { transcript, senderName } = pending;
+  _pendingVoiceTasks.delete(chatId);
+
+  // Sistem kuralları kontrolü
+  const girisKontrol = kuralKontrol('TELEGRAM_SESLI_GOREV', transcript);
+  if (!girisKontrol.gecti) {
+    const logMsg = ihlalLog('TELEGRAM_BOT_VOICE', girisKontrol);
+    if (logMsg) log(logMsg, 'WARN');
+    await ctx.reply(`🚫 <b>Görev reddedildi</b>\n\nSistem kuralları ihlali:\n${girisKontrol.ihlaller.map(i => `• [${i.kural_no}] ${i.aciklama}`).join('\n')}`, { parse_mode: 'HTML' });
+    return;
+  }
+
+  // Öncelik analizi
+  const analysis = analyzeLocalPriority(transcript);
+  const taskCode = generateTaskCode();
+
+  try {
+    const { error } = await supabase.from('tasks').insert([{
+      title: transcript.substring(0, 200),
+      task_code: taskCode,
+      status: 'beklemede',
+      priority: analysis.priority,
+      assigned_to: senderName,
+      assigned_by: 'TELEGRAM-BOT-VOICE',
+      evidence_required: true,
+      evidence_provided: false,
+      retry_count: 0,
+      is_archived: false,
+      metadata: {
+        kaynak: 'telegram_voice',
+        chat_id: ctx.chat.id,
+        gonderen: senderName,
+        ai_analiz: analysis,
+        voice_confirmed: true,
+        voice_original_text: transcript,
+      },
+    }]);
+
+    if (error) {
+      log(`SESLİ GÖREV OLUŞTURMA HATA: ${error.message}`, 'ERROR');
+      await ctx.reply(`❌ Hata: ${error.message}`);
+      return;
+    }
+
+    log(`SESLİ GÖREV OLUŞTURULDU: ${taskCode} — ${transcript.substring(0, 60)}`, 'INFO');
+    await ctx.reply([
+      `✅ <b>SESLİ GÖREV OLUŞTURULDU</b>`,
+      ``,
+      `📋 <b>Kod:</b> <code>${taskCode}</code>`,
+      `🎤 <b>Kaynak:</b> Sesli Mesaj`,
+      `📝 <b>Başlık:</b> ${transcript.substring(0, 100)}`,
+      `${PE[analysis.priority]} <b>Öncelik:</b> ${analysis.priority.toUpperCase()}`,
+      `📊 <b>Güven:</b> %${Math.round(analysis.confidence * 100)}`,
+      ``,
+      `👤 <b>Atanan:</b> ${senderName}`,
+      `📌 <b>Durum:</b> Beklemede`,
+    ].join('\n'), { parse_mode: 'HTML' });
+  } catch (err) {
+    log(`SESLİ GÖREV OLUŞTURMA HATA: ${err.message}`, 'ERROR');
+    await ctx.reply('❌ Görev oluşturulurken hata oluştu.');
+  }
+});
+
+// ── /iptal_ses — Sesli mesaj onayını iptal et ────────────────
+bot.command('iptal_ses', async (ctx) => {
+  if (!isAuthorized(ctx.chat?.id)) return;
+  const chatId = String(ctx.chat.id);
+
+  if (_pendingVoiceTasks.has(chatId)) {
+    _pendingVoiceTasks.delete(chatId);
+    await ctx.reply('🚫 Sesli görev iptal edildi.');
+    log(`SESLİ GÖREV İPTAL: chatId=${chatId}`, 'INFO');
+  } else {
+    await ctx.reply('⚠️ İptal edilecek sesli görev bulunamadı.');
+  }
+});
+
 // ── YAZILI MESAJ → GÖREV OLUŞTUR ────────────────────────────
 bot.on('message:text', async (ctx) => {
   const text = ctx.message.text;

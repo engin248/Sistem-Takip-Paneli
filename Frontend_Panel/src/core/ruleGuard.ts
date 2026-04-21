@@ -161,7 +161,15 @@ export function aracKontrol(
   return { gecti: true, kural_no: '', aciklama: 'Araç kontrolü geçildi', eylem: 'GECIR' };
 }
 
-// ── YANIT SONRASI KONTROL ────────────────────────────────────
+// ── YANIT SONRASI KONTROL — TEK-001 DOĞRULA ─────────────────
+// Her AI çıktısı şüpheyle karşılanır ve doğrulanır.
+// 5 katmanlı doğrulama:
+//   1. Varsayım tespiti (D-001)
+//   2. Halüsinasyon tespiti (D-002)
+//   3. Çelişki tespiti (D-004)
+//   4. Kaynak doğrulama — mutlak ifadeler kanıt ister
+//   5. Confidence gate — çok kısa/boş yanıt güvenilmez
+// ─────────────────────────────────────────────────────────────
 export function yanitKontrol(
   agent_id : string,
   katman   : string,
@@ -169,32 +177,87 @@ export function yanitKontrol(
 ): GuardSonuc {
   const lower = yanit.toLowerCase();
 
-  // Varsayım/tahmin tespiti (T-002)
+  // ── KATMAN 1: Varsayım tespiti (D-001 BİLMİYORSAN SÖYLE) ──
   const varsayimlar = ['sanırım', 'belki', 'muhtemelen', 'galiba', 'herhalde', 'tahmin ediyorum'];
   const bulunan = varsayimlar.find(k => lower.includes(k));
   if (bulunan) {
-    auditLog(agent_id, 'RULE_GUARD_VIOLATION', {
-      kural_no: 'T-002', kelime: bulunan, katman,
+    auditLog(agent_id, 'TEK001_VARSAYIM_ENGEL', {
+      kural_no: 'D-001', kelime: bulunan, katman,
     });
     return {
       gecti: false,
-      kural_no: 'T-002',
-      aciklama: `Varsayım ifadesi tespit edildi: "${bulunan}" — VARSAYIM YASAK`,
+      kural_no: 'D-001',
+      aciklama: `Varsayım ifadesi tespit edildi: "${bulunan}" — BİLMİYORSAN SÖYLE`,
       eylem: 'ENGELLE',
     };
   }
 
-  // Halüsinasyon (A-003)
-  const halusin = ['emin değilim ama yine de', 'kaynağım yok ama'];
+  // ── KATMAN 2: Halüsinasyon tespiti (D-002 UYDURMA) ────────
+  const halusin = ['emin değilim ama yine de', 'kaynağım yok ama', 'bilmiyorum ama'];
   if (halusin.some(k => lower.includes(k))) {
-    auditLog(agent_id, 'RULE_GUARD_VIOLATION', { kural_no: 'A-003', katman });
+    auditLog(agent_id, 'TEK001_HALUSIN_UYARI', { kural_no: 'D-002', katman });
     return {
-      gecti: true,  // UYAR ama engelleme
-      kural_no: 'A-003',
-      aciklama: 'Halüsinasyon göstergesi — UYARI kaydedildi',
+      gecti: true,
+      kural_no: 'D-002',
+      aciklama: 'Halüsinasyon göstergesi — DOĞRULA: kaynağı kontrol et',
       eylem: 'UYAR',
     };
   }
 
-  return { gecti: true, kural_no: '', aciklama: 'Yanıt kontrolü geçildi', eylem: 'GECIR' };
+  // ── KATMAN 3: Çelişki tespiti (D-004 ÇELİŞME) ────────────
+  const celiskiKalibi = [
+    { a: 'başarılı', b: 'hata' },
+    { a: 'tamamlandı', b: 'yapılamadı' },
+    { a: 'doğru', b: 'yanlış' },
+    { a: 'evet', b: 'hayır' },
+  ];
+  for (const c of celiskiKalibi) {
+    if (lower.includes(c.a) && lower.includes(c.b)) {
+      auditLog(agent_id, 'TEK001_CELISKI_UYARI', {
+        kural_no: 'D-004', katman, kelime_a: c.a, kelime_b: c.b,
+      });
+      return {
+        gecti: true,
+        kural_no: 'D-004',
+        aciklama: `Çelişki tespit edildi: "${c.a}" vs "${c.b}" — DOĞRULA`,
+        eylem: 'UYAR',
+      };
+    }
+  }
+
+  // ── KATMAN 4: Kaynak doğrulama — mutlak ifadeler kanıt ister
+  const mutlakIfadeler = ['kesinlikle', 'garanti', '%100', 'asla', 'hiçbir zaman', 'imkansız'];
+  const bulunanMutlak = mutlakIfadeler.find(k => lower.includes(k));
+  if (bulunanMutlak) {
+    // Kanıt kelimesi yoksa uyar
+    const kanitKelimeleri = ['kaynak', 'kanıt', 'test', 'doğrulandı', 'log', 'çıktı'];
+    const kanitVar = kanitKelimeleri.some(k => lower.includes(k));
+    if (!kanitVar) {
+      auditLog(agent_id, 'TEK001_KANITSIZ_MUTLAK', {
+        kural_no: 'TEK-001', katman, ifade: bulunanMutlak,
+      });
+      return {
+        gecti: true,
+        kural_no: 'TEK-001',
+        aciklama: `Mutlak ifade kanıtsız: "${bulunanMutlak}" — DOĞRULA: kaynak nerede?`,
+        eylem: 'UYAR',
+      };
+    }
+  }
+
+  // ── KATMAN 5: Confidence gate — çok kısa yanıt güvenilmez ─
+  if (yanit.trim().length > 0 && yanit.trim().length < 10) {
+    auditLog(agent_id, 'TEK001_KISA_YANIT', {
+      kural_no: 'TEK-001', katman, uzunluk: yanit.trim().length,
+    });
+    return {
+      gecti: true,
+      kural_no: 'TEK-001',
+      aciklama: `Yanıt çok kısa (${yanit.trim().length} karakter) — DOĞRULA: yeterli mi?`,
+      eylem: 'UYAR',
+    };
+  }
+
+  return { gecti: true, kural_no: '', aciklama: 'Yanıt 5 katmanlı doğrulamadan geçti', eylem: 'GECIR' };
 }
+

@@ -1,0 +1,14 @@
+{
+  "name": "stp-whatsapp-bot",
+  "version": "3.0.0",
+  "description": "Sistem Takip Paneli — WhatsApp Köprüsü (Gemini STT + /api/tasks)",
+  "main": "whatsapp_agent.js",
+  "scripts": {
+    "start": "node whatsapp_agent.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "qrcode-terminal": "^0.12.0",
+    "whatsapp-web.js": "^1.26.0"
+  }
+}
