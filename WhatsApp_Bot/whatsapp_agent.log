@@ -1041,3 +1041,13 @@ Hakim Şeker olarak, POLTEKS FABRIC bünye
 [2026-04-21T06:34:13.020Z] [INFO] 📸 Fotoğraf arşivlendi: 2026-04-21T06-34-13_status@broadcast.jpeg
 [2026-04-21T06:34:13.876Z] [INFO] 📸 Fotoğraf arşivlendi: 2026-04-21T06-34-13_status@broadcast.jpeg
 [2026-04-21T06:34:14.958Z] [INFO] 📸 Fotoğraf arşivlendi: 2026-04-21T06-34-14_status@broadcast.jpeg
+[2026-04-21T06:43:38.848Z] [INFO] ✅ AI Bağlantısı (Orkestratör/Local-First) doğrulandı.
+[2026-04-21T06:43:38.851Z] [INFO] ══════════════════════════════════════════════
+[2026-04-21T06:43:38.851Z] [INFO]   WHATSAPP ↔ STP KÖPRÜSÜ v3                  
+[2026-04-21T06:43:38.851Z] [INFO]   Gemini STT + /api/tasks (15 kontrol)        
+[2026-04-21T06:43:38.851Z] [INFO]   Ollama YOK — Doğrudan Supabase YOK          
+[2026-04-21T06:43:38.852Z] [INFO] ══════════════════════════════════════════════
+[2026-04-21T06:43:44.160Z] [INFO] ✅ Kimlik doğrulandı.
+[2026-04-21T06:43:44.206Z] [INFO] ✅ WhatsApp hazır! Mesaj bekleniyor...
+[2026-04-21T06:43:44.206Z] [INFO] 🌐 STP API: https://sistem-takip-paneli.vercel.app
+[2026-04-21T06:43:44.207Z] [INFO] 📁 Fotoğraf arşivi: C:\Users\Esisya\Desktop\Sistem-Takip-Paneli\WhatsApp_Bot\arsiv\fotograflar

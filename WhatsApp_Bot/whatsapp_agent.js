@@ -83,17 +83,22 @@ function log(msg, level = 'INFO') {
 }
 
 // ── YETKİ KONTROL ───────────────────────────────────────────
-function isAuthorized(msg) {
-  const from = msg.from;
+function isAuthorized(msg, client) {
+  // 1. Kesinlikle broadcast (durum/hikaye) mesajlarını yoksay!
+  if (msg.from === 'status@broadcast' || msg.to === 'status@broadcast' || msg.isStatus) return false;
+
+  const myNumber = client.info && client.info.wid ? client.info.wid._serialized : null;
   
-  // 1. Kendi gönderiniz (Kendinize Gönderilenler veya Botun sahibi)
-  if (msg.fromMe) return true;
+  // 2. EĞER SADECE BİZE ÖZELSE (Kendi Kendimize Sohbet / Kayıtlı Mesajlar)
+  if (myNumber && msg.from === myNumber && msg.to === myNumber) return true;
 
-  // 2. Yetkili listesi boşsa, dışarıdan gelen (arkadaşlar, gruplar) HİÇBİR mesaja cevap VERME!
-  if (AUTHORIZED_NUMBERS.length === 0) return false;
+  // 3. Başka yetkili numara .env'de tanımlı mı?
+  if (AUTHORIZED_NUMBERS.length > 0 && AUTHORIZED_NUMBERS.includes(msg.from)) {
+     return true;
+  }
 
-  // 3. Gönderen numara yetkili listesinde var mı?
-  return AUTHORIZED_NUMBERS.includes(from);
+  // 4. Bütün sivilleri, arkadaşları ve grupları tamamen yoksay! Geriye hiçbir şey DÖNME.
+  return false;
 }
 
 // ── STP API ÇAĞRISI — Görev oluşturma ────────────────────────
@@ -245,7 +250,7 @@ client.on('message', async msg => {
     const type = msg.type;
 
     // Yetki kontrol
-    if (!isAuthorized(msg)) return;
+    if (!isAuthorized(msg, client)) return;
 
     const senderName = msg._data?.notifyName || from.replace('@c.us', '');
 
