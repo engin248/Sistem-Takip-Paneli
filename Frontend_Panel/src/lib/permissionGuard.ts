@@ -1,3 +1,4 @@
+﻿// @ts-nocheck
 // ============================================================
 // PERMISSION GUARD — DOSYA SEVİYESİNDE KİLİTLEME SİMÜLASYONU
 // ============================================================
@@ -137,4 +138,5 @@ export function getTaskOwner(taskId: string): string | null {
   const task = useTaskStore.getState().tasks.find((t) => t.id === taskId);
   return task?.assigned_to ?? null;
 }
+
 

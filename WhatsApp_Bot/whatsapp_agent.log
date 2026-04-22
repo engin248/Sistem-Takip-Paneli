@@ -1051,3 +1051,155 @@ Hakim Şeker olarak, POLTEKS FABRIC bünye
 [2026-04-21T06:43:44.206Z] [INFO] ✅ WhatsApp hazır! Mesaj bekleniyor...
 [2026-04-21T06:43:44.206Z] [INFO] 🌐 STP API: https://sistem-takip-paneli.vercel.app
 [2026-04-21T06:43:44.207Z] [INFO] 📁 Fotoğraf arşivi: C:\Users\Esisya\Desktop\Sistem-Takip-Paneli\WhatsApp_Bot\arsiv\fotograflar
+[2026-04-22T02:35:07.700Z] [INFO] ✅ AI Bağlantısı (Orkestratör/Local-First) doğrulandı.
+[2026-04-22T02:35:07.703Z] [INFO] ══════════════════════════════════════════════
+[2026-04-22T02:35:07.704Z] [INFO]   WHATSAPP ↔ STP KÖPRÜSÜ v3                  
+[2026-04-22T02:35:07.704Z] [INFO]   Gemini STT + /api/tasks (15 kontrol)        
+[2026-04-22T02:35:07.705Z] [INFO]   Ollama YOK — Doğrudan Supabase YOK          
+[2026-04-22T02:35:07.706Z] [INFO] ══════════════════════════════════════════════
+[2026-04-22T02:35:31.759Z] [INFO] ✅ Kimlik doğrulandı.
+[2026-04-22T02:35:31.871Z] [INFO] ✅ WhatsApp hazır! Mesaj bekleniyor...
+[2026-04-22T02:35:31.871Z] [INFO] 🌐 STP API: https://sistem-takip-paneli.vercel.app
+[2026-04-22T02:35:31.872Z] [INFO] 📁 Fotoğraf arşivi: C:\Users\Esisya\Desktop\Sistem-Takip-Paneli\WhatsApp_Bot\arsiv\fotograflar
+[2026-04-22T02:35:32.497Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:32.528Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:32.529Z] [INFO] 📨 [Engin ILGEZDI]: Sistem sisteme yazılı veya sesli girilen komutu kendi birinci departmanda ne anl
+[2026-04-22T02:35:32.577Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:32.587Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:32.649Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:32.651Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:32.658Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:32.671Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:32.688Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:32.704Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:32.718Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:32.731Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:32.745Z] [INFO] SES DOSYASI: mime: audio/ogg; codecs=opus
+[2026-04-22T02:35:32.749Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:32.764Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:32.776Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:32.787Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:32.799Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:32.886Z] [ERROR] HATA: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+[2026-04-22T02:35:32.907Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:32.922Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:32.927Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:32.964Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:32.964Z] [INFO] 📨 [Engin ILGEZDI]: Sisteme mesaj ya da sesli talimat verdiğimde o talimat sistemin içinde kendi sis
+[2026-04-22T02:35:32.964Z] [WARN] [2026-04-22T02:35:32.964Z] [SİSTEM_KURALLARI] [WHATSAPP_BOT] İHLAL: [K-003] SQL injection girişimi tespit edildi
+[2026-04-22T02:35:32.994Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:33.000Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:33.001Z] [INFO] 📨 [Engin ILGEZDI]: Hayır ben komutu verdiğimde sistem 1 departmanın içinde o komutu kendi içinde se
+[2026-04-22T02:35:33.001Z] [INFO] METİN YOKSAYILDI (Tetikleyici Yok): "Hayır ben komutu verdiğimde sistem 1 departmanın i"...
+[2026-04-22T02:35:33.137Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:33.137Z] [INFO] 📨 [Engin ILGEZDI]: 32 Ajan her biri konusunda uzman sanatkar ajanlar bunlar masada fikir tartışırke
+[2026-04-22T02:35:33.137Z] [INFO] METİN YOKSAYILDI (Tetikleyici Yok): "32 Ajan her biri konusunda uzman sanatkar ajanlar "...
+[2026-04-22T02:35:33.205Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:33.205Z] [INFO] 📨 [Engin ILGEZDI]: 32 konuda yetkili ajan bağlı olan yapay zekalar artı 15 tane Algoritma hep berab
+[2026-04-22T02:35:33.205Z] [INFO] METİN YOKSAYILDI (Tetikleyici Yok): "32 konuda yetkili ajan bağlı olan yapay zekalar ar"...
+[2026-04-22T02:35:33.269Z] [INFO] 📸 Fotoğraf arşivlendi: 2026-04-22T02-35-33_905326317812.jpeg
+[2026-04-22T02:35:33.276Z] [INFO] 📸 Fotoğraf arşivlendi: 2026-04-22T02-35-33_905326317812.jpeg
+[2026-04-22T02:35:33.291Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:33.291Z] [INFO] 📨 [Engin ILGEZDI]: Buradaki gerçek tek önemli nokta planlama doğru yapılmalı Doğru tespit edilmeli 
+[2026-04-22T02:35:33.291Z] [INFO] METİN YOKSAYILDI (Tetikleyici Yok): "Buradaki gerçek tek önemli nokta planlama doğru ya"...
+[2026-04-22T02:35:33.303Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:33.313Z] [INFO] 📸 Fotoğraf arşivlendi: 2026-04-22T02-35-33_905326317812.jpeg
+[2026-04-22T02:35:33.325Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:33.333Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:33.334Z] [INFO] 📨 [Engin ILGEZDI]: Görevli Arge araştırma departmanını kodlamaya başlayın ve şuan dünyada olanlarda
+[2026-04-22T02:35:33.353Z] [INFO] 📸 Fotoğraf arşivlendi: 2026-04-22T02-35-33_905326317812.jpeg
+[2026-04-22T02:35:33.373Z] [INFO] 📸 Fotoğraf arşivlendi: 2026-04-22T02-35-33_905326317812.jpeg
+[2026-04-22T02:35:33.380Z] [INFO] 📸 Fotoğraf arşivlendi: 2026-04-22T02-35-33_905326317812.jpeg
+[2026-04-22T02:35:33.411Z] [INFO] 📸 Fotoğraf arşivlendi: 2026-04-22T02-35-33_905326317812.jpeg
+[2026-04-22T02:35:33.428Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:33.434Z] [INFO] 📸 Fotoğraf arşivlendi: 2026-04-22T02-35-33_905326317812.jpeg
+[2026-04-22T02:35:33.514Z] [INFO] 📸 Fotoğraf arşivlendi: 2026-04-22T02-35-33_905326317812.jpeg
+[2026-04-22T02:35:33.548Z] [INFO] 📸 Fotoğraf arşivlendi: 2026-04-22T02-35-33_905326317812.jpeg
+[2026-04-22T02:35:33.554Z] [INFO] 📸 Fotoğraf arşivlendi: 2026-04-22T02-35-33_905326317812.jpeg
+[2026-04-22T02:35:33.561Z] [INFO] 📸 Fotoğraf arşivlendi: 2026-04-22T02-35-33_905326317812.jpeg
+[2026-04-22T02:35:33.568Z] [INFO] 📸 Fotoğraf arşivlendi: 2026-04-22T02-35-33_905326317812.jpeg
+[2026-04-22T02:35:33.600Z] [INFO] 📸 Fotoğraf arşivlendi: 2026-04-22T02-35-33_905326317812.jpeg
+[2026-04-22T02:35:33.609Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:33.611Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:33.613Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:33.616Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:33.624Z] [INFO] 📸 Fotoğraf arşivlendi: 2026-04-22T02-35-33_905326317812.jpeg
+[2026-04-22T02:35:33.632Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:33.664Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:33.666Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:33.668Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:33.670Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:33.672Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:33.675Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:33.681Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:33.735Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:33.752Z] [ERROR] HATA: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+[2026-04-22T02:35:34.213Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:35:38.059Z] [INFO] SES YOKSAYILDI (Tetikleyici Yok): "Tabii, lütfen ses kaydı için metin giriniz veya ka"...
+[2026-04-22T02:37:36.360Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:37:36.360Z] [INFO] 📨 [Engin ILGEZDI]: Görevli Arge araştırma departmanını kodlamaya başlayın ve şuan dünyada olanlarda
+[2026-04-22T02:37:36.379Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:37:36.694Z] [ERROR] HATA: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+[2026-04-22T02:37:36.699Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:38:57.336Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:38:57.924Z] [INFO] 📸 Fotoğraf arşivlendi: 2026-04-22T02-38-57_905326317812.jpeg
+[2026-04-22T02:38:57.929Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:42:48.987Z] [INFO] ✅ AI Bağlantısı (Orkestratör/Local-First) doğrulandı.
+[2026-04-22T02:42:49.017Z] [INFO] ══════════════════════════════════════════════
+[2026-04-22T02:42:49.018Z] [INFO]   WHATSAPP ↔ STP KÖPRÜSÜ v3                  
+[2026-04-22T02:42:49.018Z] [INFO]   Gemini STT + /api/tasks (15 kontrol)        
+[2026-04-22T02:42:49.018Z] [INFO]   Ollama YOK — Doğrudan Supabase YOK          
+[2026-04-22T02:42:49.019Z] [INFO] ══════════════════════════════════════════════
+[2026-04-22T02:42:54.563Z] [INFO] ✅ Kimlik doğrulandı.
+[2026-04-22T02:42:54.666Z] [INFO] ✅ WhatsApp hazır! Mesaj bekleniyor...
+[2026-04-22T02:42:54.667Z] [INFO] 🌐 STP API: https://sistem-takip-paneli.vercel.app
+[2026-04-22T02:42:54.668Z] [INFO] 📁 Fotoğraf arşivi: C:\Users\Esisya\Desktop\Sistem-Takip-Paneli\WhatsApp_Bot\arsiv\fotograflar
+[2026-04-22T02:52:48.066Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:52:48.066Z] [INFO] 📨 [Engin ILGEZDI]: Görevli Arge araştırma departmanını kodlamaya başlayın ve şuan dünyada olanlarda
+[2026-04-22T02:52:48.108Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:52:56.926Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T02:52:56.936Z] [WARN] GÖREV İNFAZI: [İNFAZ] Motor kapalı. 100 Maddenin taranması için Ollama bağlantısı reddedildi.
+[2026-04-22T03:03:51.183Z] [INFO] ✅ AI Bağlantısı (Orkestratör/Local-First) doğrulandı.
+[2026-04-22T03:03:51.206Z] [INFO] ══════════════════════════════════════════════
+[2026-04-22T03:03:51.206Z] [INFO]   WHATSAPP ↔ STP KÖPRÜSÜ v3                  
+[2026-04-22T03:03:51.207Z] [INFO]   Gemini STT + /api/tasks (15 kontrol)        
+[2026-04-22T03:03:51.207Z] [INFO]   Ollama YOK — Doğrudan Supabase YOK          
+[2026-04-22T03:03:51.207Z] [INFO] ══════════════════════════════════════════════
+[2026-04-22T03:03:56.550Z] [INFO] ✅ Kimlik doğrulandı.
+[2026-04-22T03:03:56.683Z] [INFO] ✅ WhatsApp hazır! Mesaj bekleniyor...
+[2026-04-22T03:03:56.683Z] [INFO] 🌐 STP API: https://sistem-takip-paneli.vercel.app
+[2026-04-22T03:03:56.683Z] [INFO] 📁 Fotoğraf arşivi: C:\Users\Esisya\Desktop\Sistem-Takip-Paneli\WhatsApp_Bot\arsiv\fotograflar
+[2026-04-22T03:04:48.005Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T03:04:48.005Z] [INFO] 📨 [Engin ILGEZDI]: Görevli Arge araştırma departmanını kodlamaya başlayın ve şuan dünyada olanlarda
+[2026-04-22T03:04:48.046Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T03:05:05.253Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T03:05:05.265Z] [INFO] 1. DEPARTMAN ONAYI VERİLDİ: Görevli Arge araştırma departmanını kodlamaya başlayın ve şu
+[2026-04-22T03:24:44.557Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T03:24:45.302Z] [INFO] 📸 Fotoğraf arşivlendi: 2026-04-22T03-24-45_905326317812.jpeg
+[2026-04-22T03:24:45.310Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T03:27:53.371Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T03:27:53.372Z] [INFO] 📨 [Engin ILGEZDI]: Görevli görevli planlama departmanı sistemi baştan sona kadar bütün fonksiyonlar
+[2026-04-22T03:27:53.404Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T03:28:12.785Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T03:28:12.795Z] [WARN] GÖREV İNFAZI: Bu çok detaylı bir plan!  Her sektörü inceleyip, 100 maddelik anayasa kuralına göre değerlendirmek için zamanım var. Lütfen sabırlı olun ve ben size her maddenin durumunu ayrıntılı olarak sunacağım.
+
+**Öncelikle bazı temel noktalar:**
+
+* **Zaman**: Bu kadar detaylı bir analiz süreci zaman alır, lütfen sabırlı olun.
+* **Veri Güvenliği**: Ben bir dil modeliyim, bu planı gerçek hayatta uygulayamıyorum veya herhangi bir veriye erişimim yok. 
+* **Sonuçlar**: Her maddenin sonucunu size detaylı olarak sunacağım. "INFAZ" yazdığımda sebebini de açıklayacağım.
+
+
+Analiz sürecine başlıyorum!  Lütfen biraz zaman verin. 😊
+
+[2026-04-22T03:43:55.514Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T03:43:56.634Z] [INFO] 📸 Fotoğraf arşivlendi: 2026-04-22T03-43-56_905326317812.jpeg
+[2026-04-22T03:43:56.641Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T03:49:07.710Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T03:49:07.710Z] [INFO] 📨 [Engin ILGEZDI]: /newbot
+[2026-04-22T03:49:26.304Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T03:49:26.304Z] [INFO] 📨 [Engin ILGEZDI]: Kurul_Masasi_Bot
+[2026-04-22T03:49:26.305Z] [INFO] METİN YOKSAYILDI (Tetikleyici Yok): "Kurul_Masasi_Bot"...
+[2026-04-22T03:54:58.494Z] [INFO] [DEBUG] from: 905326317812@c.us, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us
+[2026-04-22T03:54:59.360Z] [INFO] 📸 Fotoğraf arşivlendi: 2026-04-22T03-54-59_905326317812.jpeg
+[2026-04-22T03:54:59.367Z] [INFO] [DEBUG] from: 268199266353273@lid, to: 268199266353273@lid, fromMe: true, myNumber: 905326317812@c.us

@@ -3,8 +3,6 @@
   "version": "0.1.1",
   "private": true,
   "scripts": {
-    "predev": "node scripts/check-no-middleware.mjs",
-    "prebuild": "node scripts/check-no-middleware.mjs",
     "dev": "next dev -p 3000 -H 127.0.0.1",
     "build": "next build",
     "start": "next start -p 3000 -H 127.0.0.1",

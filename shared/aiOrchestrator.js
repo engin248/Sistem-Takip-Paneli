@@ -32,12 +32,15 @@ class AIOrchestrator {
     /**
      * İstenilen Modeli Barındıran ve Aktif Olan Sağlam Motoru Bulur (Universal Smart Routing)
      * KURAL 14: SİSTEM OLLAMA'YA BAĞIMLI DEĞİLDİR. OLLAMA ÇÖKERSE LM STUDIO DEVRALIR.
+     * YÜK DAĞITIMI (Load Balancing): avoidHost geçilirse onu zorunlu (hard constraint) es geçer.
      */
-    async getEngineForModel(targetModel) {
+    async getEngineForModel(targetModel, avoidHost = null) {
         const baseName = targetModel.split(':')[0].toLowerCase(); // Örn: 'deepseek-r1'
         let selectedEngine = null;
 
         for (const engine of this.localEngines) {
+            if (avoidHost && engine.host === avoidHost) continue; // Auto-Routing Load Balancer Rule
+            
             try {
                 if (engine.type === 'ollama') {
                     const isAlive = await new Promise((resolve) => {
@@ -104,15 +107,16 @@ class AIOrchestrator {
      */
     async chat(prompt, systemPrompt = '', options = {}) {
         const targetModelOriginal = options.model || this.fallbackModel;
+        const avoidHost = options.avoidHost || null;
         
-        // HATA TOLERANSI: Ollama çökmüşse LM Studio'ya yönlenir, o da çökmüşse null döner.
-        const activeEngine = await this.getEngineForModel(targetModelOriginal);
+        // HATA TOLERANSI: Ollama çökmüşse LM Studio'ya yönlenir. Auto-Routing ile yük dağılır.
+        const activeEngine = await this.getEngineForModel(targetModelOriginal, avoidHost);
         
         if (activeEngine) {
             try {
                 // Motor değiştirildiyse (Örn LM Studio'nun asıl GGUF adı) onu kullanır
                 const finalModelName = activeEngine.mappedModelName || targetModelOriginal;
-                console.log(`[STP-AI] ⚡ [PLATFORM BAGIMSIZ] ${activeEngine.name} Motorunda "${finalModelName}" uyandırıldı.`);
+                console.log(`[STP-AI] ⚡ [AUTO-ROUTING] ${activeEngine.name} Motorunda "${finalModelName}" uyandırıldı.`);
                 
                 if (activeEngine.type === 'ollama') {
                     return await this.callOllama(activeEngine.host, finalModelName, prompt, systemPrompt, options);

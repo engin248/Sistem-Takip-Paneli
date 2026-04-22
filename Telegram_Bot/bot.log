@@ -34,3 +34,27 @@
 [2026-04-21T03:58:48.785Z] [INFO]   Supabase + Gemini AI + Görev Yönetimi       
 [2026-04-21T03:58:48.785Z] [INFO] ══════════════════════════════════════════════
 [2026-04-21T03:58:49.038Z] [INFO] ✅ Telegram bot başlatıldı (POLLING modu).
+[2026-04-22T02:34:57.279Z] [INFO] ✅ Gemini AI bağlandı (gemini-2.5-flash).
+[2026-04-22T02:34:57.282Z] [INFO] ══════════════════════════════════════════════
+[2026-04-22T02:34:57.283Z] [INFO]   STP TELEGRAM BOT — API Channel v3          
+[2026-04-22T02:34:57.283Z] [INFO]   Sıfır DB Erişimi — Tam API Pipeline         
+[2026-04-22T02:34:57.283Z] [INFO] ══════════════════════════════════════════════
+[2026-04-22T02:34:57.527Z] [INFO] ✅ Telegram bot başlatıldı (API Mode).
+[2026-04-22T02:42:54.791Z] [INFO] ✅ Gemini AI bağlandı (gemini-2.5-flash).
+[2026-04-22T02:42:54.826Z] [INFO] ══════════════════════════════════════════════
+[2026-04-22T02:42:54.827Z] [INFO]   STP TELEGRAM BOT — API Channel v3          
+[2026-04-22T02:42:54.827Z] [INFO]   Sıfır DB Erişimi — Tam API Pipeline         
+[2026-04-22T02:42:54.827Z] [INFO] ══════════════════════════════════════════════
+[2026-04-22T02:42:55.166Z] [INFO] ✅ Telegram bot başlatıldı (API Mode).
+[2026-04-22T03:03:56.074Z] [INFO] ✅ Gemini AI bağlandı (gemini-2.5-flash).
+[2026-04-22T03:03:56.095Z] [INFO] ══════════════════════════════════════════════
+[2026-04-22T03:03:56.096Z] [INFO]   STP TELEGRAM BOT — API Channel v3          
+[2026-04-22T03:03:56.096Z] [INFO]   Sıfır DB Erişimi — Tam API Pipeline         
+[2026-04-22T03:03:56.096Z] [INFO] ══════════════════════════════════════════════
+[2026-04-22T03:03:56.343Z] [INFO] ✅ Telegram bot başlatıldı (API Mode).
+[2026-04-22T03:26:59.301Z] [INFO] ✅ Gemini AI bağlandı (gemini-2.5-flash).
+[2026-04-22T03:26:59.324Z] [INFO] ══════════════════════════════════════════════
+[2026-04-22T03:26:59.325Z] [INFO]   STP TELEGRAM BOT — API Channel v3          
+[2026-04-22T03:26:59.325Z] [INFO]   Sıfır DB Erişimi — Tam API Pipeline         
+[2026-04-22T03:26:59.325Z] [INFO] ══════════════════════════════════════════════
+[2026-04-22T03:26:59.581Z] [INFO] ✅ Telegram bot başlatıldı (API Mode).

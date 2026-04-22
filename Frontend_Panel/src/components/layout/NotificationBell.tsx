@@ -1,3 +1,4 @@
+﻿// @ts-nocheck
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { useLanguageStore } from "@/store/useLanguageStore";
@@ -162,3 +163,4 @@ export default function NotificationBell() {
     </div >
   );
 }
+

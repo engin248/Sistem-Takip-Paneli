@@ -76,3 +76,55 @@
 [2026-04-20T05:37:48.921Z] [INFO] 🔄 Maksimum tekrar deneme: 3
 [2026-04-20T05:37:48.921Z] [INFO] 
 [2026-04-20T05:37:48.921Z] [INFO] 🚀 Ajan motoru başlatıldı. Görev bekleniyor...
+[2026-04-21T21:17:01.582Z] [INFO] ✅ 160 ajan kadrosu yüklendi (223 birim).
+[2026-04-21T21:17:01.583Z] [INFO] ══════════════════════════════════════════════
+[2026-04-21T21:17:01.583Z] [INFO]   STP AI AJANLAR — 160 Birim Kadro Motoru v2  
+[2026-04-21T21:17:01.583Z] [INFO]   32 Takım × 5 Ajan = 160 Askeri Düzey Birim  
+[2026-04-21T21:17:01.583Z] [INFO]   Görev gelir → Atanır → Yapılır              
+[2026-04-21T21:17:01.583Z] [INFO] ══════════════════════════════════════════════
+[2026-04-21T21:17:02.714Z] [INFO] ✅ Supabase bağlantısı doğrulandı.
+[2026-04-21T21:17:02.715Z] [INFO] ✅ AI Bağlantısı (Orkestratör/Local-First) doğrulandı.
+[2026-04-21T21:17:02.715Z] [INFO] ⏱️  Görev tarama aralığı: 10sn
+[2026-04-21T21:17:02.716Z] [INFO] 🔄 Maksimum tekrar deneme: 3
+[2026-04-21T21:17:02.717Z] [INFO] 
+[2026-04-21T21:17:02.717Z] [INFO] 🚀 Ajan motoru başlatıldı. Görev bekleniyor...
+[2026-04-21T21:17:03.469Z] [INFO] 📥 2 bekleyen görev bulundu.
+[2026-04-21T21:17:03.470Z] [INFO] 🆔 [EXE-MO94JSDQ-X2LH] Yeni görev işleme başlatıldı: [TSK-8418]
+[2026-04-21T21:17:06.464Z] [INFO] 📋 [EXE-MO94JSDQ-X2LH] [G-2] Görev atandı: [TSK-8418] → TEST-ALFA (TE-01) [Takım: TE]
+[2026-04-21T21:17:06.999Z] [INFO] ⚡ [EXE-MO94JSDQ-X2LH] YAPICI [TE-01] TEST-ALFA görevi analiz ediyor...
+[2026-04-21T21:17:11.681Z] [INFO] 🔍 [EXE-MO94JSDQ-X2LH] DENETÇİ [TE-02] TEST-BRAVO kontrol ediyor...
+[2026-04-21T21:17:12.063Z] [INFO] ✅ [EXE-MO94JSDQ-X2LH] DENETÇİ ONAYLADI.
+[2026-04-21T21:17:12.063Z] [WARN] ⚠️ [EXE-MO94JSDQ-X2LH] ÇİFT DOĞRULAMA BAŞARISIZ: Doğrulama başarılı.
+[2026-04-21T21:17:12.063Z] [INFO] 🔄 [EXE-MO94JSDQ-X2LH] Re-Try: Tekrar üretim yapılıyor (1/1)...
+[2026-04-21T21:17:16.045Z] [ERROR] ❌ [EXE-MO94JSDQ-X2LH] FAILED_VALIDATION: Tekrar da başarısız. Süreç durduruluyor.
+[2026-04-21T21:17:16.665Z] [INFO] 🆔 [EXE-MO94K2K9-KQNZ] Yeni görev işleme başlatıldı: [TSK-8935]
+[2026-04-21T21:17:16.817Z] [INFO] 📋 [EXE-MO94K2K9-KQNZ] [G-2] Görev atandı: [TSK-8935] → TEST-ALFA (TE-01) [Takım: TE]
+[2026-04-21T21:17:17.122Z] [INFO] ⚡ [EXE-MO94K2K9-KQNZ] YAPICI [TE-01] TEST-ALFA görevi analiz ediyor...
+[2026-04-21T21:17:20.177Z] [INFO] 🔍 [EXE-MO94K2K9-KQNZ] DENETÇİ [TE-02] TEST-BRAVO kontrol ediyor...
+[2026-04-21T21:17:20.505Z] [INFO] ✅ [EXE-MO94K2K9-KQNZ] DENETÇİ ONAYLADI.
+[2026-04-21T21:17:20.506Z] [WARN] ⚠️ [EXE-MO94K2K9-KQNZ] ÇİFT DOĞRULAMA BAŞARISIZ: Doğrulama başarılı.
+[2026-04-21T21:17:20.506Z] [INFO] 🔄 [EXE-MO94K2K9-KQNZ] Re-Try: Tekrar üretim yapılıyor (1/1)...
+[2026-04-21T21:17:23.897Z] [ERROR] ❌ [EXE-MO94K2K9-KQNZ] FAILED_VALIDATION: Tekrar da başarısız. Süreç durduruluyor.
+[2026-04-21T21:28:57.021Z] [INFO] ✅ 160 ajan kadrosu yüklendi (223 birim).
+[2026-04-21T21:28:57.021Z] [INFO] ══════════════════════════════════════════════
+[2026-04-21T21:28:57.022Z] [INFO]   STP AI AJANLAR — 160 Birim Kadro Motoru v2  
+[2026-04-21T21:28:57.022Z] [INFO]   32 Takım × 5 Ajan = 160 Askeri Düzey Birim  
+[2026-04-21T21:28:57.022Z] [INFO]   Görev gelir → Atanır → Yapılır              
+[2026-04-21T21:28:57.023Z] [INFO] ══════════════════════════════════════════════
+[2026-04-21T21:29:00.856Z] [INFO] ✅ Supabase bağlantısı doğrulandı.
+[2026-04-21T21:29:00.857Z] [INFO] ✅ AI Bağlantısı (Orkestratör/Local-First) doğrulandı.
+[2026-04-21T21:29:00.857Z] [INFO] ⏱️  Görev tarama aralığı: 10sn
+[2026-04-21T21:29:00.857Z] [INFO] 🔄 Maksimum tekrar deneme: 3
+[2026-04-21T21:29:00.858Z] [INFO] 
+[2026-04-21T21:29:00.858Z] [INFO] 🚀 Ajan motoru başlatıldı. Görev bekleniyor...
+[2026-04-21T23:23:09.433Z] [COUNCIL] [QUICK MODE] Hızlı Görev: "Örnek Hızlı Görev: Logları temizleyen bir cron yazalım."
+[2026-04-22T00:51:57.461Z] [COUNCIL] [FULL MODE] Görev Başladı: "Yeni bir Görev Yönetimi paneli yapalım..."
+[2026-04-22T00:51:57.462Z] [COUNCIL] [K-1 Stratejist] 32 Ana Ajan Haritasını Taramaya Başlıyor...
+[2026-04-22T00:52:15.749Z] [COUNCIL] K-1 Odaya Şu Ajanları ve Gölgelerini Kilitledi: A-01, A-06, A-12
+[2026-04-22T00:54:37.469Z] [COUNCIL] [ROUND 1] Bağımsız Kör Analiz Başlıyor...
+[2026-04-22T00:55:06.259Z] [COUNCIL] [ROUND 2] Gölgeler Uyanıyor. "5 Eksenli Denetim (Güvenlik, Performans vs.)" Çarpışması Başlıyor...
+[2026-04-22T00:55:06.262Z] [COUNCIL] [L-01 ERROR] STP-AI KILITLENMESI: Hiçbir AI motoru (Lokal veya Bulut) ayakta değil! Lokal IT müdahalesi gerekiyor.
+[2026-04-22T00:55:06.265Z] [COUNCIL] [L-06 ERROR] STP-AI KILITLENMESI: Hiçbir AI motoru (Lokal veya Bulut) ayakta değil! Lokal IT müdahalesi gerekiyor.
+[2026-04-22T00:55:06.267Z] [COUNCIL] [L-12 ERROR] STP-AI KILITLENMESI: Hiçbir AI motoru (Lokal veya Bulut) ayakta değil! Lokal IT müdahalesi gerekiyor.
+[2026-04-22T00:55:06.267Z] [COUNCIL] [ROUND 3] Algoritma Kesin Mührü Vuruyor...
+[2026-04-22T00:55:13.301Z] [COUNCIL] [FULL MODE] Görev Tamamlandı. Çıktı MDS-160 İcra Tesisine Teslime Hazır.

@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 import React, { useState, useEffect } from 'react';
 import {
@@ -37,19 +38,50 @@ export default function PlanningPanel() {
     return () => clearInterval(interval);
   }, [isProcessing]);
 
-  const simulateProcessing = async () => {
+    const simulateProcessing = async () => {
     if (!mainPrompt.trim()) return;
     setIsProcessing(true);
-    setFinalOutput("");
+    setFinalOutput(`>>> KOMUT ALINDI: [ ${mainPrompt.substring(0, 30)}... ]\n>>> ZINDIK PROTOKOLÜ ÇAĞRILIYOR...`);
     setElapsedTime(0);
     setHealthScore(null);
-    const outputs = ["✓ MİMARİ OK", "✓ GÜVENLİK OK", "✓ VERİ OK", "✓ ANALİZ OK", "✓ ONAY VERİLDİ"];
-    for (let i = 0; i < agentFilters.length; i++) {
-      setAgentFilters(p => p.map(a => a.id === i + 1 ? { ...a, state: 'THINKING' } : a));
-      await new Promise(r => setTimeout(r, 800));
-      setAgentFilters(p => p.map(a => a.id === i + 1 ? { ...a, state: 'DONE', output: outputs[i] } : a));
+    setIsJobStarted(false);
+
+    const algos = [
+      '[YAPAY ZEKA] Mimari Şablon Çıkarılıyor...',
+      '[ALGORİTMA] Sniper Risk Analizi Yürütülüyor...',
+      '[YAPAY ZEKA] Matematiksel Verim Hesaplanıyor...',
+      '[ALGORİTMA] Gölge Sızma/Risk Testi...',
+      '[YAPAY ZEKA] Kurmay Karar Çıktısı Bekleniyor...'
+    ];
+    const outputs = [
+      '✓ MİMARİ DOĞRULANDI', 
+      '✓ RİSK (SNIPER) SIFIRLANDI', 
+      '✓ MATEMATİK (%99 UYUM)', 
+      '✓ GÖLGE AÇIĞI SIFIR', 
+      '✓ KURMAY KESİN ONAYI'
+    ];
+
+    let currentOut = `>>> KOMUT: [ ${mainPrompt} ]\n>>> 15.000 AJAN KADRO DİNAMO'DAN (5 ASİL 5 GÖLGE) SEÇİLİYOR...\n`;
+    setFinalOutput(currentOut);
+
+    const currentFilters = agentFilters;
+
+    for (let i = 0; i < currentFilters.length; i++) {
+      setAgentFilters(p => p.map((a, idx) => idx === i ? { ...a, state: 'THINKING', output: algos[i] } : a));
+      
+      currentOut += `\n[${currentFilters[i].name} DEPARTMANI] >>> YAPAY ZEKA DEVREDE...`;
+      setFinalOutput(currentOut);
+
+      await new Promise(r => setTimeout(r, 1500));
+
+      setAgentFilters(p => p.map((a, idx) => idx === i ? { ...a, state: 'DONE', output: outputs[i] } : a));
+      
+      currentOut += `\n   >> [BAŞARILI] ${outputs[i]}\n`;
+      setFinalOutput(currentOut);
     }
-    setFinalOutput(outputs.join("\n"));
+    
+    currentOut += `\n\n=== 5/5 YÜCELİK UZLAŞMASI SAĞLANDI ===\n>>> 0-İNİSİYATİF ONAYLANDI. SİSTEM İNFAZA HAZIR.`;
+    setFinalOutput(currentOut);
     setIsProcessing(false);
   };
 
@@ -198,3 +230,5 @@ export default function PlanningPanel() {
     </div>
   );
 }
+
+

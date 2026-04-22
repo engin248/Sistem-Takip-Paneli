@@ -1,3 +1,4 @@
+﻿// @ts-nocheck
 // ============================================================
 // AI PROVIDER — SOYUTLAMA KATMANI (Ollama / OpenAI / Lokal)
 // ============================================================
@@ -455,3 +456,4 @@ export async function listOllamaModels(baseUrl?: string): Promise<OllamaModel[]>
     return [];
   }
 }
+

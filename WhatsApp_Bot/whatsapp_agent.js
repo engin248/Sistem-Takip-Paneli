@@ -103,27 +103,30 @@ function isAuthorized(msg, client) {
   return false;
 }
 
-// ── STP API ÇAĞRISI — Görev oluşturma ────────────────────────
-// Doğrudan Supabase'e yazmaz! /api/tasks endpoint'i 15 kontrol noktasından geçirir.
+const { komutuSistemeKabulEt } = require('../Gorev_Kabul_Departmani/komut_alim');
+
+// ── 1. DEPARTMAN ÇAĞRISI (LOKAL) — Görev oluşturma ────────────
 async function createTaskViaAPI(title, senderName, source = 'whatsapp_text') {
-  const url = `${STP_API_BASE}/api/tasks`;
-  const headers = { 
-    'Content-Type': 'application/json',
-    'Origin': STP_API_BASE
-  };
-  if (STP_SERVICE_TOKEN) headers['Authorization'] = `Bearer ${STP_SERVICE_TOKEN}`;
-
-  const body = JSON.stringify({
-    title: title.substring(0, 200),
-    description: `WhatsApp üzerinden gönderildi (${source})`,
-    priority: 'normal',
-    assigned_to: senderName,
-    operator_name: senderName,
-  });
-
-  const response = await fetch(url, { method: 'POST', headers, body });
-  const result = await response.json();
-  return result;
+  try {
+    const tamBilet = `[KAYNAK: ${source} - KULLANICI: ${senderName}] ${title}`;
+    const sonuc = await komutuSistemeKabulEt(tamBilet);
+    
+    if (sonuc.durum === 'PASS') {
+      return { 
+        success: true, 
+        data: { task_code: 'ZINDIK-ONAYLI' }, 
+        mimar_plan: sonuc.mimar_plan,
+        error: null 
+      };
+    } else {
+      return { 
+        success: false, 
+        error: sonuc.zindik_raporu 
+      };
+    }
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
 }
 
 // ── STP API — Sistem durumu ──────────────────────────────────
@@ -428,24 +431,26 @@ client.on('message_create', async msg => {
 
     await msg.reply('📥 *Görev alındı.* Kontrol noktalarından geçiriliyor...');
 
-    // /api/tasks POST — 15 kontrol noktası burada çalışır
+    // ── 1. DEPARTMAN'A (Görev Kabul) OTONOM GÖNDERİM ──
     const result = await createTaskViaAPI(metin, senderName, 'whatsapp_text');
 
     if (result.success) {
-      const taskCode = result.data?.task_code || '';
-      const priority = analyzeLocalPriority(metin);
       await msg.reply(
-        `✅ *GÖREV OLUŞTURULDU*\n\n` +
-        `📋 Kod: \`${taskCode}\`\n` +
-        `📝 ${metin.substring(0, 100)}\n` +
-        `${PE[priority]} Öncelik: ${priority.toUpperCase()}\n` +
-        `👤 Atanan: ${senderName}\n` +
-        `📌 Durum: Beklemede`
+        `🏛️ *1. DEPARTMAN (GÖREV KABUL) ONAYLANDI*\n\n` +
+        `✅ *MİMAR:* Görevi Anladı ve 6-Katmanlı Planı Çizdi.\n` +
+        `⚖️ *ZINDIK:* 100 Maddelik İnfaz Testinden Geçti! [PASS]\n\n` +
+        `📋 *Hedef:* ${metin.substring(0, 100).replace(/\n/g, ' ')}...\n` +
+        `📌 *Aksiyon:* Onaylandı, Kurul Masasına Çıkarılıyor!`
       );
-      log(`GÖREV OLUŞTURULDU: ${taskCode} — ${metin.substring(0, 60)}`, 'INFO');
+      log(`1. DEPARTMAN ONAYI VERİLDİ: ${metin.substring(0, 60)}`, 'INFO');
     } else {
-      await msg.reply(`❌ Görev oluşturulamadı: ${result.error || 'bilinmeyen hata'}\n\n_15 kontrol noktasından biri tarafından reddedilmiş olabilir._`);
-      log(`GÖREV REDDEDİLDİ: ${result.error}`, 'WARN');
+      await msg.reply(
+        `❌ *1. DEPARTMAN İNFAZ ETTİ!* ❌\n\n` +
+        `Mimarın çizdiği plan, Zındık'ın (MDS-160) Anayasasından geçemedi!\n\n` +
+        `*ZINDIK RAPORU:*\n` +
+        `\`\`\`\n${result.error || 'Bilinmeyen Hata'}\n\`\`\``
+      );
+      log(`GÖREV İNFAZI: ${result.error}`, 'WARN');
     }
 
   } catch (err) {

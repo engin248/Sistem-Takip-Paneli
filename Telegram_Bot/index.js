@@ -71,25 +71,30 @@ function isAuthorized(chatId) {
 
 // ── STP API ÇAĞRILARI ────────────────────────────────────────
 
-// 1. Görev Oluştur (POST)
+const { komutuSistemeKabulEt } = require('../Gorev_Kabul_Departmani/komut_alim');
+
+// 1. Görev Oluştur (LOKAL - MİMAR VE ZINDIK)
 async function createTaskViaAPI(title, senderName, source = 'telegram_text') {
-  const url = `${STP_API_BASE}/api/tasks`;
-  const headers = { 
-    'Content-Type': 'application/json',
-    'Origin': STP_API_BASE,
-    'Authorization': `Bearer ${STP_SERVICE_TOKEN}`
-  };
-
-  const body = JSON.stringify({
-    title: title.substring(0, 200),
-    description: `Telegram üzerinden gönderildi (${source})`,
-    priority: 'normal',
-    assigned_to: senderName,
-    operator_name: senderName,
-  });
-
-  const response = await fetch(url, { method: 'POST', headers, body });
-  return await response.json();
+  try {
+    const tamBilet = `[KAYNAK: ${source} - KULLANICI: ${senderName}] ${title}`;
+    const sonuc = await komutuSistemeKabulEt(tamBilet);
+    
+    if (sonuc.durum === 'PASS') {
+      return { 
+        success: true, 
+        data: { task_code: 'ZINDIK-ONAYLI' }, 
+        mimar_plan: sonuc.mimar_plan,
+        error: null 
+      };
+    } else {
+      return { 
+        success: false, 
+        error: sonuc.zindik_raporu 
+      };
+    }
+  } catch(e) {
+    return { success: false, error: e.message };
+  }
 }
 
 // 2. Görev Güncelle (PUT)
@@ -456,12 +461,27 @@ bot.on('message:text', async (ctx) => {
   try {
     const result = await createTaskViaAPI(text, senderName, 'telegram_text');
     if (result.success) {
-      await ctx.reply(`✅ <b>GÖREV OLUŞTURULDU</b>\n\nKod: <code>${result.data?.task_code}</code>\n📝 ${text.substring(0, 100)}`, { parse_mode: 'HTML' });
+      await ctx.reply(
+        `🏛️ <b>1. DEPARTMAN (GÖREV KABUL) ONAYLANDI</b>\n\n` +
+        `✅ <b>MİMAR:</b> Görevi Anladı ve 6-Katmanlı Planı Çizdi.\n` +
+        `⚖️ <b>ZINDIK:</b> 100 Maddelik İnfaz Testinden Geçti! [PASS]\n\n` +
+        `📋 <b>Hedef:</b> ${text.substring(0, 100).replace(/\n/g, ' ')}...\n` +
+        `📌 <b>Aksiyon:</b> Onaylandı, Kurul Masasına Çıkarılıyor!`,
+        { parse_mode: 'HTML' }
+      );
+      log(`1. DEPARTMAN ONAYI VERİLDİ: ${text.substring(0, 60)}`, 'INFO');
     } else {
-      await ctx.reply(`❌ Reddedildi: ${result.error}`);
+      await ctx.reply(
+        `❌ <b>1. DEPARTMAN İNFAZ ETTİ!</b> ❌\n\n` +
+        `Mimarın çizdiği plan, Zındık'ın Anayasasından geçemedi!\n\n` +
+        `<b>ZINDIK RAPORU:</b>\n` +
+        `<pre>${result.error || 'Bilinmeyen Hata'}</pre>`,
+        { parse_mode: 'HTML' }
+      );
+      log(`GÖREV İNFAZI: ${result.error}`, 'WARN');
     }
   } catch (err) {
-    await ctx.reply(`❌ API bağlantı hatası.`);
+    await ctx.reply(`❌ Lokal departman bağlantı hatası: ${err.message}`);
   }
 });
 
