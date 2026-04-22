@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useState } from 'react';
 import {
     Workflow, PlusCircle, Play, Pause, Save, Trash2,
@@ -33,7 +33,7 @@ interface AutomationFlow {
 const MOCK_FLOWS: AutomationFlow[] = [
     { id: 'FL-001', name: 'PAZAR TREND & ÜRETİM ANALİZİ', trigger: 'EVERY-24H', aiNode: 'QWEN-2.5', target: 'ARGE-PANEL', status: 'ACTIVE', lastRun: '08:00', runCount: 142 },
     { id: 'FL-002', name: 'L2 GÜVENLİK MÜHÜRLEME ZİNCİRİ', trigger: 'ALERT-HOOK', aiNode: 'PHI-3-SNIPER', target: 'SMS/SEC', status: 'ACTIVE', lastRun: '16:45', runCount: 12 },
-    { id: 'FL-003', name: 'MİZANET STOK SENKRONİZASYONU', trigger: 'DB-CHANGE', aiNode: 'AGENT-WORKER', target: 'TELEGRAM', status: 'PAUSED', lastRun: 'DÜN', runCount: 890 },
+    { id: 'FL-003', name: 'Sunucu STOK SENKRONİZASYONU', trigger: 'DB-CHANGE', aiNode: 'AGENT-WORKER', target: 'TELEGRAM', status: 'PAUSED', lastRun: 'DÜN', runCount: 890 },
     { id: 'FL-004', name: 'MÜŞTERİ SEGMENTASYON TAHMİNİ', trigger: 'MANUAL', aiNode: 'LLAMA-3', target: 'DATABASE', status: 'ACTIVE', lastRun: '9 DK ÖNCE', runCount: 5 },
 ];
 
@@ -96,7 +96,7 @@ export default function AutomationPanel() {
 
                         {[
                             { step: 1, title: 'TETİKLEYİCİ GİRİŞİ (TRIGGER)', icon: <Zap className="text-amber-500" />, options: ['Planlanmış Görev (CRON-24H)', 'Dış Webhook Alıntısı', 'Veritabanı Değişimi', 'Ajan Emir Çıktısı'] },
-                            { step: 2, title: 'PLATFORM / ERP BAĞLANTISI', icon: <Database className="text-blue-500" />, options: ['Mizanet: Stok Verisi Çek', 'Trendyol API: Sipariş Oku', 'Global Pazar Trendi Tara', 'Local Dosya Sistemi'] },
+                            { step: 2, title: 'PLATFORM / ERP BAĞLANTISI', icon: <Database className="text-blue-500" />, options: ['Sunucu: Stok Verisi Çek', 'Trendyol API: Sipariş Oku', 'Global Pazar Trendi Tara', 'Local Dosya Sistemi'] },
                             { step: 3, title: 'YAPAY ZEKA FİLTRESİ (AI)', icon: <BrainCircuit className="text-purple-500" />, options: ['Qwen 2.5 (Analiz)', 'Llama 3 (Özetleme)', 'Mistral (Karar)', 'Phi-3 (Kod)'] },
                             { step: 4, title: 'KADER / ÇIKTI HEDEFİ', icon: <Globe className="text-cyan-500" />, options: ['Telegram: Karargah Grubu', 'SMS: Kurucuya İlet', 'Karargah Veritabanına Yaz', 'Zinciri Yeniden Başlat'] }
                         ].map((s, i) => (
@@ -215,3 +215,4 @@ export default function AutomationPanel() {
         </div>
     );
 }
+

@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 "use client";
 import React, { useState, useEffect } from 'react';
 import {
@@ -41,7 +41,7 @@ export default function PlanningPanel() {
     const simulateProcessing = async () => {
     if (!mainPrompt.trim()) return;
     setIsProcessing(true);
-    setFinalOutput(`>>> KOMUT ALINDI: [ ${mainPrompt.substring(0, 30)}... ]\n>>> ZINDIK PROTOKOLÜ ÇAĞRILIYOR...`);
+    setFinalOutput(`>>> KOMUT ALINDI: [ ${mainPrompt.substring(0, 30)}... ]\n>>> GÜVENLİK PROTOKOLÜ ÇAĞRILIYOR...`);
     setElapsedTime(0);
     setHealthScore(null);
     setIsJobStarted(false);
@@ -230,5 +230,6 @@ export default function PlanningPanel() {
     </div>
   );
 }
+
 
 

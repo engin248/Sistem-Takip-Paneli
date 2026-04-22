@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Users, Bot, Shield, Zap, Activity,
@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 // ============================================================
 // AGENT MANAGEMENT COMMAND CENTER (AMCC)
 // ============================================================
-// Bu bileşen, SİSTEM ANA AJAN ve ona bağlı tüm alt birimleri
+// Bu bileşen, ANA SİSTEM ve ona bağlı tüm alt birimleri
 // yönetmek, görev atamak ve performans izlemek için tasarlanmıştır.
 // ============================================================
 
@@ -31,7 +31,7 @@ interface Agent {
 }
 
 const MOCK_AGENTS: Agent[] = [
-  { id: 'AG-01', codename: 'NİZAM CORE', tier: 'OVERLORD', status: 'ACTIVE', specialty: 'Orchestration', tasksCompleted: 1450, health: 100, lastAction: 'Sistem denetimi aktif' },
+  { id: 'AG-01', codename: 'SİSTEM CORE', tier: 'OVERLORD', status: 'ACTIVE', specialty: 'Orchestration', tasksCompleted: 1450, health: 100, lastAction: 'Sistem denetimi aktif' },
   { id: 'AG-02', codename: 'MATH-JUDGE', tier: 'AUDITOR', status: 'ACTIVE', specialty: 'Quality Control', tasksCompleted: 890, health: 98, lastAction: 'Finans verisi doğrulandı' },
   { id: 'AG-03', codename: 'DEAD-WORKER', tier: 'OPERATIONAL', status: 'BUSY', specialty: 'Data Processing', tasksCompleted: 3421, health: 92, lastAction: 'SQL Enjeksiyon taraması...' },
   { id: 'AG-04', codename: 'FRONT-GUARD', tier: 'OPERATIONAL', status: 'IDLE', specialty: 'UI/UX Integrity', tasksCompleted: 560, health: 100, lastAction: 'Beklemede' },
@@ -215,3 +215,4 @@ export default function AgentPanel() {
     </div>
   );
 }
+

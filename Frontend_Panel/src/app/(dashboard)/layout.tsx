@@ -1,4 +1,4 @@
-
+﻿
 "use client";
 import { useEffect, useState, useCallback, useMemo } from 'react';
 
@@ -51,7 +51,7 @@ import NavBar from '@/components/layout/NavBar';
 // Ekran 07: ALARM MERKEZİ      — AlarmPanel
 // Ekran 08: TELEGRAM KÖPRÜSÜ   — TelegramSender
 // Ekran 09: DENETİM GÜNLÜĞÜ    — AuditLog
-// Ekran 10: SİSTEM ANA AJAN    — CoreBrainPanel
+// Ekran 10: ANA SİSTEM    — CoreBrainPanel
 // Ekran 11: BİLGİ TABANI       — KnowledgeBasePanel (RAG)
 // Ekran 12: AKTİVİTE AKIŞI     — ActivityFeed (Ajan Canlı Akış)
 // Ekran 13: CANLI METRİKLER    — LiveMetrics (Radial Gauge)
@@ -190,3 +190,4 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     </div>
   );
 }
+

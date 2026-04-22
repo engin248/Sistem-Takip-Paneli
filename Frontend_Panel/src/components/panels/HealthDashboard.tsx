@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Server, Cpu, Activity, Shield, Zap, Layers,
@@ -30,12 +30,12 @@ interface UniversalSystem {
 }
 
 const MOCK_SYSTEMS: UniversalSystem[] = [
-  { id: 'US-001', name: 'NİZAM CORE ENGINE', category: 'CORE', status: 'ONLINE', load: 12, uptime: '14d 2h', endpoint: '127.0.0.1:3000', lastAction: 'L2 ONAY' },
+  { id: 'US-001', name: 'SİSTEM CORE ENGINE', category: 'CORE', status: 'ONLINE', load: 12, uptime: '14d 2h', endpoint: '127.0.0.1:3000', lastAction: 'L2 ONAY' },
   { id: 'US-002', name: 'OLLAMA AI CLUSTER', category: 'AI', status: 'ONLINE', load: 85, uptime: '2d 14h', endpoint: '127.0.0.1:11434', lastAction: 'INFERENCE' },
-  { id: 'US-003', name: 'MIZANET PRIMARY', category: 'ERP', status: 'ONLINE', load: 34, uptime: '45d 8h', endpoint: 'mizanet.internal', lastAction: 'SYNC' },
-  { id: 'US-004', name: 'VECTOR DB (PINE)', category: 'DATABASE', status: 'ONLINE', load: 5, uptime: '120d 1h', endpoint: 'db.v-nizam', lastAction: 'INDEX' },
+  { id: 'US-003', name: 'SUNUCU PRIMARY', category: 'ERP', status: 'ONLINE', load: 34, uptime: '45d 8h', endpoint: 'Sunucu.internal', lastAction: 'SYNC' },
+  { id: 'US-004', name: 'VECTOR DB (PINE)', category: 'DATABASE', status: 'ONLINE', load: 5, uptime: '120d 1h', endpoint: 'db.v-SİSTEM', lastAction: 'INDEX' },
   { id: 'US-005', name: 'WHATSAPP BRIDGE', category: 'NETWORK', status: 'STANDBY', load: 0, uptime: '4h 12m', endpoint: 'bridge.api', lastAction: 'IDLE' },
-  { id: 'US-006', name: 'MIZANET SECONDARY', category: 'ERP', status: 'CRITICAL', load: 98, uptime: '12m', endpoint: 'mizanet-backup.internal', lastAction: 'OVERLOAD' },
+  { id: 'US-006', name: 'SUNUCU SECONDARY', category: 'ERP', status: 'CRITICAL', load: 98, uptime: '12m', endpoint: 'Sunucu-backup.internal', lastAction: 'OVERLOAD' },
 ];
 
 export default function HealthDashboard() {
@@ -230,7 +230,7 @@ export default function HealthDashboard() {
         <div className="flex-1 overflow-hidden">
           <div className="flex items-center gap-8 text-[8px] font-mono text-slate-500 tracking-tight animate-[marquee_30s_linear_infinite] whitespace-nowrap">
             <span>[19:12:45] OLLAMA: Model "Llama-3" yükleme yüzdesi %85...</span>
-            <span>[19:12:42] MIZANET: Stok verileri "Warehouse-B" ile senkronize edildi.</span>
+            <span>[19:12:42] SUNUCU: Stok verileri "Warehouse-B" ile senkronize edildi.</span>
             <span>[19:12:39] CORE: L2 Doğrulama protokolleri tüm departmanlar için onaylandı.</span>
             <span>[19:12:35] NETWORK: WhatsApp köprüsü stabil, mesaj gecikmesi: 450ms.</span>
             <span>[19:12:45] OLLAMA: Model "Llama-3" yükleme yüzdesi %85...</span>
@@ -241,3 +241,4 @@ export default function HealthDashboard() {
     </div>
   );
 }
+

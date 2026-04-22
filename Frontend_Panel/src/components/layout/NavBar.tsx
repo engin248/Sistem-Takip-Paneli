@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useState } from 'react';
 import { useLanguageStore } from '@/store/useLanguageStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -28,7 +28,7 @@ export default function NavBar() {
         "DEMİR TEKSTİL ÜRETİM HATTI VERİLERİ ANLIK SENKRONİZE EDİLİYOR...",
         "STRATEJİK ANALİZ: GLOBAL PAZAR TRENDLERİ İŞLENDİ VE RAPORLANDI.",
         "SIFUR İNİSİYATİF PROTOKOLÜ: TÜM KARARLAR VERİ ODAKLI ÇALIŞIYOR.",
-        "SİSTEM ÇEKİRDEĞİ (NİZAM) OPTİMİZE EDİLDİ - TEPKİ SÜRESİ: 12ms",
+        "SİSTEM ÇEKİRDEĞİ (SİSTEM) OPTİMİZE EDİLDİ - TEPKİ SÜRESİ: 12ms",
         "PAZARYERİ STOKLARI VE SATIŞ VERİLERİ TEK POTADA ERİTİLİYOR...",
         "DOKTRİN UYARINCA TÜM LOGLAR DENETLENDİ - 0 HATA TESPİT EDİLDİ.",
         "BİLİŞSEL KATMAN AKTİF: STRATEJİK ÖNGÖRÜLER PANELDE ÜRETİLİYOR.",
@@ -73,7 +73,7 @@ export default function NavBar() {
                         className="flex items-center gap-2 px-4 py-2 bg-purple-600/20 border border-purple-500/40 text-purple-400 hover:bg-purple-600 hover:text-white transition-all duration-300 group shadow-[0_0_15px_rgba(168,85,247,0.1)] hover:shadow-[0_0_20px_rgba(168,85,247,0.3)]"
                     >
                         <Brain className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                        <span className="text-[10px] font-black tracking-tighter">SİSTEM ANA AJAN</span>
+                        <span className="text-[10px] font-black tracking-tighter">ANA SİSTEM</span>
                     </button>
 
                     <div className="w-px h-8 bg-slate-700/50 mx-2" />
@@ -99,3 +99,4 @@ export default function NavBar() {
         </nav>
     );
 }
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React from 'react';
 import {
     ShieldCheck, Bot, Activity, Radio,
@@ -24,7 +24,7 @@ export default function MainDashboard() {
         {
             id: 'SCR-01',
             title: 'SİSTEM YÖNETİMİ',
-            desc: 'Local ERP [Mizanet] ve AI [Ollama] altyapısını otonom olarak denetle ve yönet.',
+            desc: 'Local ERP [Sunucu] ve AI [Ollama] altyapısını otonom olarak denetle ve yönet.',
             icon: <Activity className="w-6 h-6" />,
             color: 'text-cyan-400',
             bg: 'bg-cyan-500/10',
@@ -92,7 +92,7 @@ export default function MainDashboard() {
                         <span className="text-[10px] font-black text-cyan-400 tracking-[0.5em] uppercase">SYSTEM OPERATIONAL STATUS: ALPHA-1</span>
                     </div>
                     <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter leading-none mb-6">
-                        NİZAM <span className="text-cyan-500">OPERASYON</span> MERKEZİ
+                        SİSTEM <span className="text-cyan-500">OPERASYON</span> MERKEZİ
                     </h1>
                     <p className="text-sm md:text-base text-slate-400 font-mono leading-relaxed max-w-2xl mb-8">
                         Bu merkez, tüm lokal altyapıların, otonom ajanların ve iletişim kanallarının tek bir noktadan yönetildiği "Karargah"tır. Sisteme doğrudan müdahale edin veya ajanların otonom karar alma süreçlerini denetleyin.
@@ -155,7 +155,7 @@ export default function MainDashboard() {
                             </h4>
                             <div className="grid grid-cols-2 gap-4">
                                 {[
-                                    { name: 'LOCAL ERP (MIZANET)', status: 'BAĞLI', icon: <Database /> },
+                                    { name: 'LOCAL ERP (SUNUCU)', status: 'BAĞLI', icon: <Database /> },
                                     { name: 'OLLAMA ENGINE', status: 'HAZIR', icon: <Cpu /> },
                                     { name: 'GROQ CLUSTER', status: 'AKTİF', icon: <Network /> },
                                     { name: 'SUPABASE DB', status: 'SENKRON', icon: <Globe /> }
@@ -178,10 +178,10 @@ export default function MainDashboard() {
                             <div className="bg-black border border-white/5 p-4 h-[120px] overflow-hidden rounded-none relative">
                                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/80 pointer-events-none" />
                                 <div className="space-y-1.5 font-mono text-[9px]">
-                                    <p className="text-red-500/80 leading-none">19:28:45 - CRITICAL: Mizanet Bridge re-connected.</p>
+                                    <p className="text-red-500/80 leading-none">19:28:45 - CRITICAL: Sunucu Bridge re-connected.</p>
                                     <p className="text-slate-600 leading-none">19:28:42 - INFO: Agent-Sniper patrolling database shards.</p>
                                     <p className="text-emerald-500/80 leading-none">19:28:38 - SUCCESS: Automation sequence #47-S completed.</p>
-                                    <p className="text-slate-600 leading-none">19:28:35 - INFO: Nizam worker heartbeat: 120bpm.</p>
+                                    <p className="text-slate-600 leading-none">19:28:35 - INFO: SİSTEM worker heartbeat: 120bpm.</p>
                                     <p className="text-slate-600 leading-none">19:28:30 - INFO: All comm-channels handshake OK.</p>
                                 </div>
                             </div>
@@ -194,3 +194,4 @@ export default function MainDashboard() {
         </div>
     );
 }
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useState, useEffect } from 'react';
 import {
     MessageSquare, Send, Phone, Hash, Mail,
@@ -32,9 +32,9 @@ interface Message {
 const MOCK_MESSAGES: Message[] = [
     { id: '1', platform: 'WHATSAPP', type: 'IN', sender: 'Müşteri +90532...', content: 'Yeni sezon kumaş kartelası haftaya çıkar mı?', timestamp: '19:20', isAI: false, status: 'READ' },
     { id: '2', platform: 'WHATSAPP', type: 'OUT', sender: 'AJAN-TEKSTİL (AI)', content: 'Merhaba! Evet, 2026 İlkbahar koleksiyonu için tüm kartelalar Cuma günü sisteme yüklenecek.', timestamp: '19:20', isAI: true, status: 'DELIVERED' },
-    { id: '3', platform: 'TELEGRAM', type: 'OUT', sender: 'NİZAM: GÜVENLİK', content: '[KRİTİK] Local sunucu yedekleme işlemi %100 tamamlandı.', timestamp: '19:15', isAI: true, status: 'DELIVERED' },
+    { id: '3', platform: 'TELEGRAM', type: 'OUT', sender: 'SİSTEM: GÜVENLİK', content: '[KRİTİK] Local sunucu yedekleme işlemi %100 tamamlandı.', timestamp: '19:15', isAI: true, status: 'DELIVERED' },
     { id: '4', platform: 'DISCORD', type: 'IN', sender: 'Dev-Team (Admin)', content: 'Health dashboard üzerindeki API gecikmesi 450ms üzerine çıktı, kontrol edin.', timestamp: '18:40', isAI: false, status: 'READ' },
-    { id: '5', platform: 'SMS', type: 'OUT', sender: 'SİSTEM', content: 'Sayın Engin, mizanet paneli için yeni giriş talebi onaylandı.', timestamp: '18:30', isAI: true, status: 'DELIVERED' },
+    { id: '5', platform: 'SMS', type: 'OUT', sender: 'SİSTEM', content: 'Sayın Engin, Sunucu paneli için yeni giriş talebi onaylandı.', timestamp: '18:30', isAI: true, status: 'DELIVERED' },
 ];
 
 export default function CommunicationHubPanel() {
@@ -224,7 +224,7 @@ export default function CommunicationHubPanel() {
                         <div className="space-y-2 h-40 overflow-y-auto no-scrollbar font-mono text-[9px]">
                             <p className="text-slate-600"><span className="text-cyan-600">19:20:45</span> - WhatsApp API handshake OK.</p>
                             <p className="text-slate-600"><span className="text-cyan-600">19:20:42</span> - Telegram bot polling: 0 yeni.</p>
-                            <p className="text-slate-600"><span className="text-cyan-600">19:20:38</span> - Nizam worker iletisi Discord'a kopyalandı.</p>
+                            <p className="text-slate-600"><span className="text-cyan-600">19:20:38</span> - SİSTEM worker iletisi Discord'a kopyalandı.</p>
                             <p className="text-slate-600"><span className="text-cyan-600">19:20:35</span> - SMS Gateway heartbeat stabil.</p>
                         </div>
                     </div>
@@ -234,3 +234,4 @@ export default function CommunicationHubPanel() {
         </div>
     );
 }
+
