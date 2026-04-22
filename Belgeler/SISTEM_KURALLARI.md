@@ -1,11 +1,11 @@
-# SİSTEM KURALLARI — Sistem Takip Paneli
+﻿# SİSTEM KURALLARI — Sistem Takip Paneli
 > **Kurucu:** Engin  
 > **Sistem:** Sistem Takip Paneli  
 > **Birleştirme Tarihi:** 13 Nisan 2026  
 > **Kaynak Dosyalar:**  
 > - `01_SISTEM_FELSEFESI_VE_ANA_VIZYON.md` (Sohbet Analizi)  
 > - `07_SISTEM_KURALLARI_VE_DISIPLIN.md` (Sohbet Analizi)  
-> - `SISTEM_KURALLARI_FINAL.md` (Mizanet Final)  
+> - `SISTEM_KURALLARI_FINAL.md` (Sunucu Final)  
 > - `SISTEM_ANAYASASI_V1.md` (Arşiv 47)  
 > - `SISTEM_ANAYASASI_110_MADDE.md` (Arşiv 47)  
 > - `rules.md` (Aktif Antigravity User Rules)
@@ -278,7 +278,7 @@ Her konu aşağıdaki 5 düşünce ekseninden analiz edilir:
 | **Sistem Adı** | Sistem Takip Paneli |
 | **Kurucu** | Engin |
 | **Veritabanı** | Supabase |
-| **Ana Proje** | Mizanet (ERP) + STP (Takip) |
+| **Ana Proje** | Sunucu (ERP) + STP (Takip) |
 | **Doktrin** | Sıfır İnisiyatif |
 | **Renk Kodu** | Zümrüt Yeşili (#046A38) + Koyu Gold (#C8A951) |
 
@@ -453,3 +453,4 @@ Her konu aşağıdaki 5 düşünce ekseninden analiz edilir:
 > Hiçbir bilgi atlanmamış, hiçbir kural çıkarılmamıştır.  
 > İçerik değiştirilemez — sadece yeni bölüm EKLENEBİLİR.  
 > **Tarih:** 13 Nisan 2026 — 05:35 UTC+3
+
