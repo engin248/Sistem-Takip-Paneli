@@ -53,12 +53,12 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-white/5 backdrop-blur-md p-4">
       <div className="w-full max-w-sm">
         {/* Logo Section */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-cyan-500/10 border border-cyan-500/20 rounded-none mb-4 shadow-[0_0_20px_rgba(6,182,212,0.15)]">
-            <span className="text-2xl font-black text-cyan-500 tracking-tighter">STP</span>
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-rose-500/10 border border-rose-500/20 rounded-none mb-4 shadow-[0_0_20px_rgba(6,182,212,0.15)]">
+            <span className="text-2xl font-black text-rose-500 tracking-tighter">STP</span>
           </div>
           <h1 className="text-xl font-black text-white tracking-tight uppercase">
             SİSTEM TAKİP PANELİ
@@ -76,7 +76,7 @@ export default function LoginPage() {
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="AD SOYAD"
-              className="w-full bg-slate-900/50 border border-slate-800 text-white text-[10px] font-bold px-4 py-3 rounded-none outline-none focus:border-cyan-500/50 transition-all placeholder:text-slate-700"
+              className="w-full bg-black/20/50 border border-slate-800 text-white text-[10px] font-bold px-4 py-3 rounded-none outline-none focus:border-rose-500/50 transition-all placeholder:text-slate-700"
             />
           )}
 
@@ -86,7 +86,7 @@ export default function LoginPage() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="E-POSTA ADRESİ"
             required
-            className="w-full bg-slate-900/50 border border-slate-800 text-white text-[10px] font-bold px-4 py-3 rounded-none outline-none focus:border-cyan-500/50 transition-all placeholder:text-slate-700"
+            className="w-full bg-black/20/50 border border-slate-800 text-white text-[10px] font-bold px-4 py-3 rounded-none outline-none focus:border-rose-500/50 transition-all placeholder:text-slate-700"
           />
 
           <input
@@ -96,13 +96,13 @@ export default function LoginPage() {
             placeholder="GÜVENLİK ŞİFRESİ"
             required
             minLength={6}
-            className="w-full bg-slate-900/50 border border-slate-800 text-white text-[10px] font-bold px-4 py-3 rounded-none outline-none focus:border-cyan-500/50 transition-all placeholder:text-slate-700"
+            className="w-full bg-black/20/50 border border-slate-800 text-white text-[10px] font-bold px-4 py-3 rounded-none outline-none focus:border-rose-500/50 transition-all placeholder:text-slate-700"
           />
 
           <button
             type="submit"
             disabled={isLoading || !email || !password}
-            className="w-full bg-cyan-500 text-white text-[10px] font-black py-3 rounded-none hover:bg-cyan-600 transition-all uppercase tracking-widest disabled:opacity-40 shadow-[0_0_15px_rgba(6,182,212,0.2)]"
+            className="w-full bg-rose-500 text-white text-[10px] font-black py-3 rounded-none hover:bg-rose-600 transition-all uppercase tracking-widest disabled:opacity-40 shadow-[0_0_15px_rgba(6,182,212,0.2)]"
           >
             {isLoading ? "İŞLENİYOR..." : isSignUp ? "KAYIT OL" : "ERİŞİM SAĞLA"}
           </button>
@@ -111,7 +111,7 @@ export default function LoginPage() {
         {/* Toggle Section */}
         <button
           onClick={() => setIsSignUp(!isSignUp)}
-          className="w-full text-center mt-6 text-[9px] font-bold text-slate-600 hover:text-cyan-500 transition-colors uppercase tracking-widest"
+          className="w-full text-center mt-6 text-[9px] font-bold text-slate-600 hover:text-rose-500 transition-colors uppercase tracking-widest"
         >
           {isSignUp
             ? "Mevcut oturumun var mı? Giriş yap"
@@ -121,3 +121,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

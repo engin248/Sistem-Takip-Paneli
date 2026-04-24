@@ -9,10 +9,10 @@ export default function ArgePanel() {
     const platforms = [
         { name: 'TRENDYOL', icon: <ShoppingBag className="w-4 h-4" />, status: 'Canlı Veri Akışı', color: 'bg-orange-500' },
         { name: 'AMAZON', icon: <Globe className="w-4 h-4" />, status: 'Fiyat Analizi Aktif', color: 'bg-yellow-500' },
-        { name: 'GOOGLE TRENDS', icon: <Search className="w-4 h-4" />, status: 'Aranma Hacmi Senkronize', color: 'bg-blue-500' },
+        { name: 'GOOGLE TRENDS', icon: <Search className="w-4 h-4" />, status: 'Aranma Hacmi Senkronize', color: 'bg-fuchsia-500' },
         { name: 'TIKTOK', icon: <Smartphone className="w-4 h-4" />, status: 'Viral Etiket Taraması', color: 'bg-pink-500' },
         { name: 'INSTAGRAM', icon: <Camera className="w-4 h-4" />, status: 'Görsel Ağı Dinleniyor', color: 'bg-purple-500' },
-        { name: 'FACEBOOK', icon: <Share2 className="w-4 h-4" />, status: 'Grup/Pazar Taraması', color: 'bg-blue-600' },
+        { name: 'FACEBOOK', icon: <Share2 className="w-4 h-4" />, status: 'Grup/Pazar Taraması', color: 'bg-fuchsia-600' },
         { name: 'PINTEREST', icon: <Radar className="w-4 h-4" />, status: 'Tasarım Odaklı İzleme', color: 'bg-red-500' },
     ];
 
@@ -25,12 +25,12 @@ export default function ArgePanel() {
         <div className="space-y-6">
 
             {/* ── ÜST BAŞLIK VE AKSİYON ─────────────────────────── */}
-            <div className="glass-card border border-blue-500/30 p-5 relative overflow-hidden flex flex-col gap-5">
-                <div className="absolute top-0 right-0 w-2 h-full bg-blue-500/50" />
+            <div className="glass-card border border-fuchsia-500/30 p-5 relative overflow-hidden flex flex-col gap-5">
+                <div className="absolute top-0 right-0 w-2 h-full bg-fuchsia-500/50" />
 
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h2 className="text-sm font-black text-blue-400 tracking-[0.15em] uppercase flex items-center gap-2 mb-1">
+                        <h2 className="text-sm font-black text-fuchsia-400 tracking-[0.15em] uppercase flex items-center gap-2 mb-1">
                             <Radar className={`w-5 h-5 ${isScanning ? 'animate-spin' : ''}`} />
                             Global İstihbarat & AR-GE Merkezi
                         </h2>
@@ -41,19 +41,19 @@ export default function ArgePanel() {
                 {/* YENİ EKLENEN KISIM: AR-GE ARAMA / HEDEF GİRİŞİ */}
                 <div className="flex flex-col md:flex-row gap-3 pt-4 border-t border-slate-700/50">
                     <div className="relative flex-1">
-                        <Target className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-500" />
+                        <Target className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fuchsia-500" />
                         <input
                             type="text"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             placeholder="AR-GE Hedefi: (Örn: Kazak, Kargo Pantolon, Yeni Sezon Renkleri...)"
-                            className="w-full bg-slate-950/80 border border-slate-700/50 rounded-lg px-10 py-3 text-xs text-white font-mono focus:outline-none focus:border-blue-400 transition-all"
+                            className="w-full bg-white/5 backdrop-blur-md/80 border border-slate-700/50 rounded-lg px-10 py-3 text-xs text-white font-mono focus:outline-none focus:border-fuchsia-400 transition-all"
                         />
                     </div>
                     <button
                         onClick={handleScan}
                         disabled={isScanning}
-                        className="px-6 py-3 bg-blue-500/10 border border-blue-500/40 text-blue-400 font-black tracking-widest text-xs uppercase rounded-lg hover:bg-blue-500/20 disabled:opacity-40 transition-all flex items-center justify-center gap-2 whitespace-nowrap shadow-[0_0_15px_rgba(59,130,246,0.15)]"
+                        className="px-6 py-3 bg-fuchsia-500/10 border border-fuchsia-500/40 text-fuchsia-400 font-black tracking-widest text-xs uppercase rounded-lg hover:bg-fuchsia-500/20 disabled:opacity-40 transition-all flex items-center justify-center gap-2 whitespace-nowrap shadow-[0_0_15px_rgba(59,130,246,0.15)]"
                     >
                         <RefreshCw className={`w-4 h-4 ${isScanning ? 'animate-spin' : ''}`} />
                         {isScanning ? 'AJANLAR TARALAMA YAPIYOR...' : 'DERİN TARAMAYI BAŞLAT'}
@@ -66,7 +66,7 @@ export default function ArgePanel() {
                 {platforms.map((plat) => (
                     <div key={plat.name} className="glass-card p-3 border border-slate-700/50 flex flex-col items-center text-center justify-center relative group hover:border-slate-500 transition-colors">
                         {isScanning && (
-                            <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-blue-400 animate-ping" />
+                            <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-fuchsia-400 animate-ping" />
                         )}
                         <div className={`p-2 rounded-lg ${plat.color} bg-opacity-20 text-slate-300 mb-2 group-hover:text-white transition-colors`}>
                             {plat.icon}
@@ -99,7 +99,7 @@ export default function ArgePanel() {
                             { title: "Vintage Deri Ceket Kombinleri", pl: "Pinterest, Facebook Pazar", score: 76, dif: "-5%", color: "red" },
                             { title: "Dikişsiz Spor Tayt", pl: "Instagram, Trendyol", score: 88, dif: "+22%", color: "green" },
                         ].map((trend, i) => (
-                            <div key={i} className={`p-4 bg-slate-900/60 border border-slate-700/50 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${isScanning ? 'opacity-50 animate-pulse' : ''}`}>
+                            <div key={i} className={`p-4 bg-black/20/60 border border-slate-700/50 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${isScanning ? 'opacity-50 animate-pulse' : ''}`}>
                                 <div>
                                     <div className="text-xs sm:text-sm font-bold text-slate-200">{trend.title}</div>
                                     <div className="text-[9px] font-mono text-slate-500 uppercase mt-1">Kaynaklar: {trend.pl}</div>
@@ -127,7 +127,7 @@ export default function ArgePanel() {
                     </h3>
                     <div className="relative border-l border-slate-700/50 ml-2 space-y-6">
                         <div className="relative pl-4">
-                            <span className="absolute -left-1.5 top-1 w-3 h-3 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
+                            <span className="absolute -left-1.5 top-1 w-3 h-3 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
                             <h4 className="text-[10px] font-bold text-white mb-0.5">Ajan-Sniper @ Tiktok Moda</h4>
                             <p className="text-[9px] text-slate-400 font-mono leading-relaxed line-clamp-3">
                                 Son 24 saat İçerisinde popüler olan giyim kombinleri hashtaglerine veri madenciliği uygulandı. 12 farklı viral video tespit edildi, rapor oluşturuluyor.
@@ -135,7 +135,7 @@ export default function ArgePanel() {
                             <span className="text-[8px] text-slate-500 mt-1 block">5 dk önce</span>
                         </div>
                         <div className="relative pl-4">
-                            <span className="absolute -left-[5px] top-1 w-2.5 h-2.5 rounded-full border-2 border-amber-500 bg-slate-900" />
+                            <span className="absolute -left-[5px] top-1 w-2.5 h-2.5 rounded-full border-2 border-amber-500 bg-black/20" />
                             <h4 className="text-[10px] font-bold text-white mb-0.5">Ajan-Qwen @ Trendyol Optimizasyon</h4>
                             <p className="text-[9px] text-slate-400 font-mono leading-relaxed line-clamp-3">
                                 Rakip fiyat analiz raporu tamamlandı. "Çok sevilenler" listesindeki 500 ürün fiyat eşleşmesi yapıldı. Veri ambarına eklendi.
@@ -143,7 +143,7 @@ export default function ArgePanel() {
                             <span className="text-[8px] text-slate-500 mt-1 block">45 dk önce</span>
                         </div>
                         <div className="relative pl-4">
-                            <span className="absolute -left-[5px] top-1 w-2.5 h-2.5 rounded-full border-2 border-slate-500 bg-slate-900" />
+                            <span className="absolute -left-[5px] top-1 w-2.5 h-2.5 rounded-full border-2 border-slate-500 bg-black/20" />
                             <h4 className="text-[10px] font-bold text-white mb-0.5">Ajan-Gölge @ Pinterest Panoları</h4>
                             <p className="text-[9px] text-slate-400 font-mono leading-relaxed line-clamp-3">
                                 Gelecek sezon renk paletleri ve siluet tarzları aranıyor. Görüntü işleme modelleri devreye sokuldu.
@@ -161,3 +161,4 @@ export default function ArgePanel() {
         </div>
     );
 }
+

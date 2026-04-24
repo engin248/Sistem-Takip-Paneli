@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { useLanguageStore } from "@/store/useLanguageStore";
@@ -11,11 +11,11 @@ import {
 import { t } from "@/lib/i18n";
 
 // ============================================================
-// NOTIFICATION BELL — Bildirim Kontrol Bileşeni
+// NOTIFICATION BELL � Bildirim Kontrol Bile�eni
 // ============================================================
 // NavBar'a entegre edilecek.
-// İzin durumuna göre ikon + renk değişir.
-// Test bildirimi gönderme desteği.
+// �zin durumuna g�re ikon + renk de�i�ir.
+// Test bildirimi g�nderme deste�i.
 // ============================================================
 
 export default function NotificationBell() {
@@ -46,17 +46,17 @@ export default function NotificationBell() {
     setShowMenu(false);
   }, [tr]);
 
-  // İkon durumu
+  // �kon durumu
   const getIcon = () => {
     switch (permission) {
       case "granted":
-        return "🔔";
+        return "??";
       case "denied":
-        return "🔕";
+        return "??";
       case "unsupported":
-        return "⚠️";
+        return "??";
       default:
-        return "🔔";
+        return "??";
     }
   };
 
@@ -81,13 +81,13 @@ export default function NotificationBell() {
         title={tr.notifTitle}
       >
         {getIcon()}
-        {/* Durum noktası */}
+        {/* Durum noktas� */}
         <span
           className={`absolute -top-0.5 ${dir === "rtl" ? "-left-0.5" : "-right-0.5"} w-2.5 h-2.5 rounded-full border-2 border-white dark:border-slate-900 ${getStatusColor()}`}
         />
       </button>
 
-      {/* Dropdown Menü */}
+      {/* Dropdown Men� */}
       {showMenu && (
         <>
           {/* Backdrop */}
@@ -97,10 +97,10 @@ export default function NotificationBell() {
           />
           {/* Panel */}
           <div
-            className={`absolute top-full mt-2 z-50 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden ${dir === "rtl" ? "left-0" : "right-0"
+            className={`absolute top-full mt-2 z-50 w-64 bg-white dark:bg-black/20 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden ${dir === "rtl" ? "left-0" : "right-0"
               }`}
           >
-            {/* Başlık */}
+            {/* Ba�l�k */}
             <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
               <p className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-widest text-start">
                 {tr.notifTitle}
@@ -119,18 +119,18 @@ export default function NotificationBell() {
                 </span>
               </div>
 
-              {/* İzin iste butonu */}
+              {/* �zin iste butonu */}
               {permission === "default" && (
                 <button
                   id="notification-enable"
                   onClick={handleRequestPermission}
-                  className="w-full text-[10px] font-bold bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-2 rounded-lg hover:opacity-90 transition-all uppercase tracking-wider"
+                  className="w-full text-[10px] font-bold bg-black/20 dark:bg-white text-white dark:text-slate-900 py-2 rounded-lg hover:opacity-90 transition-all uppercase tracking-wider"
                 >
                   {tr.notifEnableButton}
                 </button>
               )}
 
-              {/* İzin verilmiş → test gönder */}
+              {/* �zin verilmi� � test g�nder */}
               {permission === "granted" && (
                 <button
                   id="notification-test"
@@ -142,7 +142,7 @@ export default function NotificationBell() {
                 </button>
               )}
 
-              {/* İzin reddedilmiş */}
+              {/* �zin reddedilmi� */}
               {permission === "denied" && (
                 <p className="text-[10px] text-red-500 leading-relaxed text-start">
                   {tr.notifDeniedHint}
@@ -163,4 +163,5 @@ export default function NotificationBell() {
     </div >
   );
 }
+
 

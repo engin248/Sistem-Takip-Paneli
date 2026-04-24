@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import React, { useState, useRef, useEffect } from 'react';
 import { Cpu, Send, Command, User, Brain, AlertCircle, Sparkles, Plus, Mic, HelpCircle } from 'lucide-react';
 
@@ -8,7 +8,7 @@ export default function CoreBrainPanel() {
     const chatEndRef = useRef<HTMLDivElement>(null);
 
     const [chatLog, setChatLog] = useState([
-        { role: 'ai', msg: "Emret Kurucu Engin! ANA SİSTEM göreve hazır.\n\nTüm sistem ağlarını denetliyorum. Planın sonraki aşaması nedir?" }
+        { role: 'ai', msg: "Emret Kurucu Engin! ANA S�STEM g�reve haz�r.\n\nT�m sistem a�lar�n� denetliyorum. Plan�n sonraki a�amas� nedir?" }
     ]);
 
     const handleSend = () => {
@@ -18,7 +18,7 @@ export default function CoreBrainPanel() {
         setIsThinking(true);
 
         setTimeout(() => {
-            setChatLog(prev => [...prev, { role: 'ai', msg: "Anlaşıldı Kurucu! İlgili analizler tamamlandı. ANA SİSTEM raporu hazır ve operasyonel onaya sunuldu. Emre itaat ediliyor." }]);
+            setChatLog(prev => [...prev, { role: 'ai', msg: "Anla��ld� Kurucu! �lgili analizler tamamland�. ANA S�STEM raporu haz�r ve operasyonel onaya sunuldu. Emre itaat ediliyor." }]);
             setIsThinking(false);
         }, 1500);
     };
@@ -32,18 +32,18 @@ export default function CoreBrainPanel() {
     return (
         <div className="flex flex-col h-[calc(100vh-120px)] w-full max-w-5xl mx-auto bg-transparent overflow-hidden">
 
-            {/* ── ÜST NAVİGASYON (Minimal & Sade) ─────────────────────────── */}
+            {/* �� �ST NAV�GASYON (Minimal & Sade) ��������������������������� */}
             <div className="flex items-center justify-between p-3 shrink-0">
                 <div className="flex items-center gap-2">
-                    <span className="text-white font-black text-lg tracking-widest uppercase">ANA SİSTEM</span>
+                    <span className="text-white font-black text-lg tracking-widest uppercase">ANA S�STEM</span>
                 </div>
                 <div className="flex items-center gap-2 px-3 py-1 rounded-none bg-green-500/10 border border-green-500/20">
                     <div className="w-1.5 h-1.5 rounded-none bg-green-500 shadow-[0_0_5px_currentColor]"></div>
-                    <span className="text-[9px] text-green-400 font-bold uppercase tracking-wider">AKTİF</span>
+                    <span className="text-[9px] text-green-400 font-bold uppercase tracking-wider">AKT�F</span>
                 </div>
             </div>
 
-            {/* ── MESAJ AKIŞI (Kutusuz, Sade Tasarım) ── */}
+            {/* �� MESAJ AKI�I (Kutusuz, Sade Tasar�m) �� */}
             <div className="flex-1 overflow-y-auto px-4 py-6 space-y-10 custom-scrollbar min-h-0">
                 {chatLog.map((chat, idx) => (
                     <div key={idx} className="animate-fade-in-up flex w-full max-w-3xl mx-auto">
@@ -82,11 +82,11 @@ export default function CoreBrainPanel() {
                 <div ref={chatEndRef} className="h-10" />
             </div>
 
-            {/* ── GİRİŞ ALANI (Sınırları Zorluyor) ── */}
+            {/* �� G�R�� ALANI (S�n�rlar� Zorluyor) �� */}
             <div className="px-4 pb-0 pt-2 bg-transparent shrink-0 w-full mb-0">
                 <div className="max-w-2xl mx-auto relative group">
 
-                    {/* Küçük ve Sade Input Container */}
+                    {/* K���k ve Sade Input Container */}
                     <div className="relative flex items-center gap-2 bg-[#252528]/80 backdrop-blur-md border border-white/5 rounded-none p-1.5 pr-2 pl-3 transition-all focus-within:border-white/10 focus-within:bg-[#252528] shadow-sm">
 
                         <button className="p-1.5 text-slate-500 hover:text-white transition">
@@ -97,7 +97,7 @@ export default function CoreBrainPanel() {
                             value={inputMsg}
                             onChange={e => setInputMsg(e.target.value)}
                             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-                            placeholder="SİSTEM'a sor..."
+                            placeholder="S�STEM'a sor..."
                             className="flex-1 bg-transparent border-none text-white focus:ring-0 text-sm py-2 px-1 font-sans resize-none max-h-[120px] custom-scrollbar placeholder-slate-600 overflow-hidden"
                             rows={1}
                             style={{ height: 'auto', minHeight: '34px' }}
@@ -114,7 +114,7 @@ export default function CoreBrainPanel() {
                     </div>
 
                     <div className="mt-2 text-[9px] text-slate-600 font-medium text-center tracking-wide">
-                        ANA SİSTEM hata yapabilir. Kurucu kontrolü esastır.
+                        ANA S�STEM hata yapabilir. Kurucu kontrol� esast�r.
                     </div>
                 </div>
             </div>
@@ -122,4 +122,5 @@ export default function CoreBrainPanel() {
         </div>
     );
 }
+
 

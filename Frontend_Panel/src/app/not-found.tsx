@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white p-8">
+    <div className="min-h-screen flex items-center justify-center bg-white/5 backdrop-blur-md text-white p-8">
       <div className="max-w-md text-center space-y-6">
         <div className="text-7xl font-black text-slate-800">404</div>
         <h1 className="text-xl font-bold tracking-tight">SAYFA BULUNAMADI</h1>
@@ -19,3 +19,4 @@ export default function NotFound() {
     </div>
   );
 }
+

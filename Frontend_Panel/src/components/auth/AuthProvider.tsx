@@ -44,7 +44,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+      <div className="min-h-screen flex items-center justify-center bg-white/5 backdrop-blur-md">
         <div className="flex flex-col items-center gap-4">
           <div className="relative w-12 h-12">
             <div className="absolute inset-0 border-2 border-slate-700 rounded-full" />
@@ -64,3 +64,4 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 
   return <>{children}</>;
 }
+

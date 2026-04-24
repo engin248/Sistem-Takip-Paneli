@@ -29,7 +29,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="tr" dir="ltr">
-      <body className={`${inter.className} bg-[#030712] text-slate-100 antialiased`}>
+      <body className={`${inter.className} bg-transparent text-slate-100 antialiased`}>
         <Toaster position="top-right" richColors theme="dark" />
         <DirProvider>
           {/* AuthProvider: Supabase Auth etkinleştirildiğinde
@@ -49,3 +49,4 @@ export default function RootLayout({
     </html>
   );
 }
+

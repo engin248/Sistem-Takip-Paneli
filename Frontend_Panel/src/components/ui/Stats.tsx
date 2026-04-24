@@ -32,9 +32,9 @@ export default function Stats() {
   ];
 
   const colorCls: Record<string, { text: string; border: string; bg: string }> = {
-    cyan: { text: 'text-cyan-400', border: 'border-cyan-500/30', bg: 'bg-cyan-500/10' },
+    cyan: { text: 'text-rose-400', border: 'border-rose-500/30', bg: 'bg-rose-500/10' },
     amber: { text: 'text-amber-400', border: 'border-amber-500/30', bg: 'bg-amber-500/10' },
-    blue: { text: 'text-blue-400', border: 'border-blue-500/30', bg: 'bg-blue-500/10' },
+    blue: { text: 'text-fuchsia-400', border: 'border-fuchsia-500/30', bg: 'bg-fuchsia-500/10' },
     purple: { text: 'text-purple-400', border: 'border-purple-500/30', bg: 'bg-purple-500/10' },
     green: { text: 'text-green-400', border: 'border-green-500/30', bg: 'bg-green-500/10' },
     red: { text: 'text-red-400', border: 'border-red-500/30', bg: 'bg-red-500/10' },
@@ -64,7 +64,7 @@ export default function Stats() {
       </div>
 
       {/* ── Tamamlanma Oranı Progress Bar ───────────────────── */}
-      <div className="rounded-none border border-slate-700/30 bg-slate-900/30 p-4">
+      <div className="rounded-none border border-slate-700/30 bg-black/20/30 p-4">
         <div className="flex justify-between items-center mb-2">
           <span className="text-[9px] font-black tracking-[0.2em] uppercase text-slate-400">
             TAMAMLANMA ORANI
@@ -75,7 +75,7 @@ export default function Stats() {
         </div>
         <div className="h-2 rounded-none bg-slate-800 overflow-hidden">
           <div
-            className="h-full rounded-none bg-gradient-to-r from-green-500 to-cyan-500 transition-all duration-700"
+            className="h-full rounded-none bg-gradient-to-r from-green-500 to-rose-500 transition-all duration-700"
             style={{ width: `${tamamlanmaOrani}%` }}
           />
         </div>
@@ -92,3 +92,4 @@ export default function Stats() {
     </div>
   );
 }
+
