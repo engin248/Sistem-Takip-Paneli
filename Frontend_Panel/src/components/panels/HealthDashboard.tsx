@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Server, Cpu, Activity, Shield, Zap, Layers,
@@ -6,6 +6,7 @@ import {
   Search, Filter, LayoutGrid, List, ChevronRight,
   Database, Globe, Bot, MoreVertical, Settings
 } from 'lucide-react';
+import DepartmentCommsBox from '../shared/DepartmentCommsBox';
 import { toast } from 'sonner';
 
 // ============================================================
@@ -220,6 +221,10 @@ export default function HealthDashboard() {
           </div>
         )}
       </main>
+      
+      <div className="px-6 pb-6">
+        <DepartmentCommsBox department="SİSTEM YÖNETİMİ" />
+      </div>
 
       {/* ── ALT BAR: REAL-TIME LOG STREAM ── */}
       <footer className="shrink-0 h-10 bg-slate-900/80 border-t border-white/5 flex items-center px-6 gap-6">

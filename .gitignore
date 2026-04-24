@@ -11,13 +11,14 @@ build/
 .DS_Store
 Thumbs.db
 
-# Debug
+# Debug / build artıkları
 npm-debug.log*
 yarn-debug.log*
+pnpm-debug.log*
 *.tsbuildinfo
 
 # Vercel
-.vercel
+.vercel/
 
 # ============================================================
 # ⛔ MIDDLEWARE YASAĞI — Next.js 16+ Proxy Convention
@@ -28,5 +29,28 @@ yarn-debug.log*
 **/middleware.ts
 **/middleware.js
 
+# ============================================================
+# Yerel çalışma dosyaları — GitHub'a gitmemeli
+# ============================================================
+
+# WhatsApp çalışma çıktıları
 WhatsApp_Bot/.wwebjs_auth/
 WhatsApp_Bot/.wwebjs_cache/
+WhatsApp_Bot/arsiv/
+WhatsApp_Bot/whatsapp_qr.png
+
+# Yerel modeller ve büyük AI dosyaları
+Kurul_Modelleri/
+*.gguf
+
+# Harici klonlar / yerel bağımlı kaynaklar
+external/
+
+# Loglar
+*.log
+
+# Büyük medya / geçici çıktı
+*.mp4
+*.mp3
+*.wav
+*.ogg

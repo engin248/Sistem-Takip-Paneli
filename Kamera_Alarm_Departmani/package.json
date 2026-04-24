@@ -1,0 +1,19 @@
+{
+  "name": "kamera_alarm_departmani",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.104.0",
+    "dotenv": "^17.4.2",
+    "mailparser": "^3.9.8",
+    "smtp-server": "^3.18.4"
+  }
+}

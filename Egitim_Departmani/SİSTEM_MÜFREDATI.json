@@ -1,0 +1,29 @@
+{
+    "guncelleme_tarihi": "2026-04-23T14:07:34.010Z",
+    "aktif_ihtiyaclar": [
+        {
+            "id": "MFR-1001",
+            "kategori": "Finans ve Tekstil",
+            "acil_ihtiyac": "Sistemin kendi kendini finanse edebilmesi için Tekstil Üretimi, Maliyet Düşürme ve Global Pazarlama Stratejileri",
+            "oncelik": "ÇOK_YÜKSEK"
+        },
+        {
+            "id": "MFR-1002",
+            "kategori": "Otonom Sistem Yönetimi",
+            "acil_ihtiyac": "Sıfır insan müdahalesiyle sistem çöküşlerinde kendi kendini onaran (Self-Healing) yazılım mimarisi",
+            "oncelik": "YÜKSEK"
+        },
+        {
+            "id": "MFR-1003",
+            "kategori": "Güvenlik ve İnfaz",
+            "acil_ihtiyac": "Dış kütüphaneleri engelleyen, saf izole (Local) siber güvenlik duvarları inşası",
+            "oncelik": "YÜKSEK"
+        },
+        {
+            "id": "MFR-1004",
+            "kategori": "Arayüz ve Deneyim",
+            "acil_ihtiyac": "Kullanıcı panellerini (UI/UX) dünyadaki en akıcı ve modern standartlara çıkartacak tasarım refleksleri",
+            "oncelik": "NORMAL"
+        }
+    ]
+}

@@ -1,235 +1,417 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  Target, ShieldCheck, Bug,
-  Cpu, CheckCircle2, RefreshCw,
-  Layers, BrainCircuit,
-  ChevronRight, Bot, Radio, Terminal, Settings, Sliders,
-  Clock, Timer, X, Gauge, Zap
+  BrainCircuit, RefreshCw, Terminal, Eye, Users,
+  Radar, Search, FileText, Paperclip, ImageIcon,
+  Trash2, ArrowUpRight, Cpu, Send, Wifi, Mic
 } from 'lucide-react';
+import AgentAuthorityBadge from '../shared/AgentAuthorityBadge';
+
+// ── GERÇEK OLLAMA MODELLERİ — 52 model (26 orijinal + 26 klon) ──
+const AI_MODELLERI = [
+  // ── ORİJİNAL MODELLER ──
+  { ad: 'deepseek-coder-v2', rol: 'MİMAR',       gpu: '8.9 GB', tip: 'orijinal' },
+  { ad: 'mistral',           rol: 'DENETÇİ',     gpu: '4.4 GB', tip: 'orijinal' },
+  { ad: 'qwen2.5',           rol: 'ANALİZCİ',    gpu: '4.7 GB', tip: 'orijinal' },
+  { ad: 'llama3.1:8b',       rol: 'KURMAY',      gpu: '4.9 GB', tip: 'orijinal' },
+  { ad: 'gemma2:9b',         rol: 'GÖLGE',       gpu: '5.4 GB', tip: 'orijinal' },
+  { ad: 'phi3',              rol: 'HIZLI',       gpu: '2.2 GB', tip: 'orijinal' },
+  { ad: 'phi4-mini',         rol: 'AKIL',        gpu: '2.3 GB', tip: 'orijinal' },
+  { ad: 'codellama',         rol: 'KOD',         gpu: '3.8 GB', tip: 'orijinal' },
+  { ad: 'starcoder2',        rol: 'KOD-2',       gpu: '1.7 GB', tip: 'orijinal' },
+  { ad: 'llava',             rol: 'GÖRSEL',      gpu: '4.7 GB', tip: 'orijinal' },
+  { ad: 'command-r',         rol: 'KOMUTA',      gpu: '18 GB',  tip: 'orijinal' },
+  { ad: 'nomic-embed-text',  rol: 'ARAMA',       gpu: '274 MB', tip: 'orijinal' },
+  { ad: 'tinyllama',         rol: 'HABER',       gpu: '637 MB', tip: 'orijinal' },
+  { ad: 'qwen3:0.6b',        rol: 'DÜŞÜNÜR-1',   gpu: '522 MB', tip: 'orijinal' },
+  { ad: 'qwen2:0.5b',        rol: 'DÜŞÜNÜR-2',   gpu: '352 MB', tip: 'orijinal' },
+  { ad: 'llama3.2:1b',       rol: 'HAFİF-1',     gpu: '1.3 GB', tip: 'orijinal' },
+  { ad: 'gemma3:1b',         rol: 'HAFİF-2',     gpu: '815 MB', tip: 'orijinal' },
+  { ad: 'gemma3:4b',         rol: 'GOOGLE',      gpu: '3.3 GB', tip: 'orijinal' },
+  { ad: 'qwen2.5-coder:3b',  rol: 'KOD-3',      gpu: '1.9 GB', tip: 'orijinal' },
+  { ad: 'deepseek-r1:7b',    rol: 'MANTIK',      gpu: '4.7 GB', tip: 'orijinal' },
+  { ad: 'minicpm-v',         rol: 'GÖRSEL-2',    gpu: '5.5 GB', tip: 'orijinal' },
+  { ad: 'mistral-nemo',      rol: 'UZUN-METİN',  gpu: '7.1 GB', tip: 'orijinal' },
+  { ad: 'llama3:8b',         rol: 'META',        gpu: '4.7 GB', tip: 'orijinal' },
+  { ad: 'llama3.2-vision:11b', rol: 'VİZYON',   gpu: '7.8 GB', tip: 'orijinal' },
+  { ad: 'phi4',              rol: 'MİCROSOFT',   gpu: '9.1 GB', tip: 'orijinal' },
+  { ad: 'qwen3.5:4b',        rol: 'ÇOKLU',       gpu: '3.4 GB', tip: 'orijinal' },
+  // ── KLON MODELLER ──
+  { ad: 'klon-deepseek-coder-v2-latest', rol: 'MİMAR-K',      gpu: '8.9 GB', tip: 'klon' },
+  { ad: 'klon-mistral-latest',           rol: 'DENETÇİ-K',    gpu: '4.4 GB', tip: 'klon' },
+  { ad: 'klon-qwen2.5-latest',           rol: 'ANALİZCİ-K',   gpu: '4.7 GB', tip: 'klon' },
+  { ad: 'klon-llama3.1-8b',             rol: 'KURMAY-K',     gpu: '4.9 GB', tip: 'klon' },
+  { ad: 'klon-gemma2-9b',               rol: 'GÖLGE-K',      gpu: '5.4 GB', tip: 'klon' },
+  { ad: 'klon-phi3-latest',             rol: 'HIZLI-K',      gpu: '2.2 GB', tip: 'klon' },
+  { ad: 'klon-phi4-mini-latest',        rol: 'AKIL-K',       gpu: '2.3 GB', tip: 'klon' },
+  { ad: 'klon-codellama-latest',        rol: 'KOD-K',        gpu: '3.8 GB', tip: 'klon' },
+  { ad: 'klon-starcoder2-latest',       rol: 'KOD-2K',       gpu: '1.7 GB', tip: 'klon' },
+  { ad: 'klon-llava-latest',            rol: 'GÖRSEL-K',     gpu: '4.7 GB', tip: 'klon' },
+  { ad: 'klon-command-r-latest',        rol: 'KOMUTA-K',     gpu: '18 GB',  tip: 'klon' },
+  { ad: 'klon-nomic-embed-text-latest', rol: 'ARAMA-K',      gpu: '274 MB', tip: 'klon' },
+  { ad: 'klon-tinyllama-latest',        rol: 'HABER-K',      gpu: '637 MB', tip: 'klon' },
+  { ad: 'klon-qwen3-0.6b',             rol: 'DÜŞÜNÜR-1K',   gpu: '522 MB', tip: 'klon' },
+  { ad: 'klon-qwen2-0.5b',             rol: 'DÜŞÜNÜR-2K',   gpu: '352 MB', tip: 'klon' },
+  { ad: 'klon-llama3.2-1b',            rol: 'HAFİF-1K',     gpu: '1.3 GB', tip: 'klon' },
+  { ad: 'klon-gemma3-1b',              rol: 'HAFİF-2K',     gpu: '815 MB', tip: 'klon' },
+  { ad: 'klon-gemma3-4b',              rol: 'GOOGLE-K',     gpu: '3.3 GB', tip: 'klon' },
+  { ad: 'klon-qwen2.5-coder-3b',       rol: 'KOD-3K',       gpu: '1.9 GB', tip: 'klon' },
+  { ad: 'klon-deepseek-r1-7b',         rol: 'MANTIK-K',     gpu: '4.7 GB', tip: 'klon' },
+  { ad: 'klon-minicpm-v-latest',        rol: 'GÖRSEL-2K',   gpu: '5.5 GB', tip: 'klon' },
+  { ad: 'klon-mistral-nemo-latest',     rol: 'UZUN-METİN-K', gpu: '7.1 GB', tip: 'klon' },
+  { ad: 'klon-llama3-8b',              rol: 'META-K',       gpu: '4.7 GB', tip: 'klon' },
+  { ad: 'klon-llama3.2-vision-11b',    rol: 'VİZYON-K',    gpu: '7.8 GB', tip: 'klon' },
+  { ad: 'klon-phi4-latest',            rol: 'MİCROSOFT-K',  gpu: '9.1 GB', tip: 'klon' },
+  { ad: 'klon-qwen3.5-4b',             rol: 'ÇOKLU-K',      gpu: '3.4 GB', tip: 'klon' },
+  // ── SON 2 ORİJİNAL ──
+  { ad: 'gemma:7b',                    rol: 'GEMMA-ESK',    gpu: '5.0 GB', tip: 'orijinal' },
+  { ad: 'gpt-oss:20b',                 rol: 'OPENAI',       gpu: '13 GB',  tip: 'orijinal' },
+  // ── SON 2 KLON ──
+  { ad: 'klon-gemma-7b',               rol: 'GEMMA-ESK-K',  gpu: '5.0 GB', tip: 'klon' },
+  { ad: 'klon-gpt-oss-20b',            rol: 'OPENAI-K',     gpu: '13 GB',  tip: 'klon' },
+];
+
+const tipRenk = (t: string) => {
+  if (t === 'emir')    return 'border-red-500/40 bg-red-500/5';
+  if (t === 'onay')    return 'border-emerald-500/40 bg-emerald-500/5';
+  if (t === 'veri')    return 'border-blue-500/40 bg-blue-500/5';
+  if (t === 'hata')    return 'border-amber-500/40 bg-amber-500/5';
+  return 'border-cyan-500/40 bg-cyan-500/5';
+};
 
 export default function PlanningPanel() {
-  const [mainPrompt, setMainPrompt] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [finalOutput, setFinalOutput] = useState("");
-  const [healthScore, setHealthScore] = useState<number | null>(null);
-  const [isJobStarted, setIsJobStarted] = useState(false);
-  const [showBotModal, setShowBotModal] = useState(false);
-  const [activeTab, setActiveTab] = useState('CALIB');
-  const [elapsedTime, setElapsedTime] = useState(0);
+  const [komut,         setKomut]         = useState('');
+  const [argeKomut,     setArgeKomut]     = useState('');
+  const [isProcessing,  setIsProcessing]  = useState(false);
+  const [argeProcessing,setArgeProcessing]= useState(false);
+  const [cikti,         setCikti]         = useState('');
+  const [argeCikti,     setArgeCikti]     = useState('');
+  const [canliZaman,    setCanliZaman]    = useState(new Date().toLocaleTimeString('tr-TR'));
+  const [canliAkis,     setCanliAkis]     = useState<any[]>([]);
+  const [kararlar,      setKararlar]      = useState<any[]>([]);
+  const [kararYukleniyor, setKararYukleniyor] = useState(false);
+  const [seciliKarar,   setSeciliKarar]   = useState<any>(null);
+  const [ekliDosyalar,  setEkliDosyalar]  = useState<any[]>([]);
+  const [dragOver,      setDragOver]      = useState(false);
+  const [isListening,   setIsListening]   = useState(false);
+  const recognitionRef  = useRef<any>(null);
 
-  const [agentFilters, setAgentFilters] = useState([
-    { id: 1, name: 'MİMARİ', icon: <Layers />, state: 'IDLE', output: '', time: '0.8s' },
-    { id: 2, name: 'SNIPER', icon: <ShieldCheck />, state: 'IDLE', output: '', time: '1.2s' },
-    { id: 3, name: 'MATEMATİK', icon: <Cpu />, state: 'IDLE', output: '', time: '0.5s' },
-    { id: 4, name: 'GÖLGE', icon: <Bug />, state: 'IDLE', output: '', time: '1.0s' },
-    { id: 5, name: 'KURMAY', icon: <Target />, state: 'IDLE', output: '', time: '0.5s' },
-  ]);
+  const feedRef       = useRef<HTMLDivElement>(null);
+  const dosyaInputRef = useRef<HTMLInputElement>(null);
+  const resimInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    let interval: any;
-    if (isProcessing) {
-      interval = setInterval(() => setElapsedTime(prev => prev + 0.1), 100);
-    } else if (!isProcessing && elapsedTime > 0) {
-      clearInterval(interval);
-    }
-    return () => clearInterval(interval);
-  }, [isProcessing]);
-
-    const simulateProcessing = async () => {
-    if (!mainPrompt.trim()) return;
-    setIsProcessing(true);
-    setFinalOutput(`>>> KOMUT ALINDI: [ ${mainPrompt.substring(0, 30)}... ]\n>>> GÜVENLİK PROTOKOLÜ ÇAĞRILIYOR...`);
-    setElapsedTime(0);
-    setHealthScore(null);
-    setIsJobStarted(false);
-
-    const algos = [
-      '[YAPAY ZEKA] Mimari Şablon Çıkarılıyor...',
-      '[ALGORİTMA] Sniper Risk Analizi Yürütülüyor...',
-      '[YAPAY ZEKA] Matematiksel Verim Hesaplanıyor...',
-      '[ALGORİTMA] Gölge Sızma/Risk Testi...',
-      '[YAPAY ZEKA] Kurmay Karar Çıktısı Bekleniyor...'
-    ];
-    const outputs = [
-      '✓ MİMARİ DOĞRULANDI', 
-      '✓ RİSK (SNIPER) SIFIRLANDI', 
-      '✓ MATEMATİK (%99 UYUM)', 
-      '✓ GÖLGE AÇIĞI SIFIR', 
-      '✓ KURMAY KESİN ONAYI'
-    ];
-
-    let currentOut = `>>> KOMUT: [ ${mainPrompt} ]\n>>> 15.000 AJAN KADRO DİNAMO'DAN (5 ASİL 5 GÖLGE) SEÇİLİYOR...\n`;
-    setFinalOutput(currentOut);
-
-    const currentFilters = agentFilters;
-
-    for (let i = 0; i < currentFilters.length; i++) {
-      setAgentFilters(p => p.map((a, idx) => idx === i ? { ...a, state: 'THINKING', output: algos[i] } : a));
-      
-      currentOut += `\n[${currentFilters[i].name} DEPARTMANI] >>> YAPAY ZEKA DEVREDE...`;
-      setFinalOutput(currentOut);
-
-      await new Promise(r => setTimeout(r, 1500));
-
-      setAgentFilters(p => p.map((a, idx) => idx === i ? { ...a, state: 'DONE', output: outputs[i] } : a));
-      
-      currentOut += `\n   >> [BAŞARILI] ${outputs[i]}\n`;
-      setFinalOutput(currentOut);
-    }
+    const t = setInterval(() => setCanliZaman(new Date().toLocaleTimeString('tr-TR')), 1000);
     
-    currentOut += `\n\n=== 5/5 YÜCELİK UZLAŞMASI SAĞLANDI ===\n>>> 0-İNİSİYATİF ONAYLANDI. SİSTEM İNFAZA HAZIR.`;
-    setFinalOutput(currentOut);
-    setIsProcessing(false);
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'tr-TR';
+      recognition.onresult = (event: any) => {
+        let finalTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          finalTranscript += event.results[i][0].transcript;
+        }
+        setKomut(finalTranscript);
+      };
+      recognition.onend = () => setIsListening(false);
+      recognitionRef.current = recognition;
+    }
+
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // Kullanıcı herhangi bir Ctrl tuşuna (sol veya sağ CTRL) basarsa mikrofon tetiklenir
+      if (e.key === 'Control') {
+        // Form girişindeyse vs engellememesi için doğrudan butonu tetikliyoruz
+        const micBtn = document.getElementById('mic-button');
+        if (micBtn) micBtn.click();
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+
+    return () => {
+      clearInterval(t);
+      window.removeEventListener('keydown', handleGlobalKeyDown);
+    };
+  }, []);
+
+  const toggleListen = () => {
+    if (!recognitionRef.current) {
+      alert("Tarayıcınız sesli komutu desteklemiyor (Lütfen Chrome veya Edge kullanın).");
+      return;
+    }
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      setKomut('');
+      recognitionRef.current.start();
+      setIsListening(true);
+    }
+  };
+
+  const dosyaEkle = (files: FileList | null) => {
+    if (!files) return;
+    Array.from(files).forEach(file => {
+      if (file.size > 10 * 1024 * 1024) { alert(`${file.name} çok büyük (max 10MB)`); return; }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const base64 = e.target?.result as string;
+        setEkliDosyalar(prev => [...prev, { ad: file.name, tip: file.type, boyut: file.size, onizleme: file.type.startsWith('image/') ? base64 : undefined, data: base64 }]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+  const dosyaSil   = (i: number) => setEkliDosyalar(prev => prev.filter((_, idx) => idx !== i));
+  const handleDrop = (e: React.DragEvent) => { e.preventDefault(); setDragOver(false); dosyaEkle(e.dataTransfer.files); };
+
+  const kararlariYukle = useCallback(async () => {
+    setKararYukleniyor(true);
+    try { const res = await fetch('/api/kararlar'); const data = await res.json(); setKararlar(data.kararlar || []); }
+    catch { setKararlar([]); }
+    setKararYukleniyor(false);
+  }, []);
+
+  useEffect(() => { kararlariYukle(); }, [kararlariYukle]);
+
+  const komutGonder = async () => {
+    if ((!komut.trim() && ekliDosyalar.length === 0) || isProcessing) return;
+    setIsProcessing(true); setCikti('');
+    const dosyaBilgi = ekliDosyalar.length > 0 ? ` [${ekliDosyalar.map(d => d.ad).join(', ')}]` : '';
+    setCanliAkis(prev => [{ id: Date.now(), ajan: 'SEN', hedef: 'KURUL', mesaj: (komut || '(Dosya)') + dosyaBilgi, zaman: canliZaman, tip: 'emir' }, ...prev]);
+    try {
+      const res  = await fetch('/api/intake', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ task: komut, dosyalar: ekliDosyalar.map(d => ({ ad: d.ad, tip: d.tip, boyut: d.boyut, data: d.data })) }),
+      });
+      const data = await res.json();
+      if (data.error) { setCikti(`HATA: ${data.error}`); setCanliAkis(prev => [{ id: Date.now()+1, ajan: 'SİSTEM', hedef: 'SEN', mesaj: data.error, zaman: new Date().toLocaleTimeString('tr-TR'), tip: 'hata' }, ...prev]); }
+      else {
+        setCikti(`[${data.status}] ${data.message}\n\n[MİMAR PLANI]:\n${data.mimar_taslagi || '-'}\n\n[DENETÇİ]:\n${data.denetim_raporu || '-'}`);
+        setCanliAkis(prev => [{ id: Date.now()+1, ajan: 'KURUL', hedef: 'SEN', mesaj: `${data.status} — ${data.message}`, zaman: new Date().toLocaleTimeString('tr-TR'), tip: data.status === 'PASS' ? 'onay' : 'hata' }, ...prev]);
+        kararlariYukle();
+      }
+    } catch (err: any) { setCikti(`BAĞLANTI HATASI: ${err.message}`); }
+    finally { setIsProcessing(false); setKomut(''); setEkliDosyalar([]); }
+  };
+
+  const argeGonder = async () => {
+    if (!argeKomut.trim() || argeProcessing) return;
+    setArgeProcessing(true); setArgeCikti('');
+    setCanliAkis(prev => [{ id: Date.now(), ajan: 'SEN', hedef: 'ARGE', mesaj: argeKomut, zaman: canliZaman, tip: 'veri' }, ...prev]);
+    try {
+      const res  = await fetch('/api/intake', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ task: `[ARGE]: ${argeKomut}` }) });
+      const data = await res.json();
+      setArgeCikti(data.mimar_taslagi || data.error || '-');
+    } catch (err: any) { setArgeCikti(`BAĞLANTI HATASI: ${err.message}`); }
+    finally { setArgeProcessing(false); setArgeKomut(''); }
   };
 
   return (
-    <div className="h-full flex flex-col bg-[#02040a] p-2 gap-3 box-border overflow-hidden relative">
+    <div className="h-full flex flex-col bg-[#030712] gap-1 box-border overflow-hidden">
+      <AgentAuthorityBadge agentName="K-1 KOMUTAN" agentRole="KURUL MASASI" status="ACTIVE" />
 
-      {/* COMPACT MODAL WINDOW - FIXED CENTERED */}
-      {showBotModal && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center pointer-events-auto">
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setShowBotModal(false)}></div>
-          <div className="bg-[#0b1120] border border-white/10 w-80 shadow-2xl relative z-[10000] animate-scale-in overflow-hidden shadow-[0_0_50px_rgba(168,85,247,0.2)]">
-            {/* Header */}
-            <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between bg-[#0d121f]">
-              <div className="flex items-center gap-2">
-                <Settings className="w-3.5 h-3.5 text-purple-400 rotate-90" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-white">BOT SİSTEM AYARLARI</span>
+      {/* ÜST BAR */}
+      <div className="flex items-center justify-between px-4 py-1 bg-[#0a0e1a] border-b border-cyan-500/20 shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-[10px] font-black text-emerald-400 tracking-[0.2em]">KURUL MASASI</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] font-mono text-cyan-400">{canliZaman}</span>
+          <span className="text-[8px] font-mono text-slate-500">{AI_MODELLERI.length} MODEL TANIMLI · OLLAMA YERELde</span>
+        </div>
+      </div>
+
+      {/* ANA İÇERİK */}
+      <div className="flex-1 flex flex-col gap-1 px-2 overflow-hidden min-h-0">
+
+        {/* ÜST YARI */}
+        <div className="h-[55%] flex gap-1.5 shrink-0">
+
+          {/* KOMUT */}
+          <div
+            className={`w-[35%] bg-[#0a0e1a] border rounded flex flex-col overflow-hidden transition-colors ${dragOver ? 'border-purple-400 bg-purple-500/10' : 'border-purple-500/30'}`}
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={handleDrop}
+          >
+            <div className="px-3 py-1.5 border-b border-purple-500/15 flex items-center justify-between shrink-0 bg-[#080c16]">
+              <div className="flex items-center gap-1.5">
+                <Terminal className="w-3 h-3 text-purple-400" />
+                <span className="text-[9px] font-black text-purple-400 tracking-widest">KURUL EMİR</span>
               </div>
-              <button onClick={() => setShowBotModal(false)} className="text-slate-500 hover:text-white transition-colors"><X className="w-4 h-4" /></button>
+              <div className="flex items-center gap-1">
+                <button id="mic-button" onClick={toggleListen} title="Sesli Komut (CTRL Tuşu)" className={`p-1 rounded transition-all ${isListening ? 'bg-red-500/20 text-red-500 animate-pulse' : 'hover:bg-purple-500/20 text-purple-400/60 hover:text-purple-400'}`}>
+                  <Mic className="w-3.5 h-3.5" />
+                </button>
+                <input ref={dosyaInputRef} type="file" multiple className="hidden" onChange={(e) => dosyaEkle(e.target.files)} />
+                <input ref={resimInputRef} type="file" multiple accept="image/*" className="hidden" onChange={(e) => dosyaEkle(e.target.files)} />
+                <button onClick={() => resimInputRef.current?.click()} title="Resim Ekle" className="p-1 rounded hover:bg-purple-500/20 text-purple-400/60 hover:text-purple-400 transition-all"><ImageIcon className="w-3.5 h-3.5" /></button>
+                <button onClick={() => dosyaInputRef.current?.click()} title="Dosya Ekle"  className="p-1 rounded hover:bg-purple-500/20 text-purple-400/60 hover:text-purple-400 transition-all"><Paperclip  className="w-3.5 h-3.5" /></button>
+              </div>
             </div>
-
-            {/* Tabs */}
-            <div className="flex border-b border-white/5 bg-black/20">
-              <button onClick={() => setActiveTab('CALIB')} className={`flex-1 py-2.5 text-[8px] font-black uppercase tracking-[0.2em] transition-all ${activeTab === 'CALIB' ? 'bg-purple-600/10 text-purple-400 border-b-2 border-purple-600' : 'text-slate-500 hover:text-slate-300'}`}>KALİBRASYON</button>
-              <button onClick={() => setActiveTab('POWER')} className={`flex-1 py-2.5 text-[8px] font-black uppercase tracking-[0.2em] transition-all ${activeTab === 'POWER' ? 'bg-purple-600/10 text-purple-400 border-b-2 border-purple-600' : 'text-slate-500 hover:text-slate-300'}`}>GÜÇ/MOD</button>
+            {ekliDosyalar.length > 0 && (
+              <div className="flex flex-wrap gap-1 px-2 py-1 border-b border-purple-500/10 shrink-0">
+                {ekliDosyalar.map((d, i) => (
+                  <div key={i} className="flex items-center gap-1 bg-purple-500/10 border border-purple-500/20 rounded px-1.5 py-0.5">
+                    {d.onizleme ? <img src={d.onizleme} alt={d.ad} className="w-5 h-5 rounded object-cover" /> : <FileText className="w-3 h-3 text-purple-400" />}
+                    <span className="text-[8px] text-purple-300 font-mono truncate max-w-[80px]">{d.ad}</span>
+                    <button onClick={() => dosyaSil(i)} className="text-red-500/50 hover:text-red-400"><Trash2 className="w-2.5 h-2.5" /></button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {dragOver && <div className="p-2 border-2 border-dashed border-purple-400/50 bg-purple-500/10 text-center shrink-0"><span className="text-[10px] text-purple-400 font-black">DOSYAYI BIRAK</span></div>}
+            <div className="flex-1 flex flex-col p-2 gap-1.5">
+              <textarea
+                value={komut}
+                onChange={(e) => setKomut(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); komutGonder(); } }}
+                placeholder="Komutu yaz, Enter ile gönder..."
+                className="flex-1 bg-black/40 border border-white/10 rounded text-[12px] text-white p-2 resize-none outline-none focus:border-purple-500/50 font-mono leading-relaxed"
+              />
+              <button onClick={komutGonder} disabled={isProcessing} className={`w-full py-2 rounded text-[10px] font-black tracking-wider transition-all ${isProcessing ? 'bg-purple-900/30 text-purple-600' : 'bg-purple-600 text-white hover:bg-purple-500 active:scale-[0.98]'}`}>
+                {isProcessing ? <RefreshCw className="w-4 h-4 animate-spin mx-auto" /> : '📡 EMİR GÖNDER'}
+              </button>
             </div>
+          </div>
 
-            {/* Content */}
-            <div className="p-6 h-48 flex flex-col justify-center">
-              {activeTab === 'CALIB' ? (
-                <div className="space-y-6 animate-fadeIn">
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center"><div className="flex items-center gap-1.5"><Sliders className="w-3 h-3 text-purple-500" /><span className="text-[9px] font-black text-slate-300 uppercase">HASSASİYET</span></div><span className="text-[9px] font-mono text-purple-400 font-bold">%94</span></div>
-                    <div className="h-1 bg-black border border-white/5 rounded-full overflow-hidden"><div className="h-full bg-purple-600 w-[94%] shadow-[0_0_8px_purple]"></div></div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center"><div className="flex items-center gap-1.5"><Gauge className="w-3 h-3 text-purple-500" /><span className="text-[9px] font-black text-slate-300 uppercase">DERİNLİK</span></div><span className="text-[9px] font-mono text-purple-400 font-bold">LVL 4</span></div>
-                    <div className="h-1 bg-black border border-white/5 rounded-full overflow-hidden"><div className="h-full bg-purple-600 w-3/4 shadow-[0_0_8px_purple]"></div></div>
-                  </div>
-                </div>
+          {/* ÇIKTI */}
+          <div className="w-[40%] bg-[#0a0e1a] border border-cyan-500/20 rounded flex flex-col overflow-hidden">
+            <div className="px-3 py-1.5 border-b border-cyan-500/15 flex items-center gap-2 shrink-0 bg-[#080c16]">
+              <BrainCircuit className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="text-[9px] font-black text-cyan-400 tracking-widest">KURUL ÇIKTISI</span>
+            </div>
+            <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
+              {cikti ? (
+                <pre className="text-[9px] text-slate-300 font-mono whitespace-pre-wrap leading-relaxed">{cikti}</pre>
               ) : (
-                <div className="space-y-4 animate-fadeIn">
-                  <div className="flex items-center justify-between p-3 border border-purple-500/20 bg-purple-500/5 rounded">
-                    <div className="flex items-center gap-2"><Zap className="w-4 h-4 text-purple-400" /><span className="text-[9px] font-black text-white">YÜKSEK PERFORMANS</span></div>
-                    <div className="w-3 h-3 rounded-full bg-purple-500 shadow-[0_0_10px_purple]"></div>
-                  </div>
-                  <div className="flex items-center justify-between p-3 border border-white/5 bg-white/5 rounded opacity-40 grayscale">
-                    <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-slate-400" /><span className="text-[9px] font-black text-slate-400">EKONOMİ MODU</span></div>
-                    <div className="w-3 h-3 rounded-full bg-slate-800"></div>
-                  </div>
+                <div className="h-full flex flex-col items-center justify-center opacity-20">
+                  <BrainCircuit className="w-8 h-8 text-cyan-500 mb-2" />
+                  <span className="text-[9px] font-black text-slate-500 tracking-widest">EMİR BEKLENİYOR</span>
                 </div>
               )}
             </div>
-
-            <div className="p-4 bg-[#0d121f] border-t border-white/10 flex gap-2">
-              <button onClick={() => setShowBotModal(false)} className="flex-1 py-2.5 bg-purple-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-purple-500 shadow-lg active:scale-95 transition-all">KAYDET</button>
-            </div>
           </div>
-        </div>
-      )}
 
-      <div className="flex-1 flex gap-3 items-stretch overflow-hidden">
-
-        {/* SOL PANEL */}
-        <div className="w-[34%] flex flex-col gap-3 shrink-0">
-          <div className="bg-[#0b1120] border border-purple-500/10 p-3 h-24 shrink-0 relative">
-            <textarea value={mainPrompt} onChange={(e) => setMainPrompt(e.target.value)} placeholder="Parametre..." className="w-full h-full bg-transparent text-[13px] text-white outline-none resize-none font-bold placeholder:font-normal" />
-            <button onClick={simulateProcessing} className="absolute bottom-2 right-2 px-5 py-1.5 text-[9px] font-black bg-purple-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.3)]">SÜZGECİ ÇALIŞTIR</button>
-          </div>
-          <div className="flex-1 border border-white/5 bg-[#05060c] p-3 space-y-2 overflow-y-auto custom-scrollbar">
-            {agentFilters.map(a => (
-              <div key={a.id} className={`flex items-center gap-3 p-3 border transition-all duration-300 ${a.state === 'THINKING' ? 'border-purple-500 bg-purple-500/10 shadow-[0_0_15px_rgba(168,85,247,0.2)]' : a.state === 'DONE' ? 'border-purple-900/30 bg-purple-900/5' : 'border-white/5 bg-[#0a0c14] opacity-50'}`}>
-                <div className={`w-8 h-8 border flex items-center justify-center shrink-0 ${a.state === 'THINKING' ? 'border-purple-400 text-purple-400 animate-pulse' : a.state === 'DONE' ? 'border-purple-600 text-purple-500' : 'border-slate-800 text-slate-700'}`}>{a.state === 'THINKING' ? <RefreshCw className="w-4 h-4 animate-spin" /> : a.icon}</div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-center"><span className={`text-[10px] font-black uppercase tracking-widest ${a.state === 'DONE' ? 'text-purple-200' : 'text-white'}`}>{a.name}</span><span className="text-[8px] font-mono text-purple-400/60 uppercase">{a.time}</span></div>
-                  <p className="text-[8px] font-mono text-slate-500 uppercase mt-0.5 truncate">{a.output || 'BEKLENİYOR'}</p>
-                </div>
+          {/* ARGE */}
+          <div className="w-[25%] bg-[#0a0e1a] border border-blue-500/30 rounded flex flex-col overflow-hidden">
+            <div className="px-3 py-1.5 border-b border-blue-500/15 flex items-center justify-between shrink-0 bg-[#060a14]">
+              <div className="flex items-center gap-2">
+                <Radar className="w-3.5 h-3.5 text-blue-400" />
+                <span className="text-[9px] font-black text-blue-400 tracking-widest">ARGE HATTI</span>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ORTA PANEL */}
-        <div className="w-[33%] flex flex-col border border-white/10 bg-[#0a0c14] shrink-0 h-full">
-          <div className="p-4 flex flex-col h-full box-border">
-            <div className="h-12 border-b border-purple-500/10 flex items-center mb-4 shrink-0 px-2"><Terminal className="w-3.5 h-3.5 text-purple-400 mr-2" /><span className="text-[12px] font-black italic uppercase text-white tracking-widest">TOPLU ÇIKTI</span></div>
-            <div className="flex-1 bg-black/60 border border-white/5 p-4 overflow-y-auto mb-4 font-mono text-[10px] shadow-inner relative custom-scrollbar">
-              {finalOutput ? (
-                <div className="space-y-4">
-                  {finalOutput.split('\n').map((l, i) => <div key={i} className="flex gap-2 border-l-2 border-purple-500/30 pl-3 py-1 scale-in-center"><ChevronRight className="w-3 h-3 text-purple-400" /><span className="uppercase text-purple-100 font-bold tracking-tight">{l}</span></div>)}
-                </div>
-              ) : <div className="h-full flex flex-col items-center justify-center opacity-10"><BrainCircuit className="w-10 h-10 text-purple-500" /><span className="text-[10px] font-black tracking-widest mt-2 uppercase">STREAM SILENT</span></div>}
             </div>
-            <div className="h-[120px] flex flex-col justify-end gap-2 shrink-0">
-              <button onClick={() => setIsJobStarted(true)} className="h-12 bg-purple-600 font-black text-[11px] uppercase text-white shadow-[0_0_20px_purple/30]">GÖREVE BAŞLA</button>
-              <button onClick={() => { setIsVerifying(true); setTimeout(() => { setHealthScore(98.4); setIsVerifying(false); }, 1500); }} className={`h-10 border border-white/10 text-[10px] font-black uppercase tracking-widest transition-all ${isVerifying ? 'bg-purple-500/10 border-purple-400 text-purple-400' : 'text-slate-300 hover:border-purple-600/50'}`}>{isVerifying ? 'ANALİZ EDİLİYOR...' : healthScore ? `DOKTRİN SAĞLIĞI: %${healthScore}` : 'ÇIKTIYI DOĞRULA'}</button>
+            <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
+              {argeCikti ? (
+                <pre className="text-[9px] text-blue-200 font-mono whitespace-pre-wrap leading-relaxed">{argeCikti}</pre>
+              ) : (
+                <div className="flex items-center justify-center h-full opacity-20"><span className="text-[8px] text-slate-500 font-black tracking-widest">ARGE BEKLİYOR</span></div>
+              )}
+            </div>
+            <div className="p-1.5 border-t border-blue-500/15 flex gap-1 shrink-0">
+              <input value={argeKomut} onChange={(e) => setArgeKomut(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') argeGonder(); }} placeholder="ARGE'ye soru sor..." className="flex-1 bg-black/40 border border-blue-500/20 rounded text-[9px] text-white px-2 py-1 outline-none focus:border-blue-500/50 font-mono" />
+              <button onClick={argeGonder} disabled={argeProcessing} className={`px-2 rounded text-[8px] font-black transition-all ${argeProcessing ? 'bg-blue-900/30 text-blue-600' : 'bg-blue-600 text-white hover:bg-blue-500'}`}>{argeProcessing ? '…' : '▶'}</button>
             </div>
           </div>
         </div>
 
-        {/* SAĞ PANEL (İCRA) */}
-        <div className="w-[33%] flex flex-col border border-white/10 bg-[#06080c] shrink-0 h-full box-border relative">
-          <div className="p-4 flex flex-col h-full box-border">
-            <div className="h-12 border-b border-purple-500/10 flex items-center mb-4 shrink-0 px-4 justify-between">
-              <div className="flex items-center"><Radio className="w-3.5 h-3.5 mr-2 text-purple-400" /><span className="text-[12px] font-black italic uppercase text-white tracking-widest">İŞÇİ MİMAR</span></div>
-              <button onClick={() => setShowBotModal(true)} className="text-slate-400 hover:text-purple-400 transition-all hover:rotate-90 pr-1"><Settings className="w-4 h-4" /></button>
-            </div>
+        {/* ALT YARI */}
+        <div className="flex-1 flex gap-1.5 min-h-0">
 
-            <div className="flex-1 bg-black border border-white/10 flex flex-col items-center justify-center relative overflow-hidden mb-4 shadow-2xl">
-              <div className="flex flex-col items-center justify-center relative">
-                <div className={`absolute inset-[-40px] bg-purple-600/30 blur-[40px] rounded-full transition-all duration-700 ${isJobStarted ? 'opacity-100 scale-110 animate-pulse' : 'opacity-0 scale-50'}`}></div>
-                <Settings className={`w-16 h-16 absolute text-purple-500/40 opacity-20 ${isJobStarted ? 'animate-spin-slow opacity-90' : ''}`} />
-                <Bot className={`w-16 h-16 relative z-10 transition-all duration-700 ${isJobStarted ? 'text-white drop-shadow-[0_0_35px_rgba(168,85,247,0.9)] scale-110' : 'text-slate-400 opacity-60'}`} />
+          {/* CANLI AKIŞ — sadece gerçek komutlar */}
+          <div className="w-[25%] bg-[#0a0e1a] border border-cyan-500/20 rounded flex flex-col overflow-hidden">
+            <div className="px-2 py-1.5 border-b border-cyan-500/15 flex items-center justify-between shrink-0 bg-[#080c16]">
+              <div className="flex items-center gap-1.5">
+                <Eye className="w-3 h-3 text-cyan-400" />
+                <span className="text-[9px] font-black text-cyan-400 tracking-widest">OTURUM AKIŞI</span>
               </div>
-              <div className="h-6 mt-4 flex items-center justify-center relative z-20">
-                <span className={`text-[11px] font-black uppercase tracking-[0.5em] transition-all duration-500 ${isJobStarted ? 'text-white drop-shadow-[0_0_15px_purple]' : 'text-slate-400 opacity-30'}`}>{isJobStarted ? 'I C R A D A' : 'GÖREV BEKLENİYOR'}</span>
-              </div>
+              <span className="text-[7px] font-mono text-slate-600">{canliAkis.length} kayıt</span>
             </div>
+            <div ref={feedRef} className="flex-1 overflow-y-auto p-1.5 space-y-1 custom-scrollbar">
+              {canliAkis.length === 0 && (
+                <div className="flex items-center justify-center h-full opacity-20"><span className="text-[8px] text-slate-500 font-black">EMİR GELİNCE DOLAR</span></div>
+              )}
+              {canliAkis.map((msg) => (
+                <div key={msg.id} className={`p-1.5 border rounded ${tipRenk(msg.tip)} transition-all animate-fade-in`}>
+                  <div className="flex items-center justify-between mb-0.5">
+                    <div className="flex items-center gap-1">
+                      <span className="text-[8px] font-black text-white">{msg.ajan}</span>
+                      <ArrowUpRight className="w-2 h-2 text-slate-500" />
+                      <span className="text-[7px] font-mono text-slate-400">{msg.hedef}</span>
+                    </div>
+                    <span className="text-[6px] font-mono text-slate-600">{msg.zaman}</span>
+                  </div>
+                  <p className="text-[8px] text-slate-300 leading-relaxed">{msg.mesaj}</p>
+                </div>
+              ))}
+            </div>
+          </div>
 
-            <div className="h-[120px] flex flex-col items-center justify-center border-t border-white/10 bg-black/60 box-border gap-4 shrink-0 shadow-inner">
-              <div className="flex gap-8 items-center bg-[#0a0c14]/50 px-6 py-4 border border-white/5">
-                <div className="flex flex-col items-center min-w-[70px]">
-                  <div className="flex items-center gap-1.5 mb-1.5"><Clock className="w-3 h-3 text-purple-400" /><span className="text-[7px] text-slate-400 font-black uppercase tracking-tighter">İŞLEM SÜRESİ</span></div>
-                  <span className="text-[12px] font-mono text-white font-black leading-none">{elapsedTime.toFixed(1)}S</span>
-                </div>
-                <div className="w-px h-10 bg-white/10"></div>
-                <div className="flex flex-col items-center min-w-[70px]">
-                  <div className="flex items-center gap-1.5 mb-1.5"><Timer className="w-3 h-3 text-purple-400" /><span className="text-[7px] text-slate-400 font-black uppercase tracking-tighter">TOPLAM GEREKEN</span></div>
-                  <span className="text-[12px] font-mono text-white font-black leading-none">4.2S</span>
-                </div>
+          {/* KARARLAR — gerçek JSON dosyaları */}
+          <div className="w-[22%] bg-[#0a0e1a] border border-orange-500/20 rounded flex flex-col overflow-hidden">
+            <div className="px-2 py-1.5 border-b border-orange-500/15 flex items-center justify-between shrink-0 bg-[#0c0a10]">
+              <div className="flex items-center gap-1.5">
+                <FileText className="w-3 h-3 text-orange-400" />
+                <span className="text-[9px] font-black text-orange-400 tracking-widest">KARARLAR</span>
+                <span className="text-[7px] bg-orange-500/15 text-orange-300 px-1 py-0.5 rounded font-mono">{kararlar.length}</span>
               </div>
-              <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest opacity-60 italic leading-none">STP-V1 // SECURE_NODE</span>
+              <button onClick={kararlariYukle} className="text-[7px] bg-orange-500/10 text-orange-400 px-1.5 py-0.5 rounded hover:bg-orange-500/30 font-black">{kararYukleniyor ? '…' : '↻'}</button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-1.5 space-y-1 custom-scrollbar">
+              {kararlar.length === 0 ? (
+                <div className="flex items-center justify-center h-full opacity-20"><span className="text-[8px] text-slate-500 font-black">KARAR YOK</span></div>
+              ) : kararlar.map((k: any, i: number) => (
+                <div key={i} onClick={() => setSeciliKarar(seciliKarar?.dosya === k.dosya ? null : k)} className="cursor-pointer px-2 py-1.5 bg-black/30 border border-white/5 rounded hover:border-orange-500/30 transition-all">
+                  <span className="text-[8px] font-black text-white block truncate">{k.gorev}</span>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className={`text-[7px] px-1 py-0.5 rounded font-black ${k.durum === 'PASS' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>{k.durum}</span>
+                    <span className="text-[7px] font-mono text-slate-600">{new Date(k.tarih).toLocaleTimeString('tr-TR')}</span>
+                  </div>
+                  {seciliKarar?.dosya === k.dosya && <pre className="mt-1 p-1.5 bg-black/50 rounded text-[7px] text-orange-200 font-mono whitespace-pre-wrap border border-orange-500/10 max-h-[120px] overflow-y-auto">{k.muhur}</pre>}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* AI MODELLERİ — gerçek Ollama modelleri */}
+          <div className="flex-1 bg-[#0a0e1a] border border-amber-500/20 rounded flex flex-col overflow-hidden">
+            <div className="px-2 py-1.5 border-b border-amber-500/15 flex items-center justify-between shrink-0 bg-[#0a0a10]">
+              <div className="flex items-center gap-2">
+                <Cpu className="w-3 h-3 text-amber-400" />
+                <span className="text-[9px] font-black text-amber-400 tracking-widest">OLLAMA MODELLERİ</span>
+              </div>
+              <span className="text-[7px] text-slate-500 font-mono">localhost:11434</span>
+            </div>
+            <div className="flex-1 overflow-y-auto p-1.5 space-y-1 custom-scrollbar">
+              {AI_MODELLERI.map((m, i) => (
+                <div key={i} className="flex items-center justify-between px-2 py-2 bg-black/30 border border-white/5 rounded hover:border-amber-500/20 transition-colors">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]" />
+                    <span className="text-[11px] font-black text-white">{m.ad}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[9px] font-mono text-amber-400/70">{m.rol}</span>
+                    <span className="text-[8px] font-mono text-slate-600">{m.gpu}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
-
       </div>
+
       <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 2px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.2); }
-        @keyframes scale-in {
-          0% { transform: scale(0.95); opacity: 0; }
-          100% { transform: scale(1); opacity: 1; }
-        }
-        .animate-scale-in { animation: scale-in 0.15s ease-out forwards; }
+        .custom-scrollbar::-webkit-scrollbar { width: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(6,182,212,0.3); border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        @keyframes fade-in { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+        .animate-fade-in { animation: fade-in 0.3s ease-out; }
       `}</style>
     </div>
   );
 }
-
-
-

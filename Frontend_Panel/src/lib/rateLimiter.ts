@@ -1,9 +1,9 @@
 // src/lib/rateLimiter.ts
 // ============================================================
-// BOT RATE LIMITER — In-Memory, Sunucu-Taraflý
+// BOT RATE LIMITER ï¿½ In-Memory, Sunucu-Taraflï¿½
 // ============================================================
-// Her chat_id için: 10 saniyede 5 istek limit
-// Aþýlýrsa: cooldown mesajý + istek iþlenmez
+// Her chat_id iï¿½in: 10 saniyede 5 istek limit
+// Aï¿½ï¿½lï¿½rsa: cooldown mesajï¿½ + istek iï¿½lenmez
 // ============================================================
 
 interface RateEntry {
@@ -15,10 +15,10 @@ interface RateEntry {
 const store = new Map<string, RateEntry>();
 
 const WINDOW_MS  = 10_000; // 10 saniye
-const MAX_CALLS  = 5;      // pencere baþýna max istek
+const MAX_CALLS  = 5;      // pencere baï¿½ï¿½na max istek
 const CLEANUP_INTERVAL = 60_000; // 60 saniyede bir temizle
 
-// Eski kayýtlarý temizle (memleak önleme)
+// Eski kayï¿½tlarï¿½ temizle (memleak ï¿½nleme)
 setInterval(() => {
   const now = Date.now();
   for (const [key, entry] of store.entries()) {
@@ -38,7 +38,7 @@ export function checkRateLimit(chatId: number | string): RateLimitResult {
 
   let entry = store.get(key);
 
-  // Pencere dolmuÞsa sýfýrla
+  // Pencere dolmuï¿½sa sï¿½fï¿½rla
   if (!entry || entry.resetAt < now) {
     entry = { count: 0, resetAt: now + WINDOW_MS, warned: false };
     store.set(key, entry);

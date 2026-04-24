@@ -5,6 +5,7 @@ import { updateStatus } from '@/services/taskService';
 import { useLanguageStore } from '@/store/useLanguageStore';
 import { t } from '@/lib/i18n';
 import { toast } from 'sonner';
+import DepartmentCommsBox from '../shared/DepartmentCommsBox';
 
 // ============================================================
 // KANBAN SÜTUN TANIMLARI
@@ -495,6 +496,9 @@ export default function TaskBoard() {
             </div>
           );
         })}
+      </div>
+      <div className="mt-6">
+        <DepartmentCommsBox department="GÖREV PANOSU" />
       </div>
     </section>
   );

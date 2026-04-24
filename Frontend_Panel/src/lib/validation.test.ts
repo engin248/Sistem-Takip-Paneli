@@ -8,7 +8,7 @@ import {
   UpdateTaskStatusSchema,
   BoardDecisionSchema,
   validateInput,
-} from '@/lib/validation';
+} from './validation';
 
 describe('ZOD Validation', () => {
   // ── CreateTaskSchema ──────────────────────────────────────

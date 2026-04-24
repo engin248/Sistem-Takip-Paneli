@@ -1,14 +1,16 @@
-﻿
+
 "use client";
 import { useEffect, useState, useCallback, useMemo } from 'react';
 
 import { useSelectedLayoutSegment, useRouter } from 'next/navigation';
 import {
   Activity, LayoutDashboard,
-  Target, Bot, Radio, X, Radar, Workflow, Bug, Cpu, Shield
+  Target, Bot, Radio, X, Radar, Workflow, Bug, Cpu, Shield,
+  Layers, Terminal, AlertTriangle, Camera
 } from 'lucide-react';
 import { useLanguageStore } from '@/store/useLanguageStore';
 import ScreenErrorBoundary from '@/components/layout/ScreenErrorBoundary';
+import GlobalBotTrigger from '@/components/shared/GlobalBotTrigger';
 
 const LogoSVG = () => (
   <svg width="40" height="40" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 drop-shadow-[0_0_12px_rgba(56,189,248,0.5)]">
@@ -68,14 +70,19 @@ type ScreenMeta = {
 };
 
 const HQ_SCREENS: ScreenMeta[] = [
-  { id: 'SCR-00', label: 'ANA SAYFA', subtitle: 'Global Sistem Komuta Merkezi', icon: <LayoutDashboard className="w-5 h-5" />, color: 'amber', status: 'ONLİNE' },
-  { id: 'SCR-01', label: 'SİSTEM YÖNETİMİ', subtitle: 'Lokal / Canlı Sistemler', icon: <Activity className="w-5 h-5" />, color: 'cyan', status: 'AKTİF' },
-  { id: 'SCR-02', label: 'PLANLAMA', subtitle: 'Otonom / İnsan Görev Dağıtımı', icon: <Target className="w-5 h-5" />, color: 'amber', status: 'AKTİF' },
-  { id: 'SCR-03', label: 'AJAN YÖNETİMİ', subtitle: 'Ajan Kadrosu', icon: <Bot className="w-5 h-5" />, color: 'amber', status: 'AKTİF' },
-  { id: 'SCR-04', label: 'AR-GE İSTİHBARAT', subtitle: 'Global Trend & Pazar Verisi', icon: <Radar className="w-5 h-5" />, color: 'blue', status: 'AKTİF' },
-  { id: 'SCR-05', label: 'OTOMASYONLAR', subtitle: 'Zincirleme Görev Akışları', icon: <Workflow className="w-5 h-5" />, color: 'green', status: 'AKTİF' },
-  { id: 'SCR-07', label: 'SİSTEM HATALARI', subtitle: 'Hata Logları ve Crash Tespiti', icon: <Bug className="w-5 h-5" />, color: 'red', status: 'AKTİF' },
-  { id: 'SCR-08', label: 'İLETİŞİM AĞLARI', subtitle: 'WhatsApp, Telegram, SMS Hub', icon: <Radio className="w-5 h-5" />, color: 'blue', status: 'AKTİF' },
+  { id: 'STP-00', label: 'ANA SAYFA', subtitle: 'Global Sistem Komuta Merkezi', icon: <LayoutDashboard className="w-5 h-5" />, color: 'amber', status: 'ONLİNE' },
+  { id: 'STP-01', label: 'SİSTEM YÖNETİMİ', subtitle: 'Lokal / Canlı Sistemler', icon: <Activity className="w-5 h-5" />, color: 'cyan', status: 'AKTİF' },
+  { id: 'STP-02', label: 'PLANLAMA', subtitle: 'Otonom / İnsan Görev Dağıtımı', icon: <Target className="w-5 h-5" />, color: 'amber', status: 'AKTİF' },
+  { id: 'STP-03', label: 'AJAN YÖNETİMİ', subtitle: 'Ajan Kadrosu', icon: <Bot className="w-5 h-5" />, color: 'amber', status: 'AKTİF' },
+  { id: 'STP-04', label: 'AR-GE İSTİHBARAT', subtitle: 'Global Trend & Pazar Verisi', icon: <Radar className="w-5 h-5" />, color: 'blue', status: 'AKTİF' },
+  { id: 'STP-05', label: 'OTOMASYONLAR', subtitle: 'Zincirleme Görev Akışları', icon: <Workflow className="w-5 h-5" />, color: 'green', status: 'AKTİF' },
+  { id: 'STP-06', label: 'GÖREV PANOSU', subtitle: 'Aktif Görev Kartları', icon: <Layers className="w-5 h-5" />, color: 'amber', status: 'AKTİF' },
+  { id: 'STP-07', label: 'SİSTEM HATALARI', subtitle: 'Hata Logları ve Crash Tespiti', icon: <Bug className="w-5 h-5" />, color: 'red', status: 'AKTİF' },
+  { id: 'STP-08', label: 'İLETİŞİM AĞLARI', subtitle: 'WhatsApp, Telegram, SMS Hub', icon: <Radio className="w-5 h-5" />, color: 'blue', status: 'AKTİF' },
+  { id: 'STP-10', label: 'ANA SİSTEM', subtitle: 'Temel Motor ve Kontrol', icon: <Cpu className="w-5 h-5" />, color: 'cyan', status: 'AKTİF' },
+  { id: 'STP-11', label: 'ALARM MERKEZİ', subtitle: 'Sistem Kritik Uyarıları', icon: <AlertTriangle className="w-5 h-5" />, color: 'amber', status: 'AKTİF' },
+  { id: 'STP-12', label: 'KAMERA PERFORMANS', subtitle: 'Personel Takip/Adalet', icon: <Camera className="w-5 h-5" />, color: 'emerald', status: 'AKTİF' },
+  { id: 'STP-16', label: 'GÖREV MONİTÖRÜ', subtitle: 'Canlı İşlem Akışı', icon: <Terminal className="w-5 h-5" />, color: 'green', status: 'AKTİF' },
 ];
 
 
@@ -102,7 +109,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { lang, dir } = useLanguageStore();
   const activeSegment = useSelectedLayoutSegment();
   const router = useRouter();
-  const activeScreen = activeSegment || 'SCR-03';
+  const activeScreen = activeSegment || 'STP-03';
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const scrollToScreen = (id: string) => {
@@ -125,16 +132,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
             {/* Yazı Bloğu: Logo ile tam uyumlu 2 satır */}
             <div className="flex flex-col justify-center">
-              <div className="flex flex-col leading-[0.8] mb-1">
-                <span className="font-extrabold text-[16px] text-white tracking-widest uppercase">
-                  SİSTEM
-                </span>
-                <span className="font-extrabold text-[16px] text-white tracking-widest uppercase">
-                  TAKİP
-                </span>
-              </div>
-              <span className="text-[7px] font-black text-cyan-400 tracking-[0.3em] uppercase opacity-70 whitespace-nowrap">
-                OPERASYON MERKEZİ
+              <span className="font-extrabold text-[16px] text-white tracking-widest uppercase leading-tight">
+                SİSTEM
+              </span>
+              <span className="font-extrabold text-[16px] text-cyan-400 tracking-widest uppercase leading-tight">
+                OPERASYON
+              </span>
+              <span className="font-extrabold text-[16px] text-white tracking-widest uppercase leading-tight">
+                MERKEZİ
               </span>
             </div>
           </div>
@@ -186,6 +191,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </main>
 
+        <GlobalBotTrigger />
       </div>
     </div>
   );

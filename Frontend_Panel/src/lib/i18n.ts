@@ -8,8 +8,9 @@
 
 export const translations = {
   tr: {
-    // ── NavBar ──────────�    panelTitle: 'SİSTEM TAKİP PANELİ',
-    panelSubtitle: 'MERKEZ OPERASYON DAİRE BAŞKANLIĞI',
+    // ── NavBar ──────────────────────────────────────────────
+    panelTitle: 'S\u0130STEM TAK\u0130P PANEL\u0130',
+    panelSubtitle: 'MERKEZ OPERASYON DA\u0130RE BA\u015eKANLI\u011eI',
 
     // ── Dashboard Başlık ─────────────────────────────────────
     dashboardTitle: 'MERKEZ OPERASYON DAİRE BAŞKANLIĞI',

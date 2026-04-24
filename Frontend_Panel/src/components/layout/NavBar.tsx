@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useEffect, useState } from 'react';
 import { useLanguageStore } from '@/store/useLanguageStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -39,9 +39,11 @@ export default function NavBar() {
         <nav className="border-b border-slate-700/50 bg-[#0b1120] sticky top-0 z-50 shadow-sm h-[100px] flex items-center w-full overflow-hidden font-sans">
             <div className={`w-full px-6 flex items-center justify-between h-full ${dir === 'rtl' ? 'flex-row-reverse' : ''}`}>
 
-                {/* ── SOL TARAF: BOŞ (Ticker Hizalaması İçin) ── */}
-                <div className="flex items-center gap-4 shrink-0">
-                    {/* Statik göstergeler kaldırıldı: Zero Initiative */}
+                {/* SOL: SİSTEM OPERASYON MERKEZİ */}
+                <div className="flex items-center gap-3 shrink-0">
+                    <span className="text-[18px] font-black text-white tracking-tight uppercase">SİSTEM</span>
+                    <span className="text-[18px] font-black text-cyan-400 tracking-tight uppercase">OPERASYON</span>
+                    <span className="text-[18px] font-black text-white tracking-tight uppercase">MERKEZİ</span>
                 </div>
 
                 {/* ── MERKEZ: TICKER ── */}
@@ -69,7 +71,7 @@ export default function NavBar() {
 
                     {/* MOR CHAT BUTONU - RESTORED */}
                     <button
-                        onClick={() => router.push('/SCR-10')}
+                        onClick={() => router.push('/STP-10')}
                         className="flex items-center gap-2 px-4 py-2 bg-purple-600/20 border border-purple-500/40 text-purple-400 hover:bg-purple-600 hover:text-white transition-all duration-300 group shadow-[0_0_15px_rgba(168,85,247,0.1)] hover:shadow-[0_0_20px_rgba(168,85,247,0.3)]"
                     >
                         <Brain className="w-4 h-4 group-hover:scale-110 transition-transform" />

@@ -9,8 +9,8 @@
 // ============================================================
 
 import { z } from 'zod';
-import { ERR, processError } from '@/lib/errorCore';
-import { CONTROL, STRICT_CONTROL } from '@/core/control_engine';
+import { ERR, processError } from './errorCore';
+import { CONTROL, STRICT_CONTROL } from '../core/control_engine';
 
 // ─── GÖREV DURUMLARI ────────────────────────────────────────
 export const TaskStatusEnum = z.enum([

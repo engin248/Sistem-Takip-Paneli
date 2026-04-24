@@ -3,7 +3,7 @@
 // ============================================================
 
 import { describe, it, expect, vi } from 'vitest';
-import { ERR, processError, generateUID } from '@/lib/errorCore';
+import { ERR, processError, generateUID } from './errorCore';
 
 describe('errorCore', () => {
   // ── UID ÜRETİMİ ──────────────────────────────────────────

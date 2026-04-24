@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Users, Bot, Shield, Zap, Activity,
@@ -7,6 +7,7 @@ import {
   MoreVertical, Power, Settings, Plus,
   Cpu, MessageSquare, Briefcase
 } from 'lucide-react';
+import DepartmentCommsBox from '../shared/DepartmentCommsBox';
 import { toast } from 'sonner';
 
 // ============================================================
@@ -16,8 +17,8 @@ import { toast } from 'sonner';
 // yönetmek, görev atamak ve performans izlemek için tasarlanmıştır.
 // ============================================================
 
-type AgentStatus = 'ACTIVE' | 'IDLE' | 'BUSY' | 'ERROR';
-type AgentTier = 'OVERLORD' | 'OPERATIONAL' | 'SUPPORT' | 'AUDITOR';
+type AgentStatus = 'AKTİF' | 'BOŞTA' | 'MEŞGUL' | 'HATA';
+type AgentTier = 'YÖNETİCİ' | 'OPERASYONEL' | 'DESTEK' | 'DENETÇİ';
 
 interface Agent {
   id: string;
@@ -31,22 +32,22 @@ interface Agent {
 }
 
 const MOCK_AGENTS: Agent[] = [
-  { id: 'AG-01', codename: 'SİSTEM CORE', tier: 'OVERLORD', status: 'ACTIVE', specialty: 'Orchestration', tasksCompleted: 1450, health: 100, lastAction: 'Sistem denetimi aktif' },
-  { id: 'AG-02', codename: 'MATH-JUDGE', tier: 'AUDITOR', status: 'ACTIVE', specialty: 'Quality Control', tasksCompleted: 890, health: 98, lastAction: 'Finans verisi doğrulandı' },
-  { id: 'AG-03', codename: 'DEAD-WORKER', tier: 'OPERATIONAL', status: 'BUSY', specialty: 'Data Processing', tasksCompleted: 3421, health: 92, lastAction: 'SQL Enjeksiyon taraması...' },
-  { id: 'AG-04', codename: 'FRONT-GUARD', tier: 'OPERATIONAL', status: 'IDLE', specialty: 'UI/UX Integrity', tasksCompleted: 560, health: 100, lastAction: 'Beklemede' },
-  { id: 'AG-05', codename: 'REFL-BOT', tier: 'SUPPORT', status: 'ACTIVE', specialty: 'Self-Correction', tasksCompleted: 120, health: 100, lastAction: 'Hafıza optimizasyonu' },
-  { id: 'AG-06', codename: 'L2-AUDITOR', tier: 'AUDITOR', status: 'ERROR', specialty: 'Security Audit', tasksCompleted: 230, health: 45, lastAction: 'Zaman aşımı hatası!' },
+  { id: 'AG-01', codename: 'ANA SİSTEM', tier: 'YÖNETİCİ', status: 'AKTİF', specialty: 'Orkestrasyon', tasksCompleted: 1450, health: 100, lastAction: 'Sistem denetimi aktif' },
+  { id: 'AG-02', codename: 'MATEMATİK-HAKEMİ', tier: 'DENETÇİ', status: 'AKTİF', specialty: 'Kalite Kontrol', tasksCompleted: 890, health: 98, lastAction: 'Finans verisi doğrulandı' },
+  { id: 'AG-03', codename: 'ARKA_PLAN-İŞÇİ', tier: 'OPERASYONEL', status: 'MEŞGUL', specialty: 'Veri İşleme', tasksCompleted: 3421, health: 92, lastAction: 'SQL Enjeksiyon taraması...' },
+  { id: 'AG-04', codename: 'ÖN-KORUMA', tier: 'OPERASYONEL', status: 'BOŞTA', specialty: 'UI/UX Bütünlüğü', tasksCompleted: 560, health: 100, lastAction: 'Beklemede' },
+  { id: 'AG-05', codename: 'YANSITMA-BOTU', tier: 'DESTEK', status: 'AKTİF', specialty: 'Otomatik Düzeltme', tasksCompleted: 120, health: 100, lastAction: 'Hafıza optimizasyonu' },
+  { id: 'AG-06', codename: 'L2-DENETMEN', tier: 'DENETÇİ', status: 'HATA', specialty: 'Güvenlik Denetimi', tasksCompleted: 230, health: 45, lastAction: 'Zaman aşımı hatası!' },
 ];
 
 export default function AgentPanel() {
   const [agents, setAgents] = useState<Agent[]>(MOCK_AGENTS);
-  const [filter, setFilter] = useState<AgentTier | 'ALL'>('ALL');
+  const [filter, setFilter] = useState<AgentTier | 'TÜMÜ'>('TÜMÜ');
   const [search, setSearch] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const filteredAgents = agents.filter(a => {
-    const matchFilter = filter === 'ALL' || a.tier === filter;
+    const matchFilter = filter === 'TÜMÜ' || a.tier === filter;
     const matchSearch = a.codename.toLowerCase().includes(search.toLowerCase());
     return matchFilter && matchSearch;
   });
@@ -61,9 +62,9 @@ export default function AgentPanel() {
 
   const getStatusColor = (status: AgentStatus) => {
     switch (status) {
-      case 'ACTIVE': return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
-      case 'BUSY': return 'text-amber-400 bg-amber-500/10 border-amber-500/20';
-      case 'ERROR': return 'text-red-400 bg-red-500/10 border-red-500/20';
+      case 'AKTİF': return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
+      case 'MEŞGUL': return 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+      case 'HATA': return 'text-red-400 bg-red-500/10 border-red-500/20';
       default: return 'text-slate-400 bg-slate-500/10 border-slate-500/20';
     }
   };
@@ -130,7 +131,7 @@ export default function AgentPanel() {
 
       {/* ── FİLTRE BARI ── */}
       <div className="px-6 py-3 border-b border-white/5 flex gap-2 overflow-x-auto no-scrollbar">
-        {(['ALL', 'OVERLORD', 'OPERATIONAL', 'AUDITOR', 'SUPPORT'] as const).map(f => (
+        {(['TÜMÜ', 'YÖNETİCİ', 'OPERASYONEL', 'DENETÇİ', 'DESTEK'] as const).map(f => (
           <button
             key={f}
             onClick={() => setFilter(f)}
@@ -154,10 +155,10 @@ export default function AgentPanel() {
 
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-slate-950 border border-white/5 flex items-center justify-center shrink-0">
-                {agent.tier === 'OVERLORD' && <Shield className="w-6 h-6 text-purple-400" />}
-                {agent.tier === 'AUDITOR' && <Activity className="w-6 h-6 text-amber-400" />}
-                {agent.tier === 'OPERATIONAL' && <Cpu className="w-6 h-6 text-cyan-400" />}
-                {agent.tier === 'SUPPORT' && <MessageSquare className="w-6 h-6 text-emerald-400" />}
+                {agent.tier === 'YÖNETİCİ' && <Shield className="w-6 h-6 text-purple-400" />}
+                {agent.tier === 'DENETÇİ' && <Activity className="w-6 h-6 text-amber-400" />}
+                {agent.tier === 'OPERASYONEL' && <Cpu className="w-6 h-6 text-cyan-400" />}
+                {agent.tier === 'DESTEK' && <MessageSquare className="w-6 h-6 text-emerald-400" />}
               </div>
               <div>
                 <h3 className="text-[14px] font-black text-white tracking-widest uppercase">{agent.codename}</h3>
@@ -210,6 +211,10 @@ export default function AgentPanel() {
 
           </div>
         ))}
+      </div>
+      
+      <div className="p-6 pt-0">
+        <DepartmentCommsBox department="AJAN YÖNETİMİ" />
       </div>
 
     </div>

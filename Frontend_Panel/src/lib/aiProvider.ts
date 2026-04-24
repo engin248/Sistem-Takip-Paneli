@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 // ============================================================
 // AI PROVIDER — SOYUTLAMA KATMANI (Ollama / OpenAI / Lokal)
 // ============================================================
@@ -15,7 +15,6 @@
 // ============================================================
 
 import { ERR, processError } from './errorCore';
-import { logAudit } from '@/services/auditService';
 import { cbSarici, getCBDurum } from '@/core/circuitBreaker';
 import { auditLog } from '@/core/localAudit';
 import { buildKuralPrompt } from '@/core/agentRules';
@@ -273,22 +272,11 @@ export async function aiComplete(
           undefined,
         );
 
-        // Başarılı — SHA-256 audit + Supabase log
+        // Başarılı — Yerel SHA-256 audit (Supabase sökülmüştür)
         auditLog('AI_PROVIDER', 'OLLAMA_SUCCESS', {
           model: config.ollamaModel, sure_ms: result.durationMs,
           cb_state: getCBDurum().state,
         });
-        await logAudit({
-          operation_type: 'EXECUTE',
-          action_description: `Ollama AI yanıt: model=${config.ollamaModel}, süre=${result.durationMs}ms`,
-          metadata: {
-            action_code: 'AI_PROVIDER_OLLAMA',
-            model: config.ollamaModel,
-            duration_ms: result.durationMs,
-            tokens_used: result.tokensUsed || 0,
-            cost: 0,
-          },
-        }).catch(() => {});
 
         // ── SİSTEM KURALLARI: Yanıt Denetimi ────────────────
         const denetimSonuc = yanitKontrol('AI_PROVIDER', 'L1', result.content);
@@ -341,25 +329,13 @@ export async function aiComplete(
           result.content = `[SİSTEM KURALLARI İHLALİ] Yanıt filtrelendi: ${denetimSonucOai.aciklama}`;
         }
 
-        // Fallback bildirimi
+        // Fallback bildirimi (Yerel log)
         processError(ERR.AI_PROVIDER_FALLBACK, new Error('Ollama devre dışı, OpenAI kullanıldı'), {
           kaynak: 'aiProvider.ts',
           islem: 'OPENAI_FALLBACK',
           model: config.openaiModel,
           duration_ms: result.durationMs,
         }, 'INFO');
-
-        await logAudit({
-          operation_type: 'EXECUTE',
-          action_description: `OpenAI fallback: model=${config.openaiModel}, süre=${result.durationMs}ms`,
-          metadata: {
-            action_code: 'AI_PROVIDER_OPENAI_FALLBACK',
-            model: config.openaiModel,
-            duration_ms: result.durationMs,
-            tokens_used: result.tokensUsed || 0,
-            cost_warning: true,
-          },
-        }).catch(() => {});
 
         return result;
       } catch (error) {

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import React, { useState } from 'react';
 import {
     Workflow, PlusCircle, Play, Pause, Save, Trash2,
@@ -8,6 +8,7 @@ import {
     Activity, Power
 } from 'lucide-react';
 import { toast } from 'sonner';
+import DepartmentCommsBox from '../shared/DepartmentCommsBox';
 
 // ============================================================
 // AUTONOMOUS Z-CHAIN ORCHESTRATOR (AZCO)
@@ -208,6 +209,10 @@ export default function AutomationPanel() {
                                 <span className="text-[9px] font-mono text-emerald-400">0.002%</span>
                             </div>
                         </div>
+                    </div>
+
+                    <div className="pt-4">
+                        <DepartmentCommsBox department="OTOMASYON ZİNCİR MERKEZİ" />
                     </div>
 
                 </div>

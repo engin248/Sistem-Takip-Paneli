@@ -23,7 +23,8 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@/core/*": ["./core/*", "./src/core/*"]
+      "@/core/*": ["./core/*", "./src/core/*"],
+      "@/Gorev/*": ["../Gorev_Kabul_Departmani/*"]
     }
   },
   "include": [

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import React, { useState, useEffect } from 'react';
 import {
     MessageSquare, Send, Phone, Hash, Mail,
@@ -8,6 +8,7 @@ import {
     Share2, Layers, Activity
 } from 'lucide-react';
 import { toast } from 'sonner';
+import DepartmentCommsBox from '../shared/DepartmentCommsBox';
 
 // ============================================================
 // OMNICHANNEL COMMAND HUB (OCH)
@@ -227,6 +228,10 @@ export default function CommunicationHubPanel() {
                             <p className="text-slate-600"><span className="text-cyan-600">19:20:38</span> - SİSTEM worker iletisi Discord'a kopyalandı.</p>
                             <p className="text-slate-600"><span className="text-cyan-600">19:20:35</span> - SMS Gateway heartbeat stabil.</p>
                         </div>
+                    </div>
+
+                    <div className="pt-4">
+                        <DepartmentCommsBox department="İLETİŞİM KONTROL MERKEZİ" />
                     </div>
 
                 </div>

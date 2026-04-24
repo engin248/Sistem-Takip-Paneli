@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import React from 'react';
 import {
     ShieldCheck, Bot, Activity, Radio,
@@ -22,7 +22,7 @@ export default function MainDashboard() {
     // Ana Aksiyon Kartları (Sistemin Ne Yapabildiği)
     const systemCapabilites = [
         {
-            id: 'SCR-01',
+            id: 'STP-01',
             title: 'SİSTEM YÖNETİMİ',
             desc: 'Local ERP [Sunucu] ve AI [Ollama] altyapısını otonom olarak denetle ve yönet.',
             icon: <Activity className="w-6 h-6" />,
@@ -31,7 +31,7 @@ export default function MainDashboard() {
             border: 'border-cyan-500/20'
         },
         {
-            id: 'SCR-03',
+            id: 'STP-03',
             title: 'AJAN KOMUTASI',
             desc: '4 tier hiyerarşideki otonom ajan ordusuna emir ver, performanslarını ve sağlıklarını izle.',
             icon: <Bot className="w-6 h-6" />,
@@ -40,7 +40,7 @@ export default function MainDashboard() {
             border: 'border-purple-500/20'
         },
         {
-            id: 'SCR-08',
+            id: 'STP-08',
             title: 'İLETİŞİM KOMUTASI',
             desc: 'WhatsApp, Telegram ve SMS kanallarını tek merkezden yönet, AI konuşmalarını denetle.',
             icon: <Radio className="w-6 h-6" />,
@@ -49,7 +49,7 @@ export default function MainDashboard() {
             border: 'border-blue-500/20'
         },
         {
-            id: 'SCR-07',
+            id: 'STP-07',
             title: 'HATA & CRASH TESPİTİ',
             desc: 'Sistem hatalarını anlık yakala ve AI tabanlı "Hot-Patch" teknolojisiyle otonom onar.',
             icon: <Bug className="w-6 h-6" />,
@@ -58,7 +58,7 @@ export default function MainDashboard() {
             border: 'border-red-500/20'
         },
         {
-            id: 'SCR-05',
+            id: 'STP-05',
             title: 'OTOMASYON ZİNCİRİ',
             desc: 'Kompleks iş akışlarını otonom ajanlarla otomatize et ve canlı süreçleri izle.',
             icon: <Workflow className="w-6 h-6" />,
@@ -67,7 +67,7 @@ export default function MainDashboard() {
             border: 'border-emerald-500/20'
         },
         {
-            id: 'SCR-02',
+            id: 'STP-02',
             title: 'PLANLAMA & HEDEF',
             desc: 'Operasyonel hedefleri belirle, ajan ve insan kaynaklarını stratejik olarak ata.',
             icon: <Target className="w-6 h-6" />,
@@ -87,16 +87,6 @@ export default function MainDashboard() {
                 </div>
 
                 <div className="max-w-5xl relative z-10">
-                    <div className="flex items-center gap-3 mb-4">
-                        <span className="w-8 h-[2px] bg-cyan-500"></span>
-                        <span className="text-[10px] font-black text-cyan-400 tracking-[0.5em] uppercase">SYSTEM OPERATIONAL STATUS: ALPHA-1</span>
-                    </div>
-                    <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter leading-none mb-6">
-                        SİSTEM <span className="text-cyan-500">OPERASYON</span> MERKEZİ
-                    </h1>
-                    <p className="text-sm md:text-base text-slate-400 font-mono leading-relaxed max-w-2xl mb-8">
-                        Bu merkez, tüm lokal altyapıların, otonom ajanların ve iletişim kanallarının tek bir noktadan yönetildiği "Karargah"tır. Sisteme doğrudan müdahale edin veya ajanların otonom karar alma süreçlerini denetleyin.
-                    </p>
 
                     <div className="flex flex-wrap gap-4">
                         <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-none shadow-[0_0_15px_rgba(16,185,129,0.1)]">
@@ -158,7 +148,7 @@ export default function MainDashboard() {
                                     { name: 'LOCAL ERP (SUNUCU)', status: 'BAĞLI', icon: <Database /> },
                                     { name: 'OLLAMA ENGINE', status: 'HAZIR', icon: <Cpu /> },
                                     { name: 'GROQ CLUSTER', status: 'AKTİF', icon: <Network /> },
-                                    { name: 'SUPABASE DB', status: 'SENKRON', icon: <Globe /> }
+                                    { name: 'YEREL VERİ ARŞİVİ', status: 'SENKRON', icon: <Globe /> }
                                 ].map((s, i) => (
                                     <div key={i} className="p-4 bg-slate-950 border border-white/5 flex items-center gap-4">
                                         <div className="text-slate-700">{s.icon}</div>

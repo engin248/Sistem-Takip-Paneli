@@ -5,6 +5,8 @@
 // /api/jobs endpointinden canlı veri çeker
 
 import { useState, useEffect, useCallback } from 'react';
+import { Activity, Clock, Terminal, AlertTriangle, PlayCircle, Filter } from 'lucide-react';
+import DepartmentCommsBox from '../shared/DepartmentCommsBox';
 import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
 
 interface QueueJob {
@@ -263,6 +265,10 @@ export default function JobMonitorPanel() {
             </div>
           );
         })}
+      </div>
+
+      <div className="pt-4">
+        <DepartmentCommsBox department="GÖREV MONİTÖRÜ" />
       </div>
 
     </div>

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { useOperatorStore } from '@/store/useOperatorStore';
+import { useOperatorStore } from '../store/useOperatorStore';
 import { checkWritePermission } from './permissionGuard';
 
 // ============================================================

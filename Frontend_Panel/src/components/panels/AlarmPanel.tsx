@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useLanguageStore } from "@/store/useLanguageStore";
 import { t } from "@/lib/i18n";
 import { toast } from "sonner";
+import DepartmentCommsBox from "../shared/DepartmentCommsBox";
 
 // ============================================================
 // ALARM PANEL — Alarm Merkezi Arayüzü
@@ -175,6 +176,10 @@ export default function AlarmPanel() {
           })}
         </div>
       )}
+      
+      <div className="mt-6">
+        <DepartmentCommsBox department="ALARM MERKEZİ" />
+      </div>
     </section>
   );
 }

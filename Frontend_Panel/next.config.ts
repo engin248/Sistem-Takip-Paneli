@@ -25,6 +25,8 @@ const nextConfig: NextConfig = {
 
   // ── Deneysel Özellikler (Next.js 16+) ───────────────────
   experimental: {
+    // Next.js kök dizini dışındaki dosyaları (Sistem Takip Paneli içindeki departmanlar) içeri aktarmaya izin verir
+    externalDir: true,
     // Server Actions ile form işleme
     serverActions: {
       bodySizeLimit: "2mb",
