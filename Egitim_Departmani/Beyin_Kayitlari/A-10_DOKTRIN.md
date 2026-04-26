@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 07:30:19]
 İşte "İcracı-Akış" adlı görevin bir bölümünü başlatmak için önerilerim:

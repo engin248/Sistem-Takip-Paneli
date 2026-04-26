@@ -190,7 +190,7 @@ export function validateInput<T>(
     return { success: false, errors: strictResult.reason?.split(' | ') || [errorMsg] };
   }
 
-  return { success: true, data: strictResult.data };
+  return { success: true, data: strictResult.data as T };
 }
 
 // ─── TİP ÇIKARIMlari ───────────────────────────────────────

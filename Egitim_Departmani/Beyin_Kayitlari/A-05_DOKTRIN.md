@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 08:18:24]
 İçeriği belirlemek için bir konu veya problem belirtmeniz gerekiyor. Bu, senin uzmanlık alanına uygun bir konuda bir simülasyon başlatabilirim. Örneğin, bir sistemdeki problemleri ve çözümlerini simüle edebilirsin.

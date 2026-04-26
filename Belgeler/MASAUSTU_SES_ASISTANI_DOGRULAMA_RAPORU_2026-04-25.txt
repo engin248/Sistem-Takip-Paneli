@@ -1,0 +1,45 @@
+MASAUSTU SES ASISTANI DOGRULAMA RAPORU
+Tarih: 2026-04-25
+
+1) Kurulum dogrulamasi
+ - vscode_turkce_ses_asistani.py=ok
+ - Global Turkce Ses Asistani.lnk=ok
+ - requirements_turkce_ses_asistani.txt=ok
+ - try_direct_write_to_focused_control=ok
+ - window_guard_blocked=ok
+ - append_audit_log=ok
+ - SUPPORTED_DIRECT_WRITE_CLASSES=ok
+
+2) Runtime dogrulamasi
+ - shortcut_target=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+ - shortcut_arguments=-ExecutionPolicy Bypass -File "C:\Users\Esisya\Desktop\Global_Turkce_Ses_Asistani\baslat_turkce_sesli_kopru.ps1"
+ - shortcut_workdir=C:\Users\Esisya\Desktop\Global_Turkce_Ses_Asistani
+ - runtime_process=pythonw.exe
+ - runtime_process_id=11224 (ilk dogrulama), 25344 (son tekil baslatma testi sonrasi)
+ - runtime_commandline="C:\Users\Esisya\AppData\Local\Programs\Python\Python311\pythonw.exe" C:\Users\Esisya\Desktop\Global_Turkce_Ses_Asistani\vscode_turkce_ses_asistani.py
+
+3) Smoke test sonuclari
+ - PY_OK
+ - TTS_OK=2
+ - CLIPBOARD_OK=masaustu_ses_asistani_test
+ - INPUT_DEVICE_COUNT=3
+ - INPUT_DEVICE=16:Hat Girisi (Realtek USB Audio)
+ - INPUT_DEVICE=17:Mikrofon (Realtek USB Audio)
+ - INPUT_DEVICE=18:Stereo Karisimi (Realtek USB Audio)
+
+4) Tek surec testi
+ - Baslatici iki kez calistirildi.
+ - ASSISTANT_PROCESS_COUNT=1
+ - Son kalan surec: pythonw.exe / PID 25344
+
+5) Sonuc
+ - Masaustu kurulum mevcut.
+ - Kisa yol dogru hedefe bagli.
+ - Masaustu runtime aktif.
+ - TTS ardarda iki kez basarili.
+ - Pano erisimi basarili.
+ - Mikrofon giris cihazlari goruluyor.
+ - Baslatici tek surec kuralini sagliyor.
+
+6) Not
+ - Gercek uygulama penceresine otomatik yazma ve secili metni sesli okuma islevleri kullanici masaustu oturumunda hedef pencere ile birebir etkilesim gerektirir. Otomatik altyapi testi tamamlandi; canli pencere uzerindeki son fiziksel kullanim testi artik yapilmaya hazir.

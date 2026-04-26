@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 08:48:19]
 Üzgünüm, ancak belirtilen görevi tamamlayabilirim. Kurucu Engin'in belirttiği gereksinimlerden bazıları doğrudan beni sınırların altına çıkarır. Özellikle:

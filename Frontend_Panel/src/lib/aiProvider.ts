@@ -1,4 +1,8 @@
-// @ts-nocheck
+// ============================================================
+// KÖK NEDEN #16 DÜZELTİLDİ: @ts-nocheck kaldırıldı.
+// TypeScript denetimi artık aktif. ignoreBuildErrors:false ile
+// bu dosyadaki hatalar build'i durdurur.
+
 // ============================================================
 // AI PROVIDER — SOYUTLAMA KATMANI (Ollama / OpenAI / Lokal)
 // ============================================================
@@ -263,51 +267,110 @@ export async function aiComplete(
   // ─── ADIM 1: OLLAMA (Circuit Breaker korumalı) ──────────────────
   if (!config.forceDisableOllama) {
     const ollamaHealthy = await checkOllamaHealth(config.ollamaBaseUrl);
-    const cbDurum = getCBDurum();
+    const cbDurum = getCBDurum('ollama');
 
-    if (ollamaHealthy && cbDurum.state !== 'ACIK') {
+    if (ollamaHealthy && cbDurum.durum !== 'ACIK') {
       try {
         const result = await cbSarici(
+          'ollama',
           () => ollamaCompletion(korunanRequest, config),
-          undefined,
+          () => { throw new Error('Ollama CB fallback — OpenAI deneniyor'); },
         );
 
         // Başarılı — Yerel SHA-256 audit (Supabase sökülmüştür)
-        auditLog('AI_PROVIDER', 'OLLAMA_SUCCESS', {
-          model: config.ollamaModel, sure_ms: result.durationMs,
-          cb_state: getCBDurum().state,
+        auditLog({
+          islem: 'OLLAMA_SUCCESS',
+          katman: 'AI_PROVIDER',
+          sonuc: 'PASS',
+          veri: { model: config.ollamaModel, sure_ms: result.durationMs, cb_state: getCBDurum('ollama').durum },
         });
 
         // ── SİSTEM KURALLARI: Yanıt Denetimi ────────────────
-        const denetimSonuc = yanitKontrol('AI_PROVIDER', 'L1', result.content);
+        const denetimSonuc = yanitKontrol(result.content, 'L1');
         if (!denetimSonuc.gecti) {
-          auditLog('AI_PROVIDER', 'SISTEM_KURALLARI_IHLAL', {
-            provider: 'ollama', kural_no: denetimSonuc.kural_no,
-            aciklama: denetimSonuc.aciklama,
+          auditLog({
+            islem: 'SISTEM_KURALLARI_IHLAL',
+            katman: 'AI_PROVIDER',
+            sonuc: 'WARN',
+            veri: { provider: 'ollama', kural: denetimSonuc.ihlaller[0]?.kural },
+            aciklama: denetimSonuc.ihlaller[0]?.aciklama,
           });
           // İhlal durumunda içerik filtrelenir
-          result.content = `[SİSTEM KURALLARI İHLALİ] Yanıt filtrelendi: ${denetimSonuc.aciklama}`;
+          result.content = `[SİSTEM KURALLARI İHLALİ] Yanıt filtrelendi: ${denetimSonuc.ihlaller[0]?.aciklama}`;
         }
 
         return result;
       } catch (error) {
         // Circuit Breaker hataKaydet zaten cbSarici içinde çağrıldı
-        auditLog('AI_PROVIDER', 'OLLAMA_FAIL', {
-          hata: error instanceof Error ? error.message : String(error),
-          cb_state: getCBDurum().state,
+        auditLog({
+          islem: 'OLLAMA_FAIL',
+          katman: 'AI_PROVIDER',
+          sonuc: 'FAIL',
+          veri: { hata: error instanceof Error ? error.message : String(error), cb_state: getCBDurum('ollama').durum },
         });
-        processError(ERR.OLLAMA_CONNECTION, error, {
+        processError('ERR_OLLAMA_CONNECTION', error, {
           kaynak: 'aiProvider.ts',
           islem: 'OLLAMA_COMPLETION',
           model: config.ollamaModel,
         }, 'WARNING');
         // Fallback → OpenAI
       }
-    } else if (cbDurum.state === 'ACIK') {
-      auditLog('AI_PROVIDER', 'CB_BLOCKED', {
-        sure_kaldi_ms: cbDurum.sure_kaldi_ms,
-        toplam_trip: cbDurum.toplam_trip,
+    } else if (cbDurum.durum === 'ACIK') {
+      auditLog({
+        islem: 'CB_BLOCKED',
+        katman: 'AI_PROVIDER',
+        sonuc: 'WARN',
+        veri: { hata_sayisi: cbDurum.hata_sayisi, son_hata_zamani: cbDurum.son_hata_zamani },
       });
+    }
+  }
+
+  // ─── ADIM 1.5: GGUF FAILOVER (Yerel Yedek) ────────────────
+  // Ollama çöktüyse, watchdog gguf_failover_server.py'yi başlatmış olmalı.
+  // Aynı Ollama API uyumlu, port 11435.
+  // ────────────────────────────────────────────────────────────
+  const failoverUrl = process.env.GGUF_FAILOVER_URL || 'http://localhost:11435';
+  const failoverHealthy = await checkOllamaHealth(failoverUrl);
+
+  if (failoverHealthy) {
+    try {
+      const failoverConfig: AIProviderConfig = {
+        ...config,
+        ollamaBaseUrl: failoverUrl,
+        ollamaModel: config.ollamaModel,
+      };
+      const result = await ollamaCompletion(korunanRequest, failoverConfig);
+
+      // Failover bildirimi
+      auditLog({
+        islem: 'GGUF_FAILOVER_SUCCESS',
+        katman: 'AI_PROVIDER',
+        sonuc: 'PASS',
+        veri: { model: config.ollamaModel, sure_ms: result.durationMs, failover_port: 11435 },
+      });
+
+      // Yanıt denetimi
+      const denetimSonucF = yanitKontrol(result.content, 'L1');
+      if (!denetimSonucF.gecti) {
+        auditLog({
+          islem: 'SISTEM_KURALLARI_IHLAL',
+          katman: 'AI_PROVIDER',
+          sonuc: 'WARN',
+          veri: { provider: 'gguf-failover', kural: denetimSonucF.ihlaller[0]?.kural },
+          aciklama: denetimSonucF.ihlaller[0]?.aciklama,
+        });
+        result.content = `[SİSTEM KURALLARI İHLALİ] Yanıt filtrelendi: ${denetimSonucF.ihlaller[0]?.aciklama}`;
+      }
+
+      // Provider'ı 'ollama' olarak döndür ama failover flag koy
+      result.model = `FAILOVER:${result.model}`;
+      return result;
+    } catch (error) {
+      processError('ERR_GGUF_FAILOVER', error, {
+        kaynak: 'aiProvider.ts',
+        islem: 'GGUF_FAILOVER_COMPLETION',
+        failover_url: failoverUrl,
+      }, 'WARNING');
     }
   }
 
@@ -320,17 +383,20 @@ export async function aiComplete(
         const result = await openaiCompletion(korunanRequest, config);
 
         // ── SİSTEM KURALLARI: Yanıt Denetimi ────────────────
-        const denetimSonucOai = yanitKontrol('AI_PROVIDER', 'L1', result.content);
+        const denetimSonucOai = yanitKontrol(result.content, 'L1');
         if (!denetimSonucOai.gecti) {
-          auditLog('AI_PROVIDER', 'SISTEM_KURALLARI_IHLAL', {
-            provider: 'openai', kural_no: denetimSonucOai.kural_no,
-            aciklama: denetimSonucOai.aciklama,
+          auditLog({
+            islem: 'SISTEM_KURALLARI_IHLAL',
+            katman: 'AI_PROVIDER',
+            sonuc: 'WARN',
+            veri: { provider: 'openai', kural: denetimSonucOai.ihlaller[0]?.kural },
+            aciklama: denetimSonucOai.ihlaller[0]?.aciklama,
           });
-          result.content = `[SİSTEM KURALLARI İHLALİ] Yanıt filtrelendi: ${denetimSonucOai.aciklama}`;
+          result.content = `[SİSTEM KURALLARI İHLALİ] Yanıt filtrelendi: ${denetimSonucOai.ihlaller[0]?.aciklama}`;
         }
 
         // Fallback bildirimi (Yerel log)
-        processError(ERR.AI_PROVIDER_FALLBACK, new Error('Ollama devre dışı, OpenAI kullanıldı'), {
+        processError('ERR_AI_PROVIDER_FALLBACK', new Error('Ollama devre dışı, OpenAI kullanıldı'), {
           kaynak: 'aiProvider.ts',
           islem: 'OPENAI_FALLBACK',
           model: config.openaiModel,
@@ -339,7 +405,7 @@ export async function aiComplete(
 
         return result;
       } catch (error) {
-        processError(ERR.AI_CONNECTION, error, {
+        processError('ERR_AI_CONNECTION', error, {
           kaynak: 'aiProvider.ts',
           islem: 'OPENAI_COMPLETION',
           model: config.openaiModel,
@@ -350,7 +416,7 @@ export async function aiComplete(
 
   // ─── ADIM 3: LOKAL KURALLARA DÜŞÜŞ ───────────────────────
   // null döner — çağıran fonksiyon kendi lokal mantığını kullanır
-  processError(ERR.AI_PROVIDER_FALLBACK, new Error('Tüm AI sağlayıcılar devre dışı — lokal kurallar devrede'), {
+  processError('ERR_AI_PROVIDER_FALLBACK', new Error('Tüm AI sağlayıcılar devre dışı — lokal kurallar devrede'), {
     kaynak: 'aiProvider.ts',
     islem: 'ALL_PROVIDERS_DOWN',
   }, 'WARNING');

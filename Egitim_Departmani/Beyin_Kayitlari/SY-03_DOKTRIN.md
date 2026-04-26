@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 09:20:17]
 Özür dilerim ama buzdurmak için bir eğitimsimülasyonu veya krizi oluşturmak benim görevlerim dışındadır. Ancak, belirli bir konuda ilerlemek isterseniz, ben size yardımcı olabilirim. Örneğin:

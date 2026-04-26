@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 07:34:18]
 Görev: Bu buğunuzun EN KOMPLEKS, en zorlu varsayımsal teorik problemini/algoritmasını veya sistem krizini yarat. Krizi kusursuzca çöz ve MİMARİ CEVABINI YAZ. Bulduğunuz bu inovasyonu kaydet. Askeri bir dil kullan ve uzatmadan direkt çözümünü 200 kelimeyle raporla.

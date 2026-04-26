@@ -1,0 +1,33 @@
+MASAUSTU SES ASISTANI LOG OZETI
+Tarih: 2026-04-26
+
+1) Log klasoru durumu
+- assistant_stderr.log: 0 bayt
+- assistant_stdout.log: 0 bayt
+- bootstrap.log: 34341 bayt
+- global_ses_asistani_audit.jsonl: 3629 bayt
+- global_ses_asistani_startup.log: 557 bayt
+- pip_stderr.log: 128 bayt
+- pip_stdout.log: 8102 bayt
+
+2) bootstrap son durum (ozet)
+- Bagimliliklar "Requirement already satisfied" olarak geciyor.
+- Baslatma kaydi var: [2026-04-26 06:12:03] assistant started pid=35452
+
+3) startup log kritik satirlar
+- 06:12:06: uygun mikrofon acilamadi / handsfree-listener-failed
+- 08:21:51: microphone-selected [16] Hat Girisi (Realtek USB Audio) @ 44100Hz
+- 08:24:44: microphone-selected [16] Hat Girisi (Realtek USB Audio) @ 44100Hz
+
+4) audit log kritik olaylar
+- application_started
+- microphone_unavailable (erken denemede Invalid sample rate -9997)
+- handsfree_listener_failed (erken deneme)
+- microphone_selected (sonraki denemelerde basarili)
+- handsfree_listener_started (sonraki denemelerde basarili)
+- model_preloaded (tr)
+
+5) Net sonuc
+- Ilk acilista mikrofon ornekleme hizi uyumsuzlugu nedeniyle handsfree hatasi olmus.
+- Sonraki acilislarda cihaz secimi basarili ve handsfree listener baslamis.
+- Yani loglar mevcut ve guncel durumda sistem calisiyor.

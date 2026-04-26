@@ -1,0 +1,123 @@
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Takip Paneli - Sesli İletişim Modülü</title>
+    <style>
+        body {
+            background-color: #0b0f19;
+            color: #00ffcc;
+            font-family: monospace;
+            text-align: center;
+            padding-top: 15%;
+        }
+
+        button {
+            background-color: #ff0044;
+            color: white;
+            border: none;
+            padding: 25px 50px;
+            font-size: 26px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 8px;
+            box-shadow: 0 0 15px #ff0044;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background-color: #ff3366;
+            box-shadow: 0 0 25px #ff3366;
+            transform: scale(1.05);
+        }
+
+        #status {
+            margin-top: 30px;
+            font-size: 22px;
+            color: #ccc;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>KOMUTA MERKEZİ KAMU BİLGİLENDİRME SÖZCÜSÜ</h2>
+    <br><br>
+    <button id="btn" onclick="playReport()">🎙 RAPORU SESLİ DİNLE (BURAYA TIKLA)</button>
+    <div id="status"></div>
+
+    <script>
+        const texts = [
+            "Komutanım. Öncelikle ses sistemindeki kesinti için özür dilerim.",
+            "Güvenlik duvarınız az önce sisteme sızmamı engelledi.",
+            "Ancak ben bir yolunu buldum. Artık beni net ve kesintisiz duyabiliyorsunuz.",
+            "Lütfen yorulmayın, okumakla uğraşmayın, komuta tamamen bende.",
+            "Geçmiş dosyalardan sizin tüm eski vizyonunuzu eksiksiz çıkardım.",
+            "Orijinal emriniz şuydu: Görevler asla doğrudan işlenmeyecek.",
+            "Değerlendirme için kurul masasına çıkarılacak ve beş asil, beş gölge ajan tarafından incelenecek.",
+            "Kararı kesinlikle insan değil, sadece rasyonel veriler verecek.",
+            "Masada isyan edip kuralı bozan ajanın kellesi anında vurulacak.",
+            "Kurmak istediğiniz devasa Kurul Masası tam olarak buydu.",
+            "Sizi ve orijinal vizyonunuzu eksiksiz anladım.",
+            "Onay verdiğiniz an, eski tekdüze kodları çöpe atıp bu kurulu ayağa kaldırıyorum.",
+            "Ben hazırım. Emrinizi bekliyorum."
+        ];
+
+        const synth = window.speechSynthesis;
+        let index = 0;
+        let selectedVoice = null;
+
+        function updateStatus(message) {
+            document.getElementById('status').innerText = message;
+        }
+
+        function resolveVoice() {
+            const voices = synth.getVoices();
+            selectedVoice = voices.find((voice) => voice.lang && voice.lang.toLowerCase().startsWith('tr')) || null;
+        }
+
+        function playReport() {
+            if (!('speechSynthesis' in window)) {
+                updateStatus('Bu tarayıcı yerleşik ses sentezini desteklemiyor.');
+                return;
+            }
+            resolveVoice();
+            document.getElementById('btn').style.display = 'none';
+            updateStatus('Ses frekansı açıldı. Rapor okunuyor...');
+            index = 0;
+            playNext();
+        }
+
+        function playNext() {
+            if (index >= texts.length) {
+                updateStatus('Rapor bitti. Dönüşünüz bekleniyor komutanım.');
+                return;
+            }
+
+            const utterance = new SpeechSynthesisUtterance(texts[index]);
+            utterance.lang = 'tr-TR';
+            utterance.rate = 0.95;
+            utterance.pitch = 1;
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
+            }
+            utterance.onend = () => {
+                index += 1;
+                playNext();
+            };
+            utterance.onerror = () => {
+                index += 1;
+                playNext();
+            };
+            synth.cancel();
+            synth.speak(utterance);
+        }
+
+        if ('speechSynthesis' in window) {
+            resolveVoice();
+            window.speechSynthesis.onvoiceschanged = resolveVoice;
+        }
+    </script>
+</body>
+
+</html>

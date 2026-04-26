@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 07:56:18]
 Öğrenmek için bu kodu çalıştırın:

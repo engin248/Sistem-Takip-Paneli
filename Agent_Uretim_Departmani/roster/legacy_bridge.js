@@ -51,7 +51,7 @@ const ESKI_YENI_ESLESTIRME = Object.freeze({
   // ══════════════════════════════════════════════════════════
   // DESTEK KATMANI (D SERİSİ) → Yaşatma Takımları
   // ══════════════════════════════════════════════════════════
-  'D-01': { eski_isim: 'Mühürdar', yeni_takim: 'SD', yeni_takim_adi: 'Sistem Denetimi ve Kontrol', sebep: 'SHA-256, audit zinciri, mühürleme' },
+  'D-01': { eski_isim: 'onaydar', yeni_takim: 'SD', yeni_takim_adi: 'Sistem Denetimi ve Kontrol', sebep: 'SHA-256, audit zinciri, onaylama' },
   'D-02': { eski_isim: 'Otomasyon', yeni_takim: 'OP', yeni_takim_adi: 'Operasyon (Çalıştırma)', sebep: 'Cron, webhook, batch işlem' },
   'D-03': { eski_isim: 'ARGE-A0', yeni_takim: 'TS', yeni_takim_adi: 'Teknoloji Seçimi', sebep: 'Ar-ge, deney, prototip' },
   'D-04': { eski_isim: 'Köprü', yeni_takim: 'EN', yeni_takim_adi: 'Entegrasyon', sebep: 'Servisler arası bağlantı, köprüleme' },
@@ -96,14 +96,14 @@ const ESKI_YENI_ESLESTIRME = Object.freeze({
   // ESKİ PLANLAMA MOTORLARI (L SERİSİ)
   // ══════════════════════════════════════════════════════════
   'L-1': { eski_isim: 'Hata Ayıklayıcı', yeni_takim: 'HT', yeni_takim_adi: 'Hata Tespiti ve Teşhis', sebep: 'Debugging, bug tespiti' },
-  'L-2': { eski_isim: 'Sistem Denetçisi', yeni_takim: 'SD', yeni_takim_adi: 'Sistem Denetimi ve Kontrol', sebep: 'Nizam uygunluk kontrolü' },
+  'L-2': { eski_isim: 'Sistem Denetçisi', yeni_takim: 'SD', yeni_takim_adi: 'Sistem Denetimi ve Kontrol', sebep: 'Sistem uygunluk kontrolü' },
   'L-3': { eski_isim: 'Güvenlik Denetçisi', yeni_takim: 'ST', yeni_takim_adi: 'Güvenlik Testi (Sızma Testi)', sebep: 'Sızma testi, zafiyet tarama' },
   'L-4': { eski_isim: 'Performans Optimizatörü', yeni_takim: 'PO', yeni_takim_adi: 'Performans ve Ölçeklendirme', sebep: 'Hız, kaynak optimizasyonu' },
 
   // ══════════════════════════════════════════════════════════
   // ESKİ ARŞİV (G SERİSİ)
   // ══════════════════════════════════════════════════════════
-  'G-8': { eski_isim: 'Arşiv Uzmanı', yeni_takim: 'DK', yeni_takim_adi: 'Dokümantasyon', sebep: 'Loglama, belgeleme, mühürleme' },
+  'G-8': { eski_isim: 'Arşiv Uzmanı', yeni_takim: 'DK', yeni_takim_adi: 'Dokümantasyon', sebep: 'Loglama, belgeleme, onaylama' },
 });
 
 /**

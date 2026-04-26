@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 08:18:19]
 Sistemi başlattım ve bir zorlu(varsayımsal teorik) problem yarattım.

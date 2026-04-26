@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 09:26:23]
 ### Eğitim Simülasyonu Başlatma

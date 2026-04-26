@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 09:18:26]
 İşte kurucu Engin'in belirlediği inovasyonum:

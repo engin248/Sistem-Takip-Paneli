@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// KOK NEDEN: @ts-nocheck kaldirildi (2026-04-26). Maskelenen hata: logAudit'e tip disi alanlar gonderiliyordu.
 // ============================================================
 // PERMISSION GUARD — DOSYA SEVİYESİNDE KİLİTLEME SİMÜLASYONU
 // ============================================================
@@ -17,7 +17,7 @@
 // ============================================================
 
 import { useOperatorStore, type Operator } from '@/store/useOperatorStore';
-import { ERR, processError, type ErrorCode } from '@/lib/errorCore';
+import { ERR, processError } from '@/lib/errorCore';
 import { logAudit } from '@/services/auditService';
 
 // ── İZİN SONUCU ─────────────────────────────────────────────
@@ -77,7 +77,7 @@ export async function guardWritePermission(
   taskId: string,
   assignedTo: string,
   operation: string,
-  errorCode: ErrorCode = ERR.PERMISSION_DENIED
+  errorCode: string = ERR.PERMISSION_DENIED
 ): Promise<boolean> {
   const result = checkWritePermission(taskId, assignedTo, operation);
 
@@ -95,17 +95,17 @@ export async function guardWritePermission(
     operator_role: result.operator.role,
   }, 'WARNING');
 
-  // ─── 2. Audit log'a ihlali mühürle ───────────────────────
+  // ─── 2. Audit log'a ihlali onayle ───────────────────────
   try {
     await logAudit({
       operation_type: 'REJECT',
-      action_description: `KİLİT İHLALİ: "${result.operator.name}" (${result.operator.role}) → "${assignedTo}" görevine ${operation} yetkisi reddedildi`,
-      task_id: taskId,
-      error_code: errorCode,
-      error_severity: 'WARNING',
-      status: 'basarisiz',
+      action_description: `KILIT IHLALI: "${result.operator.name}" (${result.operator.role}) -> "${assignedTo}" gorevine ${operation} yetkisi reddedildi`,
       metadata: {
         action_code: 'PERMISSION_DENIED',
+        task_id: taskId,
+        error_code: errorCode,
+        error_severity: 'WARNING',
+        status: 'basarisiz',
         operator_name: result.operator.name,
         operator_role: result.operator.role,
         task_assigned_to: assignedTo,
@@ -138,5 +138,6 @@ export function getTaskOwner(taskId: string): string | null {
   const task = useTaskStore.getState().tasks.find((t) => t.id === taskId);
   return task?.assigned_to ?? null;
 }
+
 
 

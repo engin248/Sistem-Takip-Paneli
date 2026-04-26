@@ -1,0 +1,30 @@
+﻿MASAUSTU SES ASISTANI KURULUM RAPORU
+Tarih: 2025-04-25
+
+1) Eski desktop runtime prosesleri temizlendi.
+2) Desktop kurulum scripti tekrar calistirildi.
+INSTALL_DIR=C:\Users\Esisya\Desktop\Global_Turkce_Ses_Asistani
+SHORTCUT=C:\Users\Esisya\Desktop\Global TÃ¼rkÃ§e Ses AsistanÄ±.lnk
+
+3) Desktop launcher calistirildi.
+
+4) Dosya kurulum dogrulamasi:
+vscode_turkce_ses_asistani.py=ok
+Global T³rke Ses Asistan².lnk=ok
+requirements_turkce_ses_asistani.txt=ok
+try_direct_write_to_focused_control=ok
+window_guard_blocked=ok
+append_audit_log=ok
+SUPPORTED_DIRECT_WRITE_CLASSES=ok
+
+5) Runtime dogrulamasi:
+shortcut_target=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+shortcut_arguments=-ExecutionPolicy Bypass -File "C:\Users\Esisya\Desktop\Global_Turkce_Ses_Asistani\baslat_turkce_sesli_kopru.ps1"
+shortcut_workdir=C:\Users\Esisya\Desktop\Global_Turkce_Ses_Asistani
+
+
+ProcessId   : 33616
+Name        : pythonw.exe
+CommandLine : "C:\Users\Esisya\AppData\Local\Programs\Python\Python311\pythonw.
+              exe" C:\Users\Esisya\Desktop\Global_Turkce_Ses_Asistani\vscode_tu
+              rkce_ses_asistani.py

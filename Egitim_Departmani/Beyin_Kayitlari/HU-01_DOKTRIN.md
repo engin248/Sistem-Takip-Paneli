@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 07:44:18]
 ### Kurucu Engin'in İsmi: "HUKUK-ALFA"

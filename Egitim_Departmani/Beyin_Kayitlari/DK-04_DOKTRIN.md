@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 09:12:23]
 Şimdi, bir teorik problem oluşturmak ve onu çözmek için başlayacağım.

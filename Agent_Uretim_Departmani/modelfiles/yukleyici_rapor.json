@@ -1,0 +1,146 @@
+{
+  "tarih": "2026-04-25T05:38:53.731Z",
+  "basarili": [
+    {
+      "uzmanAd": "uzman-kurul-komutani",
+      "kaynak": "klon-gpt-oss-20b:latest",
+      "uzmanlik": "KURUL_KOMUTANI"
+    },
+    {
+      "uzmanAd": "uzman-arastirma-komutani",
+      "kaynak": "klon-command-r-latest:latest",
+      "uzmanlik": "ARASTIRMA_KOMUTANI"
+    },
+    {
+      "uzmanAd": "uzman-yazilim-mimari",
+      "kaynak": "klon-deepseek-coder-v2-latest:latest",
+      "uzmanlik": "YAZILIM_MIMARI"
+    },
+    {
+      "uzmanAd": "uzman-backend-uzmani",
+      "kaynak": "klon-codellama-latest:latest",
+      "uzmanlik": "BACKEND_UZMANI"
+    },
+    {
+      "uzmanAd": "uzman-kod-review-uzmani",
+      "kaynak": "klon-starcoder2-latest:latest",
+      "uzmanlik": "KOD_REVIEW_UZMANI"
+    },
+    {
+      "uzmanAd": "uzman-frontend-uzmani",
+      "kaynak": "klon-qwen2.5-coder-3b:latest",
+      "uzmanlik": "FRONTEND_UZMANI"
+    },
+    {
+      "uzmanAd": "uzman-gorev-analizci",
+      "kaynak": "klon-mistral-nemo-latest:latest",
+      "uzmanlik": "GOREV_ANALIZCI"
+    },
+    {
+      "uzmanAd": "uzman-metin-anlama-uzmani",
+      "kaynak": "klon-mistral-latest:latest",
+      "uzmanlik": "METIN_ANLAMA_UZMANI"
+    },
+    {
+      "uzmanAd": "uzman-turkce-nlp-uzmani",
+      "kaynak": "klon-qwen2.5-latest:latest",
+      "uzmanlik": "TURKCE_NLP_UZMANI"
+    },
+    {
+      "uzmanAd": "uzman-goruntu-analiz-uzmani",
+      "kaynak": "klon-llama3.2-vision-11b:latest",
+      "uzmanlik": "GORUNTU_ANALIZ_UZMANI"
+    },
+    {
+      "uzmanAd": "uzman-uretim-kamera-uzmani",
+      "kaynak": "klon-llava-latest:latest",
+      "uzmanlik": "URETIM_KAMERA_UZMANI"
+    },
+    {
+      "uzmanAd": "uzman-urun-gorsel-uzmani",
+      "kaynak": "klon-minicpm-v-latest:latest",
+      "uzmanlik": "URUN_GORSEL_UZMANI"
+    },
+    {
+      "uzmanAd": "uzman-eticaret-stratejist",
+      "kaynak": "klon-phi4-latest:latest",
+      "uzmanlik": "ETICARET_STRATEJIST"
+    },
+    {
+      "uzmanAd": "uzman-musteri-hizmetleri-uzmani",
+      "kaynak": "klon-gemma2-9b:latest",
+      "uzmanlik": "MUSTERI_HIZMETLERI_UZMANI"
+    },
+    {
+      "uzmanAd": "uzman-seo-icerik-uzmani",
+      "kaynak": "klon-phi4-mini-latest:latest",
+      "uzmanlik": "SEO_ICERIK_UZMANI"
+    },
+    {
+      "uzmanAd": "uzman-veri-analistii",
+      "kaynak": "klon-deepseek-r1-7b:latest",
+      "uzmanlik": "VERI_ANALISTII"
+    },
+    {
+      "uzmanAd": "uzman-finans-uzmani",
+      "kaynak": "klon-gemma-7b:latest",
+      "uzmanlik": "FINANS_UZMANI"
+    },
+    {
+      "uzmanAd": "uzman-lojistik-uzmani",
+      "kaynak": "klon-llama3-8b:latest",
+      "uzmanlik": "LOJISTIK_UZMANI"
+    },
+    {
+      "uzmanAd": "uzman-operasyon-yoneticisi",
+      "kaynak": "klon-llama3.1-8b:latest",
+      "uzmanlik": "OPERASYON_YONETICISI"
+    },
+    {
+      "uzmanAd": "uzman-personel-takip-uzmani",
+      "kaynak": "klon-llama3.2-1b:latest",
+      "uzmanlik": "PERSONEL_TAKIP_UZMANI"
+    },
+    {
+      "uzmanAd": "uzman-komut-ruter",
+      "kaynak": "klon-qwen2-0.5b:latest",
+      "uzmanlik": "KOMUT_RUTER"
+    },
+    {
+      "uzmanAd": "uzman-kural-filter",
+      "kaynak": "klon-qwen3-0.6b:latest",
+      "uzmanlik": "KURAL_FILTER"
+    },
+    {
+      "uzmanAd": "uzman-ozet-uzmani",
+      "kaynak": "klon-gemma3-1b:latest",
+      "uzmanlik": "OZET_UZMANI"
+    },
+    {
+      "uzmanAd": "uzman-plan-uretici",
+      "kaynak": "klon-gemma3-4b:latest",
+      "uzmanlik": "PLAN_URETICI"
+    },
+    {
+      "uzmanAd": "uzman-kalite-denetci",
+      "kaynak": "klon-phi3-latest:latest",
+      "uzmanlik": "KALITE_DENETCI"
+    },
+    {
+      "uzmanAd": "uzman-sosyal-medya-uzmani",
+      "kaynak": "klon-qwen3.5-4b:latest",
+      "uzmanlik": "SOSYAL_MEDYA_UZMANI"
+    },
+    {
+      "uzmanAd": "uzman-hizli-onay-botu",
+      "kaynak": "klon-tinyllama-latest:latest",
+      "uzmanlik": "HIZLI_ONAY_BOTU"
+    }
+  ],
+  "basarisiz": [
+    {
+      "uzmanAd": "uzman-vektör-embedding-uzmani",
+      "hata": "\u001b[?2026h\u001b[?25l\u001b[1G\u001b[?25h\u001b[?2026l\nError: invalid model name: uzman-vektör-embedding-uzmani\n"
+    }
+  ]
+}

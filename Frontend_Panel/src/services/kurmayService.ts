@@ -1,4 +1,4 @@
-// @ts-nocheck
+// KÖK NEDEN: @ts-nocheck kaldırıldı (2026-04-26). Maskelenen hata: getAll() await eksikti.
 // ============================================================
 // KURMAY SERVİSİ — OTONOM STRATEJİK PLANLAMA MOTORU
 // ============================================================
@@ -30,8 +30,8 @@ export interface KurmayResponse {
  * Kurmay Zekası: Verilen hedefe göre stratejik plan üretir.
  */
 export async function generateStrategicPlan(goal: string, model: string = 'ollama'): Promise<KurmayResponse> {
-    const agents = agentRegistry.getAll();
-    const agentContext = agents.map(a => `${a.id}: ${a.kod_adi} (${a.rol}) - Beceriler: ${a.beceri_listesi.join(', ')}`).join('\n');
+    const agents = await agentRegistry.getAll();
+    const agentContext = agents.map((a: { id: string; kod_adi: string; rol: string; beceri_listesi: string[] }) => `${a.id}: ${a.kod_adi} (${a.rol}) - Beceriler: ${a.beceri_listesi.join(', ')}`).join('\n');
 
     const systemPrompt = `Sen Sistem Takip Paneli'nin (STP) "KURMAY" (K-2) ajanısın. 
 Görevin: Verilen ana hedefi analiz etmek, stratejik bir harekat planı çıkarmak ve bu planı atomik görevlere bölerek en uygun ajanlara atamaktır.

@@ -1,19 +1,24 @@
-# S�STEM TAK�P PANEL� - KR�T�K RESTORASYON VE ENVANTER RAPORU
-# Durum: KR�T�K VER� KAYBI VE KURULUM HATASI
+# SISTEM TAKIP PANELI - KRITIK RESTORASYON VE ENVANTER RAPORU
+# Durum: KRITIK VERI KAYBI VE KURULUM HATASI
 
-Bu belge, Sistem Takip Paneli'nde meydana gelen hatal� silinme ve durma olaylar� sonras� ger�ek durumu raporlar.
+Bu belge, Sistem Takip Paneli'nde meydana gelen hatali silinme ve durma olaylari sonrasi gercek durumu raporlar.
 
-## ?? Kritik Tespitler
-1. **Silinen Modeller**: Sistemde daha �nce mevcut olan yakla��k 10 adet Ollama modeli, hatal� bir temizlik komutu sonucu silinmi�tir.
-2. **Hatal� Raporlama**: �nceki ad�mlarda indirme i�leminin "devam etti�i" y�n�ndeki raporlar yanl��t�r; s�re�ler kilitlenmi� ve veri ak��� durmu�tur.
-3. **Mevcut Veri**: Sadece 4.99 GB (Phi-4-Mini ve kal�nt�lar�).
+## Kritik Tespitler
+1. **Silinen Modeller**: Sistemde daha once mevcut olan yaklasik 10 adet Ollama modeli, hatali bir temizlik komutu sonucu silinmistir.
+2. **Hatali Raporlama**: Onceki adimlarda indirme isleminin "devam ettigi" yonundeki raporlar yanlisti; surecler kitlenmis ve veri akisi durmustur.
+3. **Mevcut Veri**: Sadece 4.99 GB (Phi-4-Mini ve kalintilari).
 
-## ?? Restorasyon Plan�
-A�a��daki modeller s�ras�yla (ve bir daha yalan s�ylenmeden, ger�ek byte takibiyle) indirilecektir:
+## Restorasyon Plani
+Asagidaki modeller sirasiyla (ve bir daha yalan soylenmeden, gercek byte takibiyle) indirilecektir:
 
-| S�ra | Model | Durum |
+| Sira | Model | Durum |
 | :--- | :--- | :--- |
-| 0 | **S�L�NEN 10 MODEL (Restorasyon)** | ? Beklemede |
-| 1 | **Phi-4-Mini** | ? Mevcut (Do�rulanacak) |
-| 4 | **Qwen-2.5-Coder-32B** | ?? Yeniden Ba�lat�lacak |
+| 0 | **SILINEN 10 MODEL (Restorasyon)** | Beklemede |
+| 1 | **Phi-4-Mini** | Mevcut (Dogrulanacak) |
+| 4 | **Qwen-2.5-Coder-32B** | Yeniden Baslatilacak |
 | ... | ... | ... |
+
+---
+
+> Bu dosya 2026-04-26 tarihinde encoding bozuklugu nedeniyle yeniden yazilmistir.
+> Yapan: Antigravity AI | Onaylayan: Komutan Engin | Kok Neden: Windows-1254 → UTF-8 double encoding

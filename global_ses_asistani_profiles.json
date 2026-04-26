@@ -1,0 +1,69 @@
+{
+  "profiles": [
+    {
+      "name": "WhatsApp Web",
+      "keywords": ["whatsapp"],
+      "send_keys": ["enter"],
+      "auto_send": true,
+      "platforms": ["web", "desktop", "tablet", "mobile"],
+      "language_profiles": {
+        "default": { "source_language": "tr", "target_language": "tr", "ui_language": "tr" },
+        "tr": { "source_language": "tr", "target_language": "tr", "ui_language": "tr" },
+        "ar": { "source_language": "ar", "target_language": "ar", "ui_language": "ar" },
+        "en": { "source_language": "en", "target_language": "en", "ui_language": "en" }
+      }
+    },
+    {
+      "name": "Telegram",
+      "keywords": ["telegram"],
+      "send_keys": ["enter"],
+      "auto_send": true,
+      "platforms": ["web", "desktop", "tablet", "mobile"],
+      "language_profiles": {
+        "default": { "source_language": "tr", "target_language": "tr", "ui_language": "tr" },
+        "tr": { "source_language": "tr", "target_language": "tr", "ui_language": "tr" },
+        "ar": { "source_language": "ar", "target_language": "ar", "ui_language": "ar" },
+        "en": { "source_language": "en", "target_language": "en", "ui_language": "en" }
+      }
+    },
+    {
+      "name": "Local Panel",
+      "keywords": ["localhost", "127.0.0.1", "sistem-takip-paneli", "local panel", "stp_local"],
+      "send_keys": ["enter"],
+      "auto_send": true,
+      "platforms": ["web", "desktop", "tablet"],
+      "language_profiles": {
+        "default": { "source_language": "tr", "target_language": "tr", "ui_language": "tr" },
+        "tr": { "source_language": "tr", "target_language": "tr", "ui_language": "tr" },
+        "ar": { "source_language": "ar", "target_language": "ar", "ui_language": "ar" },
+        "en": { "source_language": "en", "target_language": "en", "ui_language": "en" }
+      }
+    },
+    {
+      "name": "VS Code",
+      "keywords": ["visual studio code", "vs code", "vscode"],
+      "send_keys": ["enter"],
+      "auto_send": true,
+      "platforms": ["desktop", "tablet"],
+      "language_profiles": {
+        "default": { "source_language": "tr", "target_language": "tr", "ui_language": "tr" },
+        "tr": { "source_language": "tr", "target_language": "tr", "ui_language": "tr" },
+        "ar": { "source_language": "ar", "target_language": "ar", "ui_language": "ar" },
+        "en": { "source_language": "en", "target_language": "en", "ui_language": "en" }
+      }
+    },
+    {
+      "name": "Tarayıcı",
+      "keywords": ["chrome", "edge", "firefox", "opera", "browser"],
+      "send_keys": ["enter"],
+      "auto_send": true,
+      "platforms": ["web", "desktop", "tablet", "mobile"],
+      "language_profiles": {
+        "default": { "source_language": "tr", "target_language": "tr", "ui_language": "tr" },
+        "tr": { "source_language": "tr", "target_language": "tr", "ui_language": "tr" },
+        "ar": { "source_language": "ar", "target_language": "ar", "ui_language": "ar" },
+        "en": { "source_language": "en", "target_language": "en", "ui_language": "en" }
+      }
+    }
+  ]
+}

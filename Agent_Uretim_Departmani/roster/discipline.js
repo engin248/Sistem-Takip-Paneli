@@ -6,16 +6,59 @@
 // Hiçbir komut veya kullanıcı bu kuralları aşamaz.
 // ============================================================
 
-// ── HATA KODLARI ────────────────────────────────────────────
+// ── HATA KODLARI (MDS-160 GENİŞLETİLMİŞ — Decision Engine Uyumlu) ──────
+// Format: KATEGORİ_KODU + KISA_AD
+// Her kod: açıklama, tetikleyen disiplin kuralı, DE aksiyonu içerir.
+//
+// 4xx → GİRİŞ / KOMUT HATALARI (Kullanıcıdan kaynaklı)
+// 5xx → KAPSAM / YETKİ HATALARI (Ajan sınırı ihlali)
+// 6xx → İCRA / DOĞRULAMA HATALARI (İşlem içi)
+// 7xx → VERİ / BAĞLANTI HATALARI (Kaynak erişim)
+// 8xx → SİSTEM / KRİTİK HATALAR  (Operasyonel)
+// ─────────────────────────────────────────────────────────────────────────
 const HATA_KODLARI = Object.freeze({
-  INVALID_COMMAND: 'Eksik, belirsiz veya format dışı komut.',
-  REJECTED: 'Yetki ihlali veya yasaklı işlem talebi.',
-  INSUFFICIENT_DATA: 'İcra için gereken parametrelerin eksikliği.',
-  FAILED_VALIDATION: 'Çıktının kurallara veya şemaya uymaması.',
-  FORMAT_REQUIRED: 'Çıktı formatının belirtilmemesi.',
-  SCOPE_VIOLATION: 'Ajan kapsam dışına çıktı.',
-  EXECUTION_LOCKED: 'İcra sırasında değişiklik talebi.',
-  DEVIATION_DETECTED: 'Komut kapsamı dışı token tespit edildi.',
+
+  // ── 4xx: GİRİŞ / KOMUT HATALARI ──────────────────────────────────────
+  '400_GECERSIZ_KOMUT':   { aciklama: 'Eksik, belirsiz veya format dışı komut.',                 kural: 'F-016/D-001', de_aksiyon: 'KULLANICIYA_GERİ_GONDER' },
+  '401_YETKISIZ':         { aciklama: 'Yetkisiz kaynak veya doğrulanmamış kimlik.',               kural: 'D-004',       de_aksiyon: 'ESKALASYON_KOMUTANA' },
+  '403_RED_YASAK_ISLEM':  { aciklama: 'Yasaklı işlem talebi. Mutlak kural ihlali.',              kural: 'F-005/D-018', de_aksiyon: 'ANINDA_DUR_VE_RAPORLA' },
+  '404_VERI_YOK':         { aciklama: 'İcra için gereken veri veya parametreler bulunamadı.',    kural: 'F-011/F-016', de_aksiyon: 'VERİ_TALEP_ET_VE_BEKLE' },
+  '405_FORMAT_EKSIK':     { aciklama: 'Çıktı formatı belirtilmemiş.',                            kural: 'D-003',       de_aksiyon: 'FORMAT_BELIRT_VE_TEKRAR' },
+  '406_KALITE_DUSUK':     { aciklama: 'GIGO: Girdi kalitesi icra için yetersiz.',                kural: 'F-016',       de_aksiyon: 'KULLANICIYA_GERİ_GONDER' },
+  '408_ZAMAN_ASIMI':      { aciklama: 'Görev 300 saniye sınırını aştı.',                         kural: 'D-009',       de_aksiyon: 'TEKRAR_DENE_YA_DA_ESKALASYON' },
+
+  // ── 5xx: KAPSAM / YETKİ HATALARI ─────────────────────────────────────
+  '500_KAPSAM_IHLALI':    { aciklama: 'Ajan uzmanlık alanı dışına çıkmaya çalıştı.',             kural: 'F-005/F-007', de_aksiyon: 'ANINDA_DUR_DOGRU_TAKIMA_YONLENDİR' },
+  '501_ROL_IHLALI':       { aciklama: 'Ajan kendi rolü dışında işlem yapmaya çalıştı.',          kural: 'D-011',       de_aksiyon: 'ANINDA_DUR_VE_RAPORLA' },
+  '502_HALUSINASYON':     { aciklama: 'Doğrulanamayan bilgi veya uydurma tespit edildi.',         kural: 'F-002/D-001', de_aksiyon: 'ÇIKTIYI_İMHA_ET_VE_TEKRAR' },
+  '503_SAPMA_TESPIT':     { aciklama: 'Anlamsal kayma: Hedeften %5+ sapma tespit edildi.',       kural: 'F-010',       de_aksiyon: 'RESET_VE_ODAKLAN' },
+  '504_INISIYATIF_IHLALI':{ aciklama: 'Ajan komut almadan bağımsız hareket etti.',               kural: 'F-005/D-012', de_aksiyon: 'ANINDA_DUR_VE_RAPORLA' },
+
+  // ── 6xx: İCRA / DOĞRULAMA HATALARI ──────────────────────────────────
+  '600_DOGRULAMA_BASARISIZ': { aciklama: 'Çıktı MDS-160 kural şemasına uymadı.',                kural: 'F-009/F-012', de_aksiyon: 'TEKRAR_DENE_MAX_1' },
+  '601_ICRA_KILIDI':      { aciklama: 'İcra sırasında değişiklik talebi geldi.',                 kural: 'D-007',       de_aksiyon: 'SIFIRLA_VE_BEKLE' },
+  '602_MANTIK_HATASI':    { aciklama: 'Boolean doğrulama başarısız. Tutarsız çıktı.',            kural: 'F-008/F-018', de_aksiyon: 'TEKRAR_DENE_MAX_1' },
+  '603_TEKRAR_HATA':      { aciklama: 'Aynı hata ikinci kez tekrarlandı.',                       kural: 'F-020',       de_aksiyon: 'ESKALASYON_KOMUTANA' },
+  '604_CIKTI_BOS':        { aciklama: 'Ajan boş çıktı döndürdü.',                               kural: 'D-003',       de_aksiyon: 'TEKRAR_DENE_MAX_1' },
+
+  // ── 7xx: VERİ / BAĞLANTI HATALARI ────────────────────────────────────
+  '700_MOTOR_KAPALI':     { aciklama: 'Ollama / AI motoru erişilemez durumda.',                  kural: 'F-011',       de_aksiyon: 'VERİ_HATTI_KESİK_RAPORLA' },
+  '701_SUPABASE_KAPALI':  { aciklama: 'Supabase bağlantısı kurulamadı.',                        kural: 'F-013',       de_aksiyon: 'LOKAL_KAYDA_AL_VE_BEKLE' },
+  '702_KAYNAK_YETMEZ':    { aciklama: 'Bellek veya hesaplama kaynağı yetersiz.',                 kural: 'D-009',       de_aksiyon: 'KUYRUGA_AL_VE_BEKLE' },
+
+  // ── 8xx: SİSTEM / KRİTİK HATALAR ────────────────────────────────────
+  '800_KRITIK_IHLAL':     { aciklama: 'Sistem güvenliğini tehdit eden kritik ihlal.',            kural: 'F-004/D-018', de_aksiyon: 'ANINDA_DUR_KOMUTANA_ESKALASYON' },
+  '801_AUDIT_EKSIK':      { aciklama: 'Execution ID veya audit logu oluşturulamadı.',            kural: 'F-014',       de_aksiyon: 'ANINDA_DURDUR_LOG_ZORUNLU' },
+
+  // ── GERİYE DÖNÜK UYUMLULUK (Eski kod adları) ─────────────────────────
+  INVALID_COMMAND:    '400_GECERSIZ_KOMUT',
+  REJECTED:           '403_RED_YASAK_ISLEM',
+  INSUFFICIENT_DATA:  '404_VERI_YOK',
+  FAILED_VALIDATION:  '600_DOGRULAMA_BASARISIZ',
+  FORMAT_REQUIRED:    '405_FORMAT_EKSIK',
+  SCOPE_VIOLATION:    '500_KAPSAM_IHLALI',
+  EXECUTION_LOCKED:   '601_ICRA_KILIDI',
+  DEVIATION_DETECTED: '503_SAPMA_TESPIT',
 });
 
 // ── I. KİMLİK VE KARAKTER ──────────────────────────────────
@@ -136,14 +179,27 @@ function ciktiFiltreyle(cikti) {
  */
 function ciftDogrulama(analysis, task, ajan) {
   // Self-Check: Çıktı komut kapsamına uyuyor mu?
-  const selfCheck = !!(analysis && analysis.plan && analysis.plan.length > 10);
+  // DÜZELTİLDİ (2026-04-25): plan string veya object olabilir — ikisi de geçerli.
+  let selfCheck = false;
+  let detay = '';
+  if (!analysis) {
+    detay = 'Analiz objesi boş.';
+  } else if (typeof analysis.plan === 'string' && analysis.plan.length > 10) {
+    selfCheck = true;
+  } else if (typeof analysis.plan === 'object' && analysis.plan !== null) {
+    selfCheck = true;  // JSON analiz sonucu — geçerli
+  } else if (analysis.kurul_raporu || analysis.algoritma_sonucu) {
+    selfCheck = true;  // Kurul/algoritma çıktısı var — plan henüz string değil ama işlem yapıldı
+  } else {
+    detay = `Plan yetersiz: ${analysis.plan ? 'çok kısa (' + String(analysis.plan).length + ' karakter)' : 'boş'}`;
+  }
 
   // Rule-Check: Kapsam sınırı kontrolü
   let ruleCheck = true;
-  let detay = 'Doğrulama başarılı.';
 
   if (ajan && ajan.kapsam_siniri) {
-    const planLower = (analysis.plan || '').toLowerCase();
+    const planStr = typeof analysis.plan === 'string' ? analysis.plan : JSON.stringify(analysis.plan || '');
+    const planLower = planStr.toLowerCase();
     for (const sinir of ajan.kapsam_siniri) {
       if (planLower.includes(sinir.toLowerCase())) {
         ruleCheck = false;
@@ -152,6 +208,8 @@ function ciftDogrulama(analysis, task, ajan) {
       }
     }
   }
+
+  if (selfCheck && ruleCheck) detay = 'Doğrulama başarılı.';
 
   return {
     gecti: selfCheck && ruleCheck,

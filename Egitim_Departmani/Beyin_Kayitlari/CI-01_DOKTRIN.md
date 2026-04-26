@@ -1,7 +1,7 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 07:24:18]
-İşte NİZAM sistemine uygun olarak kurucu emrinize göre eğitim ve teorik problem yaratma ve çözümü:
+İşte Sistem sistemine uygun olarak kurucu emrinize göre eğitim ve teorik problem yaratma ve çözümü:
 
 **Problemin Çözümü:**
 

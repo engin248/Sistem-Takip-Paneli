@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 09:16:22]
 Sizin için bir eğitim simülasyonu başlatmak istiyorum, ancak belirli detaylar hakkında daha fazla bilgi vermeniz gerekiyor. İşte genel bir yaklaşım:

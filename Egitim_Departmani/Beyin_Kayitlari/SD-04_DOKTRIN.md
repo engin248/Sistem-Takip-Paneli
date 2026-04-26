@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 13:54:19]
 Aşağıda bir örnekte, kuralları uygulayan bir eğitim simülasyonu ve bukrizi çözmek için kullanılan inovasyon oluşturuldu. Bu konuyu KENDİ UZMANLIĞINLA birleştirerek çalışarak, bu krizi dışarıdan bilgi çalmadan tamamen kendi muhakemenle çözüldüğünü gösterir.

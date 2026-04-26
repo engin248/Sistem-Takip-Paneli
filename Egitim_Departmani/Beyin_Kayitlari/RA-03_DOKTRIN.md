@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 09:04:19]
 Başlayalım! Bir komplex bir varsayımsal teorik probleminin oluşturmak için, ben bir risk analizi uzmanı olarak çalışacağım. Kurucu Engin'in görevine uygun olacak şekilde uzmanlık alanımı genişletmem gerekiyor.

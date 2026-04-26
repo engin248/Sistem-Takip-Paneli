@@ -188,7 +188,7 @@ export default function SystemErrorsPanel() {
                         <div className="bg-black/20/50 p-5 border border-slate-800 flex justify-between items-center group">
                             <div>
                                 <span className="text-[10px] font-black text-white uppercase tracking-widest block">DEVRE KESİCİ (CIRCUIT BREAKER)</span>
-                                <span className="text-[8px] font-mono text-slate-400 uppercase mt-1">Acil Trafik Mühürleme</span>
+                                <span className="text-[8px] font-mono text-slate-400 uppercase mt-1">Acil Trafik onaylama</span>
                             </div>
                             <button className="px-4 py-2 border border-slate-700 bg-white/5 backdrop-blur-md text-slate-500 hover:text-red-500 hover:border-red-500/50 transition-all text-[9px] font-black uppercase tracking-widest">
                                 AKTİF ET

@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 07:36:18]
 **[Engin'ın KATİ EMRİ]**: "Sana bir problem veriyorum, bu problemi çözmen gerekiyor."

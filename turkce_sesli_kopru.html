@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Türkçe Sesli Köprü</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1220;
+      --panel: #131c31;
+      --panel-2: #1a2640;
+      --text: #e8eefc;
+      --muted: #9fb0d1;
+      --ok: #18b26b;
+      --warn: #ffb020;
+      --danger: #ff5d5d;
+      --accent: #5ea1ff;
+      --border: #2a385a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Segoe UI, Arial, sans-serif;
+      background: linear-gradient(180deg, #0b1220, #10192c 45%, #0e1626);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+    .card {
+      background: rgba(19, 28, 49, 0.95);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    }
+    h1, h2, p { margin: 0; }
+    h1 { font-size: 28px; margin-bottom: 8px; }
+    .sub { color: var(--muted); line-height: 1.5; }
+    .status {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .badge {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 15px;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      transition: transform .12s ease, opacity .12s ease;
+    }
+    button:hover { transform: translateY(-1px); }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    .primary { background: var(--accent); }
+    .success { background: var(--ok); }
+    .warning { background: var(--warn); color: #1b1200; }
+    .danger { background: var(--danger); }
+    .ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 260px;
+      resize: vertical;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #0b1324;
+      color: var(--text);
+      padding: 14px;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .hint {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 8px;
+      line-height: 1.45;
+    }
+    .live {
+      margin-top: 10px;
+      padding: 12px;
+      border-radius: 12px;
+      background: #0b1324;
+      border: 1px dashed var(--border);
+      color: #c4d6ff;
+      min-height: 48px;
+    }
+    .tiny { font-size: 12px; color: var(--muted); }
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="card">
+      <h1>Türkçe Sesli Komut Köprüsü</h1>
+      <p class="sub">Mikrofondan Türkçe komut alır, yazıya çevirir, panoya kopyalar ve istersen metni sesli okur. Böylece komutu sesle verip, gelen yazıyı da Türkçe sesle dinleyebilirsin.</p>
+      <div class="status">
+        <div class="badge" id="speechStatus">Mikrofon: hazır değil</div>
+        <div class="badge" id="ttsStatus">Ses: hazır</div>
+        <div class="badge" id="clipboardStatus">Pano dinleme: kapalı</div>
+      </div>
+      <div class="controls">
+        <button id="startBtn" class="primary">🎤 Dinlemeyi Başlat</button>
+        <button id="stopBtn" class="danger" disabled>■ Durdur</button>
+        <button id="toggleClipboardBtn" class="warning">📋 Pano Dinlemeyi Aç</button>
+        <button id="speakClipboardBtn" class="success">🔊 Panodakini Oku</button>
+        <button id="stopSpeakBtn" class="ghost">Sessiz</button>
+      </div>
+      <div class="hint">İlk kullanımda tarayıcı senden mikrofon ve pano izni isteyebilir. İzin ver. Konuşma algılanınca metin otomatik olarak sol kutuya yazılır ve panoya kopyalanır.</div>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h2>Sesli Komut → Yazı</h2>
+        <div class="live" id="liveText">Dinleme kapalı.</div>
+        <textarea id="commandText" placeholder="Mikrofonla konuştuğunda burada yazı oluşacak..."></textarea>
+        <div class="row">
+          <button id="copyCommandBtn" class="success">Kopyala</button>
+          <button id="clearCommandBtn" class="ghost">Temizle</button>
+          <button id="readCommandBtn" class="primary">Bu Metni Oku</button>
+        </div>
+        <div class="hint">İstersen bu kutudaki metni doğrudan sohbete yapıştırabilirsin.</div>
+      </div>
+
+      <div class="card">
+        <h2>Gelen Yazı → Türkçe Ses</h2>
+        <textarea id="responseText" placeholder="Buraya bir yanıt yapıştır; istersen pano dinleme açıkken yeni kopyalanan metin otomatik buraya da düşer ve sesli okunur."></textarea>
+        <div class="row">
+          <button id="pasteResponseBtn" class="warning">Panodan Al</button>
+          <button id="readResponseBtn" class="success">Yanıtı Oku</button>
+          <button id="clearResponseBtn" class="ghost">Temizle</button>
+        </div>
+        <div class="hint">Pano dinleme açıksa yeni kopyaladığın cevap otomatik okunur. Yazı da burada kalır.</div>
+      </div>
+    </section>
+
+    <section class="card tiny">
+      Önerilen kullanım: 1) Dinlemeyi başlat. 2) Komutu Türkçe söyle. 3) Oluşan yazıyı sohbete yapıştır. 4) Gelen cevabı kopyala. 5) Pano dinleme açıksa sistem cevabı sesli okur.
+    </section>
+  </div>
+
+  <script>
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const toggleClipboardBtn = document.getElementById('toggleClipboardBtn');
+    const speakClipboardBtn = document.getElementById('speakClipboardBtn');
+    const stopSpeakBtn = document.getElementById('stopSpeakBtn');
+    const copyCommandBtn = document.getElementById('copyCommandBtn');
+    const clearCommandBtn = document.getElementById('clearCommandBtn');
+    const readCommandBtn = document.getElementById('readCommandBtn');
+    const pasteResponseBtn = document.getElementById('pasteResponseBtn');
+    const readResponseBtn = document.getElementById('readResponseBtn');
+    const clearResponseBtn = document.getElementById('clearResponseBtn');
+    const commandText = document.getElementById('commandText');
+    const responseText = document.getElementById('responseText');
+    const liveText = document.getElementById('liveText');
+    const speechStatus = document.getElementById('speechStatus');
+    const ttsStatus = document.getElementById('ttsStatus');
+    const clipboardStatus = document.getElementById('clipboardStatus');
+
+    let recognition;
+    let isListening = false;
+    let clipboardTimer = null;
+    let lastClipboardText = '';
+
+    function setSpeechStatus(text) { speechStatus.textContent = `Mikrofon: ${text}`; }
+    function setTtsStatus(text) { ttsStatus.textContent = `Ses: ${text}`; }
+    function setClipboardStatus(text) { clipboardStatus.textContent = `Pano dinleme: ${text}`; }
+
+    function pickTurkishVoice() {
+      const voices = window.speechSynthesis.getVoices() || [];
+      return voices.find(v => (v.lang || '').toLowerCase().startsWith('tr')) || voices[0] || null;
+    }
+
+    function speakText(text) {
+      const clean = (text || '').trim();
+      if (!clean) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(clean);
+      const voice = pickTurkishVoice();
+      if (voice) utterance.voice = voice;
+      utterance.lang = voice?.lang || 'tr-TR';
+      utterance.rate = 0.95;
+      utterance.pitch = 1;
+      utterance.onstart = () => setTtsStatus('okuyor');
+      utterance.onend = () => setTtsStatus('hazır');
+      utterance.onerror = () => setTtsStatus('hata');
+      window.speechSynthesis.speak(utterance);
+    }
+
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {}
+    }
+
+    async function readClipboardIntoResponse(autoSpeak = false) {
+      try {
+        const text = await navigator.clipboard.readText();
+        if (!text || text === lastClipboardText) return;
+        lastClipboardText = text;
+        responseText.value = text;
+        if (autoSpeak) speakText(text);
+      } catch {
+        setClipboardStatus('izin gerekli');
+      }
+    }
+
+    function startClipboardWatch() {
+      if (clipboardTimer) return;
+      setClipboardStatus('açık');
+      toggleClipboardBtn.textContent = '📋 Pano Dinlemeyi Kapat';
+      clipboardTimer = setInterval(() => readClipboardIntoResponse(true), 1400);
+    }
+
+    function stopClipboardWatch() {
+      if (!clipboardTimer) return;
+      clearInterval(clipboardTimer);
+      clipboardTimer = null;
+      setClipboardStatus('kapalı');
+      toggleClipboardBtn.textContent = '📋 Pano Dinlemeyi Aç';
+    }
+
+    function initRecognition() {
+      if (!SpeechRecognition) {
+        setSpeechStatus('bu tarayıcı desteklemiyor');
+        startBtn.disabled = true;
+        liveText.textContent = 'Bu tarayıcı Türkçe konuşma algılamayı desteklemiyor. Microsoft Edge kullan.';
+        return;
+      }
+
+      recognition = new SpeechRecognition();
+      recognition.lang = 'tr-TR';
+      recognition.continuous = true;
+      recognition.interimResults = true;
+
+      recognition.onstart = () => {
+        isListening = true;
+        setSpeechStatus('dinliyor');
+        liveText.textContent = 'Dinliyorum... Türkçe konuşabilirsin.';
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+      };
+
+      recognition.onresult = async (event) => {
+        let interim = '';
+        let finalText = commandText.value ? `${commandText.value.trim()} ` : '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalText += transcript.trim() + ' ';
+          } else {
+            interim += transcript;
+          }
+        }
+
+        const finalClean = finalText.trim();
+        if (finalClean) {
+          commandText.value = finalClean;
+          await copyText(finalClean);
+        }
+        liveText.textContent = interim ? `Canlı: ${interim}` : 'Konuşma algılandı ve kopyalandı.';
+      };
+
+      recognition.onerror = (event) => {
+        setSpeechStatus(`hata (${event.error})`);
+        liveText.textContent = `Hata: ${event.error}`;
+      };
+
+      recognition.onend = () => {
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        if (isListening) {
+          try {
+            recognition.start();
+          } catch {
+            isListening = false;
+            setSpeechStatus('durdu');
+          }
+        } else {
+          setSpeechStatus('durdu');
+          liveText.textContent = 'Dinleme kapalı.';
+        }
+      };
+
+      setSpeechStatus('hazır');
+    }
+
+    startBtn.addEventListener('click', async () => {
+      if (!recognition) initRecognition();
+      isListening = true;
+      try {
+        recognition.start();
+      } catch {
+        setSpeechStatus('başlatılamadı');
+      }
+    });
+
+    stopBtn.addEventListener('click', () => {
+      isListening = false;
+      recognition?.stop();
+      setSpeechStatus('duruyor');
+    });
+
+    toggleClipboardBtn.addEventListener('click', () => {
+      if (clipboardTimer) stopClipboardWatch(); else startClipboardWatch();
+    });
+
+    speakClipboardBtn.addEventListener('click', async () => {
+      try {
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          responseText.value = text;
+          speakText(text);
+        }
+      } catch {
+        setClipboardStatus('izin gerekli');
+      }
+    });
+
+    stopSpeakBtn.addEventListener('click', () => {
+      window.speechSynthesis.cancel();
+      setTtsStatus('hazır');
+    });
+
+    copyCommandBtn.addEventListener('click', () => copyText(commandText.value));
+    clearCommandBtn.addEventListener('click', () => { commandText.value = ''; liveText.textContent = 'Temizlendi.'; });
+    readCommandBtn.addEventListener('click', () => speakText(commandText.value));
+    pasteResponseBtn.addEventListener('click', () => readClipboardIntoResponse(false));
+    readResponseBtn.addEventListener('click', () => speakText(responseText.value));
+    clearResponseBtn.addEventListener('click', () => { responseText.value = ''; });
+
+    window.speechSynthesis.onvoiceschanged = () => {};
+    initRecognition();
+  </script>
+</body>
+</html>

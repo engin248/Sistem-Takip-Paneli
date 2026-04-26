@@ -17,7 +17,12 @@ const nextConfig: NextConfig = {
       ? { exclude: ["error", "warn"] }
       : false,
 },
-  typescript: { ignoreBuildErrors: true },
+  typescript: {
+    // HATA #21 DÜZELTİLDİ: ignoreBuildErrors kaldırıldı.
+    // Önceden: ignoreBuildErrors: true — TypeScript hataları yok sayılıyordu.
+    // Artık build hatası anında derlemeyi durdurur.
+    ignoreBuildErrors: false,
+  },
 
   // ── Sunucu Tarafı Dış Paketler ──────────────────────────
   // Grammy (Telegram) node.js apisi kullanır

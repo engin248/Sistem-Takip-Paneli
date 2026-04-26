@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 08:02:25]
 Öncelikle, bu işlemi gerçek dünyada veya bilgisayar ortamında gerçekleştirebilir miyim? Eğer gerçek dünyada ise, bu işleminin güvenliği konusunda dikkatli olmanız gerekecektir. Bu işlemini gerçekleştirmek için uygun bir ortam ve araçlar (örneğin, veritabanı yönetim sistemleri veya modelleme yazılımları) gerektireceksiniz.

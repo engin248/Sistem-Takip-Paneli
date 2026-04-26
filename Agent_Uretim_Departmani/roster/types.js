@@ -1,9 +1,9 @@
 // ============================================================
 // AJAN TİP TANIMLARI — ASKERİ DÜZEY DİSİPLİN
 // ============================================================
-// 32 Uzmanlık × 5 Ajan = 160 Birim
-// Her ajan SADECE atandığı alanda çalışır.
-// Kapsam dışı her işlem → RED.
+// 36 Uzmanlık × 5 Ajan = 180 Birim (yeni kadro)
+// 32 orijinal + 4 yeni takım: AI, MB, ET, PZ
+// Her ajan SADECE atandığı alanda çalışır. Kapsam dışı → RED.
 // ============================================================
 
 /**
@@ -80,6 +80,11 @@ const TAKIM_KODLARI = Object.freeze({
   HO: 'Hata Onarımı ve Düzeltme',
   DK: 'Dokümantasyon',
   EA: 'Eğitim ve Adaptasyon',
+  // ── YENİ TAKIMLAR (RUL — Beřeri Genişletme) ──────────────────
+  AI: 'Yapay Zeka Mühendisliği',   // LLM, RAG, prompt, embedding, ML
+  MB: 'Mobil Uygulama Geliştirme',  // React Native, Flutter, iOS, Android
+  ET: 'E-Ticaret ve Pazaryeri',   // Trendyol, N11, sipariş, stok
+  PZ: 'Pazarlama ve Büyüme',       // SEO, reklam, email, müşteri segmenti
 });
 
 module.exports = { DISIPLIN, ASAMALAR, TAKIM_KODLARI };

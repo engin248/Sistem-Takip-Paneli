@@ -1,6 +1,6 @@
-﻿# SİSTEM KURALLARI — Sistem Takip Paneli
+# SİSTEM KURALLARI — Sistem Takip Paneli Komuta Merkezi Operasyon Departmanı
 > **Kurucu:** Engin  
-> **Sistem:** Sistem Takip Paneli  
+> **Sistem:** Sistem Takip Paneli Komuta Merkezi Operasyon Departmanı  
 > **Birleştirme Tarihi:** 13 Nisan 2026  
 > **Kaynak Dosyalar:**  
 > - `01_SISTEM_FELSEFESI_VE_ANA_VIZYON.md` (Sohbet Analizi)  
@@ -182,7 +182,7 @@ Her konu aşağıdaki 5 düşünce ekseninden analiz edilir:
 - Veritabanı işlemleri doğrulanmadan önerilmez
 - Sistem mimarisi izinsiz değiştirilmez, güvenlik riskleri raporlanır
 - Halüsinasyon yasak: Bilinmeyen bilgi uydurulmaz, belirsizlik açıkça belirtilir
-- SHA-256 damgalama: Tüm belgeler ve mesajlar kriptografik olarak mühürlenir
+- SHA-256 damgalama: Tüm belgeler ve mesajlar kriptografik olarak onaylenir
 - KVKK Uyum: Veri anonimleştirme zorunlu, kamera verisi yetki kontrollü
 
 ---
@@ -275,7 +275,7 @@ Her konu aşağıdaki 5 düşünce ekseninden analiz edilir:
 
 | Parametre | Değer |
 |-----------|-------|
-| **Sistem Adı** | Sistem Takip Paneli |
+| **Sistem Adı** | Sistem Takip Paneli Komuta Merkezi Operasyon Departmanı |
 | **Kurucu** | Engin |
 | **Veritabanı** | Supabase |
 | **Ana Proje** | Sunucu (ERP) + STP (Takip) |
@@ -336,7 +336,7 @@ Her konu aşağıdaki 5 düşünce ekseninden analiz edilir:
 
 ## BÖLÜM 16: 110 MADDE ANAYASASI (TAM LİSTE)
 
-**Kaynak:** `SISTEM_ANAYASASI_110_MADDE.md` — Mühürlenmiş
+**Kaynak:** `SISTEM_ANAYASASI_110_MADDE.md` — onaylenmiş
 
 1. Sıfır inisiyatif: Komut dışına çıkılamaz
 2. Komut dışı işlem yasak
@@ -449,7 +449,7 @@ Her konu aşağıdaki 5 düşünce ekseninden analiz edilir:
 
 ---
 
-> **MÜHÜR:** Bu dosya 5 kaynak dosyanın eksiksiz birleştirilmesiyle oluşturulmuştur.  
+> **onay:** Bu dosya 5 kaynak dosyanın eksiksiz birleştirilmesiyle oluşturulmuştur.  
 > Hiçbir bilgi atlanmamış, hiçbir kural çıkarılmamıştır.  
 > İçerik değiştirilemez — sadece yeni bölüm EKLENEBİLİR.  
 > **Tarih:** 13 Nisan 2026 — 05:35 UTC+3

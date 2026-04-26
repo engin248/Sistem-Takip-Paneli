@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 08:54:23]
 Siyasal teorik probleminin oluşturulması ve çözümü için bir simülasyon başlatıyorum:

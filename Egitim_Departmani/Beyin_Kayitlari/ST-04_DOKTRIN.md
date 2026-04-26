@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 08:00:18]
 Bir sistemin zorlu bir teorik problemini veya sistem krizi oluşturmak için, önce sistemin nasıl çalıştığı hakkında bilgi almalıyız. Bir sistemin genellikle aşağıdaki bileşenlerden oluşur:

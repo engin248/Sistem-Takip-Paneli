@@ -1,16 +1,16 @@
+﻿// ============================================================
+// ESKÄ° KADRO â†’ YENÄ° KADRO ENTEGRATÃ–RÃœ
 // ============================================================
-// ESKİ KADRO → YENİ KADRO ENTEGRATÖRÜ
-// ============================================================
-// 58 eski ajanı MilitaryAgent formatına çevirip takımlarına ekler.
-// Eski ajanlar silinmez — yeni takımın ek üyeleri olarak katılır.
+// 58 eski ajanÄ± MilitaryAgent formatÄ±na Ã§evirip takÄ±mlarÄ±na ekler.
+// Eski ajanlar silinmez â€” yeni takÄ±mÄ±n ek Ã¼yeleri olarak katÄ±lÄ±r.
 // ============================================================
 
 const { ESKI_YENI_ESLESTIRME } = require('./legacy_bridge.js');
 const { DISIPLIN, RUTBELER } = require('./types.js');
 
 /**
- * Tüm eski ajanları MilitaryAgent formatına çevirir.
- * @returns {Array} - MilitaryAgent formatında eski ajan listesi
+ * TÃ¼m eski ajanlarÄ± MilitaryAgent formatÄ±na Ã§evirir.
+ * @returns {Array} - MilitaryAgent formatÄ±nda eski ajan listesi
  */
 function eskiKadroyuDonustur() {
   const donusturulenler = [];
@@ -21,7 +21,7 @@ function eskiKadroyuDonustur() {
       kod_adi: bilgi.eski_isim,
       takim_kodu: bilgi.yeni_takim,
       uzmanlik_alani: bilgi.yeni_takim_adi,
-      gorev_tanimi: `[ESKİ KADRO] ${bilgi.sebep}`,
+      gorev_tanimi: `[ESKÄ° KADRO] ${bilgi.sebep}`,
       rutbe: 'UZMAN',
       asama: 'ENTEGRE',
       beceriler: _beceriCikar(eskiId, bilgi),
@@ -35,7 +35,7 @@ function eskiKadroyuDonustur() {
   return donusturulenler;
 }
 
-// Eski ajanların becerilerini ID'den çıkar
+// Eski ajanlarÄ±n becerilerini ID'den Ã§Ä±kar
 function _beceriCikar(eskiId, bilgi) {
   const BECERI_MAP = {
     'K-1': ['karar_verme', 'onay_red', 'strateji', 'gorev_atama', 'kriz_yonetimi'],
@@ -60,7 +60,7 @@ function _beceriCikar(eskiId, bilgi) {
     'B-06': ['erisilebilirlik', 'mobil_uyum', 'hata_mesajlari', 'loading_state'],
     'C-01': ['celinski_analiz', 'kanit_degerlendirme', 'nihai_karar'],
     'C-02': ['mimari_degerlendirme', 'teknik_borc', 'uzun_vadeli_etki'],
-    'D-01': ['sha256', 'audit_zincir', 'butunluk_dogrulama', 'muhur'],
+    'D-01': ['sha256', 'audit_zincir', 'butunluk_dogrulama', 'onay'],
     'D-02': ['cron', 'webhook', 'event_trigger', 'batch_islem'],
     'D-03': ['arge', 'deney', 'prototip', 'arastirma'],
     'D-04': ['servis_kopruleme', 'baglanti', 'adaptasyon', 'ceviri'],
@@ -97,13 +97,14 @@ function _beceriCikar(eskiId, bilgi) {
     'CNTRL-03': ['sonuc_dogrulama', 'mantik_hatasi', 'kabul_red'],
     'CNTRL-04': ['sonuc_dogrulama', 'mantik_hatasi', 'kabul_red'],
     'L-1': ['debugging', 'sozdizimi', 'mantik_hatasi', 'bug_tespiti'],
-    'L-2': ['nizam_kontrol', 'kural_uyumu', 'denetim_raporu'],
+    'L-2': ['sistem_kontrol', 'kural_uyumu', 'denetim_raporu'],
     'L-3': ['sizma_testi', 'zero_day', 'risk_denetimi'],
     'L-4': ['token_optimizasyon', 'hizlandirma', 'kaynak_optimizasyon'],
-    'G-8': ['loglama', 'dokumantasyon', 'muhurleme', 'arsiv'],
+    'G-8': ['loglama', 'dokumantasyon', 'onayleme', 'arsiv'],
   };
 
   return BECERI_MAP[eskiId] || [bilgi.sebep.split(',')[0].trim().toLowerCase().replace(/\s+/g, '_')];
 }
 
 module.exports = { eskiKadroyuDonustur };
+

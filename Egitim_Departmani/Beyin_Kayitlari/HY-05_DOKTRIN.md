@@ -1,7 +1,7 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 07:40:25]
-Nizam sistemine uygun olarak, bu görevi yerine getirebilirim:
+Sistem sistemine uygun olarak, bu görevi yerine getirebilirim:
 
 1. **Krişim Oluşturma**:
    - Problem: Bir büyük ve karmaşık bir bilgisayar sistemi (BBS) üzerinde bulunan bir güvenlik eksikliği.

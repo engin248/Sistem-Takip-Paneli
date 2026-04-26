@@ -44,7 +44,19 @@ export async function fetchJSON<T>(
 ): Promise<T> {
   const res = await fetchWithTimeout(url, undefined, timeoutMs);
   if (!res.ok) {
+    // 502 Cloudflare HTML döndüğünde JSON.parse crash'ini engelle
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      throw new Error(`HTTP ${res.status}: Beklenen JSON, gelen ${contentType.split(';')[0] || 'bilinmiyor'}`);
+    }
     throw new Error(`HTTP ${res.status}: ${res.statusText}`);
   }
-  return res.json() as Promise<T>;
+
+  // JSON parse güvenliği — HTML/text gelirse crash etme
+  const text = await res.text();
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new Error(`JSON parse hatasi: Yanit JSON degil (${text.substring(0, 100)}...)`);
+  }
 }

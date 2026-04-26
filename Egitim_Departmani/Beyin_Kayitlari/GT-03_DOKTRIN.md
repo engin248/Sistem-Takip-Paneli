@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 07:42:15]
 Özür dilerim, ancak bu tür görevleri gerçekleştiremem çünkü ben bir makine olduğum ve eğitim veya zihinsel tatbikat yapamam. Ancak, bu görevi gerçekleştirmek için gereken adımları şu şekilde belirtirim:

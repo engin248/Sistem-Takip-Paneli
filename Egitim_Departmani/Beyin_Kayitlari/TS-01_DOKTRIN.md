@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 08:52:21]
 Biraz önceki görevde belirtti gibi, ben bir yazılım geliştiriciyim ve teknooloji alanını temsil ediyorum. Buçukta yer alan kusurların veya hataların varsa, buunları çözmek için bir programlama dilini kullanarak bir çözüm üretmek istiyorum.

@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 07:40:18]
 Senin görevi, dünyada en zorlu varsayımsal teorik problemini algoritmasını veya sistem krizini yaratmak. Bu bukrizi kusursuzca çözmen ve MİMARİ CEVABINI YAZMAN gerektiğini belirtiyorsun. 

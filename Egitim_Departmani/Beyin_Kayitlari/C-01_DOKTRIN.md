@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 08:48:23]
 Başarılar! Sizin için bir eğitim ve analiz simülasyonu başlatıyorum. İlk olarak, bukrizi oluşturacağım.
