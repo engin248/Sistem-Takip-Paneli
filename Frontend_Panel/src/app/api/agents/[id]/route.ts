@@ -1,54 +1,41 @@
 // ============================================================
-// /api/agents/[id] — Ajan PATCH/DELETE
+// /api/agents/[id] — Yerel-Önce PATCH / DELETE
 // ============================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { localUpdate, localDelete } from '@/lib/localStore';
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const body = await req.json();
 
-    const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
-    if (body.status !== undefined) updateData.status = body.status;
-    if (body.codename !== undefined) updateData.codename = body.codename;
-    if (body.tier !== undefined) updateData.tier = body.tier;
-    if (body.specialty !== undefined) updateData.specialty = body.specialty;
-    if (body.role !== undefined) updateData.role = body.role;
-    if (body.rules !== undefined) updateData.rules = body.rules;
-    if (body.directives !== undefined) updateData.directives = body.directives;
-    if (body.memory !== undefined) updateData.memory = body.memory;
-    if (body.last_action !== undefined) updateData.last_action = body.last_action;
-    if (body.health !== undefined) updateData.health = body.health;
-    if (body.tasks_completed !== undefined) updateData.tasks_completed = body.tasks_completed;
+    const changes: Record<string, unknown> = {};
+    const fields = ['status', 'codename', 'tier', 'specialty', 'role', 'rules', 'directives', 'memory', 'last_action', 'health', 'tasks_completed'];
+    for (const f of fields) {
+      if (body[f] !== undefined) changes[f] = body[f];
+    }
 
-    const { data, error } = await supabase
-      .from('agents')
-      .update(updateData)
-      .eq('id', id)
-      .select()
-      .single();
+    const updated = localUpdate('agents', id, changes);
+    if (!updated) {
+      return NextResponse.json({ error: `Ajan bulunamadı: ${id}` }, { status: 404 });
+    }
 
-    if (error) throw error;
-
-    return NextResponse.json({ agent: data, message: 'Güncellendi' });
-  } catch (err: any) {
-    console.error('[API/agents PATCH]', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ agent: updated, message: 'Yerel arşiv güncellendi', synced: false });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-
-    const { error } = await supabase.from('agents').delete().eq('id', id);
-    if (error) throw error;
-
-    return NextResponse.json({ message: 'Ajan silindi' });
-  } catch (err: any) {
-    console.error('[API/agents DELETE]', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    const ok = localDelete('agents', id);
+    if (!ok) return NextResponse.json({ error: `Ajan bulunamadı: ${id}` }, { status: 404 });
+    return NextResponse.json({ message: 'Yerel arşivden silindi' });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
