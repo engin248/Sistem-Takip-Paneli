@@ -101,6 +101,21 @@ def get_stats():
     return jsonify([])
 
 if __name__ == '__main__':
-    # Flask sunucusunu 5001 portunda başlatıyoruz
-    # UI'daki hata mesajının aradığı port 5001'dir.
-    app.run(host='0.0.0.0', port=5001, debug=False, threaded=True)
+    port = 5001
+    
+    try:
+        from pyngrok import ngrok
+        # Open a ngrok tunnel to the dev server
+        public_url = ngrok.connect(port).public_url
+        print(f"============================================================")
+        print(f"🌟 NGROK CANLI YAYIN LINKI: {public_url}")
+        print(f"============================================================")
+        
+        # Save this URL to a file so we can easily read it
+        with open("ngrok_url.txt", "w") as f:
+            f.write(public_url)
+    except Exception as e:
+        print(f"Ngrok baslatilamadi: {e}")
+
+    # Flask sunucusunu baslatiyoruz
+    app.run(host='0.0.0.0', port=port, debug=False, threaded=True)

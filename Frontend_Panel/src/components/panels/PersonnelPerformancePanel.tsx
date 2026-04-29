@@ -33,10 +33,13 @@ export default function PersonnelPerformancePanel() {
     // Tasarım aşaması için DUMMY_CAMERAS'ı default olarak yüklüyoruz
     const [personeller, setPersoneller] = useState<Personnel[]>(DUMMY_CAMERAS);
     const [error, setError] = useState(false);
+    
+    // Cloudflare Tunnel URL'si (Canlı Yayın için)
+    const CAMERA_API_URL = "https://weblogs-syndrome-receiving-truck.trycloudflare.com";
 
     const fetchStats = async () => {
         try {
-            const req = await fetch('http://localhost:5001/api/stats');
+            const req = await fetch(`${CAMERA_API_URL}/api/stats`);
             const res = await req.json();
             if (res && res.length > 0) {
                 setPersoneller(res);
@@ -133,7 +136,7 @@ export default function PersonnelPerformancePanel() {
 
                                 {/* Asıl Kamera Görüntüsü (Bağlantı olduğunda yüklenecek) */}
                                 <img 
-                                    src={`http://127.0.0.${(index % 5) + 1}:5001/video_feed_${index + 1}`} 
+                                    src={`${CAMERA_API_URL}/video_feed_${index + 1}`} 
                                     className="absolute inset-0 object-cover w-full h-full opacity-0 transition-opacity duration-500 filter contrast-125 saturate-50 group-hover:saturate-100 z-10"
                                     onLoad={(e) => {
                                         e.currentTarget.style.opacity = '0.7';
