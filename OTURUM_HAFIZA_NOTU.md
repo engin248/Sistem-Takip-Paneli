@@ -140,3 +140,30 @@ git status --short
 ---
 
 *Bu notu oku, bağlamı kur, sonra Engin'e "Hazırım, devam ediyoruz" de.*
+
+---
+
+## NİZAM TEKSTİL AI — OTURUM NOTU (2026-04-29 ~13:35)
+
+### Bu oturumda yapılanlar:
+- 16-30 genel beceriler için proje planı hazırlandı
+- **SIFIR ek model indirmesi gerekmiyor** — Ollama'da 70+ model mevcut
+- ComfyUI Pinokio'da kurulu (script hazır, `C:\pinokio\api\comfy.git\install.js`)
+- SD için model seçimi yapılacak: **SDXL önerilir (6.5GB, RTX 5080 ile uyumlu)**
+- Master Plan (7 faz) yazıldı ve artifact'a kaydedildi
+
+### Bekleyen tek karar (Engin'den):
+1. **FAZ 7 SD modeli:** SDXL mi Flux-Dev NF4 mi?
+2. **FAZ 1:** SQLite geçişi başlansın mı?
+3. **FAZ 7:** Pinokio'dan ComfyUI kurulumu onayı
+
+### Artifact konumu:
+`C:\Users\Esisya\.gemini\antigravity\brain\4fbfe56d-b048-4734-b980-f2124dc30fe9\artifacts\NIZAM_MASTER_PLAN_v2.md`
+
+### Hızlı sistem kontrol:
+```powershell
+pm2 list
+Invoke-WebRequest http://localhost:3050/api/moduller -UseBasicParsing
+Invoke-WebRequest http://localhost:3051/health -UseBasicParsing
+```
+Beklenen: tekstil-asistan + kalip-servisi online, 15 modül, health OK
