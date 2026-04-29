@@ -38,23 +38,12 @@ loadEnv();
 const GEMINI_KEY        = process.env.GEMINI_API_KEY || '';
 const STP_API_BASE      = process.env.STP_API_URL || 'https://sistem-takip-paneli.vercel.app';
 const STP_SERVICE_TOKEN = process.env.STP_API_KEY || process.env.STP_SERVICE_TOKEN || '';
-<<<<<<< Updated upstream
 const SUPABASE_URL      = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const SUPABASE_KEY      = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const FOTO_DIR          = path.join(__dirname, 'arsiv', 'fotograflar');
 const LOG_FILE          = path.join(__dirname, 'whatsapp_agent.log');
 const STATUS_FILE       = path.join(__dirname, 'whatsapp_status.json');
 const QR_PUBLIC_PATH    = path.join(__dirname, '../Frontend_Panel/public/whatsapp_qr.png');
-=======
-const BASE_DIR         = path.join(__dirname, 'arsiv');
-const FOTO_DIR         = path.join(BASE_DIR, 'fotograflar');
-const LOG_FILE         = path.join(__dirname, 'whatsapp_agent.log');
-
-// Yalnızca bu numaralardan komut kabul et (boş = hepsi)
-// Format: '905XXXXXXXXX@c.us'
-const AUTHORIZED_NUMBERS = (process.env.WHATSAPP_AUTHORIZED_NUMBERS || '')
-  .split(',').map(s => s.trim()).filter(Boolean);
->>>>>>> Stashed changes
 
 // ── LOG ──────────────────────────────────────────────────────
 function log(msg, level = 'INFO') {
@@ -63,7 +52,6 @@ function log(msg, level = 'INFO') {
     try { fs.appendFileSync(LOG_FILE, line + '\n', 'utf-8'); } catch {}
 }
 
-<<<<<<< Updated upstream
 // ── SUPABASE / KLASÖRLER ─────────────────────────────────────
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 [path.join(__dirname, 'arsiv'), FOTO_DIR].forEach(d => {
@@ -80,16 +68,6 @@ if (!AUTHORIZED_NUMBERS.length) {
 }
 
 // ── YARDIMCI FONKSİYONLAR ────────────────────────────────────
-=======
-// ── KLASÖRLER ────────────────────────────────────────────────
-[BASE_DIR, FOTO_DIR].forEach(d => {
-  if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
-});
-
-log('✅ AI Bağlantısı (Orkestratör/Local-First) doğrulandı.', 'INFO');
-
-// ── YETKİ KONTROL ───────────────────────────────────────────
->>>>>>> Stashed changes
 function isAuthorized(msg, client) {
     if (msg.from === 'status@broadcast' || msg.to === 'status@broadcast' || msg.isStatus) return false;
     const myNum = client.info?.wid?._serialized;
