@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 07:22:21]
 Üzgünüm ama buunun tamamını kendim yapamıyorum. Ancak, bu bir eğitim simülasyonu için genel bir yaklaşım vermek istiyorum:

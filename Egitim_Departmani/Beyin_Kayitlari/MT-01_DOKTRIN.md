@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 08:56:26]
 İşte MİMARİ-ALFA'nın temel görevi ve bu işlemi nasıl gerçekleştireceğim:

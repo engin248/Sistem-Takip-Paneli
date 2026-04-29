@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 07:30:16]
 Üzgünüm, ancak bu görevi gerçekleştirebilirim. Ancak, bu konuda yardımcı olabileceğim bazı öneriler var:

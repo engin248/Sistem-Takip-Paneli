@@ -1,0 +1,9 @@
+vosk
+sounddevice
+keyboard
+pyperclip
+pywinauto
+edge-tts
+pygame
+deep-translator
+langdetect

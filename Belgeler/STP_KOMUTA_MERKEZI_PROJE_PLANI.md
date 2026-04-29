@@ -12,7 +12,7 @@
 | 1 | **Panel Stabilizasyonu** | 16 Ekranın tam işlevselliği, API 500 hatalarının temizlenmesi | P0 |
 | 2 | **Haberleşme Ağı** | Ajanlar arası güvenli yerel hub, askeri düzey loglama | P1 |
 | 3 | **Planlama Departmanı** | Otonom iş emri üretimi, operasyon planı jenerasyonu | P1 |
-| 4 | **Üretim ve QA** | Çift kontrollü icra ve kalite güvence mühürleme | P2 |
+| 4 | **Üretim ve QA** | Çift kontrollü icra ve kalite güvence onaylama | P2 |
 
 ## 3. ROL DAĞILIMI
 - **L1 (Yapıcı):** Antigravity & Ekip Üyeleri (Kodlama, Uygulama)

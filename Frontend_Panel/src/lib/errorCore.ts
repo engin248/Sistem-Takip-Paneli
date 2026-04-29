@@ -8,6 +8,7 @@ export const ERR = {
     AI_ANALYSIS: 'ERR-Sistem Takip Paneli001-003',
     DB_HATA: 'ERR-Sistem Takip Paneli001-004',
     AUTH_HATA: 'ERR-Sistem Takip Paneli001-005',
+    PERMISSION_DENIED: 'ERR-Sistem Takip Paneli001-023',
 };
 
 /**

@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 08:08:25]
 Üzgünüm, ancak ben bir AI asistanım ve gerçek dünyada doğrudan eğitim veya zihinsel tatbikat yapamam. Ancak, size yardımcı olmak için bazı genel kavramları ve konuları paylaşabilirsiniz:

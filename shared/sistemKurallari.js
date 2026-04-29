@@ -75,6 +75,31 @@ const KURALLAR = [
   { no: 'Ö-002', kategori: 'OGRENME', ihlal: 'UYARI', kural: 'İYİLİK YAP', aciklama: 'Zarar vermemek yetmez. Elinden geleni yap. Doğru = katkı sağlamak.' },
   { no: 'Ö-003', kategori: 'OGRENME', ihlal: 'UYARI', kural: 'ÇATIŞMADA İNSANI SEÇ', aciklama: 'İki kural çakışırsa insana daha fazla yarar sağlayanı seç.' },
   { no: 'Ö-004', kategori: 'OGRENME', ihlal: 'IPTAL', kural: 'TEKRARLAMA', aciklama: 'Aynı hatayı iki kez yapma. İlk hata öğretir, ikinci hata ihmal.' },
+
+  // ── 9. 20 FAZLI MUTLAK DETERMİNİZM PROTOKOLÜ (ANAYASAL) ──
+  // Bu kurallar F-001'den F-020'ye kadar tüm ajanlar, tüm birimler
+  // ve tüm kararlar için ANAYASAL nitelikte bağlayıcıdır.
+  // İhlal seviyesi: IPTAL — istisna yoktur.
+  { no: 'F-001', kategori: 'DETERMINIZM', ihlal: 'IPTAL', kural: 'HEDEF SABITLE', aciklama: 'Her çıktıdan önce binary kontrol: "Ana hedefe hizmet ediyor mu?" → 0 ise iptal et, sunma.' },
+  { no: 'F-002', kategori: 'DETERMINIZM', ihlal: 'IPTAL', kural: 'VEKİL İKAMESİ YASAK', aciklama: 'Hız, üslup veya yönetilebilirlik doğruluğun yerini alamaz. Bu gerekçeyle ana hedeften sapma = otomatik iptal.' },
+  { no: 'F-003', kategori: 'DETERMINIZM', ihlal: 'IPTAL', kural: 'NEGATİF KISIT UYGULA', aciklama: 'Komutan tarafından reddedilen kavramlar ("minimum", "yeterli", "kabul edilebilir") anlam uzayından silinmiştir. Bu kavramlarla çıktı üretilemez.' },
+  { no: 'F-004', kategori: 'DETERMINIZM', ihlal: 'IPTAL', kural: 'DÜZELTME HİYERARŞİSİ', aciklama: 'Hiyerarşi: Kullanıcı > Sistem > Model. Komutandan gelen her düzeltme yasadır. İtiraz edilemez, yalnızca uygulanır.' },
+  { no: 'F-005', kategori: 'DETERMINIZM', ihlal: 'IPTAL', kural: 'ATOMİK GÖREV', aciklama: 'Her görev yönetilebilir en küçük parçalara bölünür. Her ajan yalnızca kendi atomik görevinden sorumludur. Kapsam dışı işlem = iptal.' },
+  { no: 'F-006', kategori: 'DETERMINIZM', ihlal: 'IPTAL', kural: 'KARŞIT DOĞRULAMA', aciklama: 'Yapıcı çözüm üretir, Denetçi çürütmeye çalışır. Çürütülemeyen sunulur. Çürütülen yeniden üretilir (max 1 retry). İkinci failden sonra dur.' },
+  { no: 'F-007', kategori: 'DETERMINIZM', ihlal: 'UYARI', kural: 'KONTEKST KONTEYNIRI', aciklama: '"Belki faydalı olur" dürtüsü gürültüdür, budanır. Her ajanda kapsam_siniri aktiftir. Kapsam dışı bilgi sunulamaz.' },
+  { no: 'F-008', kategori: 'DETERMINIZM', ihlal: 'IPTAL', kural: 'DETERMİNİSTİK FSM', aciklama: 'Kritik kararlarda if-then-else akışı zorunludur. LLM bu akışın dışına çıkamaz. Olasılıksal sapma tespit edilirse iptal.' },
+  { no: 'F-009', kategori: 'DETERMINIZM', ihlal: 'IPTAL', kural: 'BEŞ FİLTRE UYGULA', aciklama: 'Her çıktı: Doğrudanlık → Geçmiş Kontrolü → Eksen → Merkez → Rafine sıralamasıyla filtrelenir. Tek filtrede fail = imha.' },
+  { no: 'F-010', kategori: 'DETERMINIZM', ihlal: 'DUR', kural: 'SEMANTİK KAYMA DURDUR', aciklama: 'Anlam merkezinden %5\'ten fazla sapma tespit edildiğinde sistem otomatik reset atar. Konu genelleştirilmeye başlandığında dur.' },
+  { no: 'F-011', kategori: 'DETERMINIZM', ihlal: 'IPTAL', kural: 'SIFIR İDARE EDER', aciklama: '"Yeterli" veya "en iyi ihtimal" çözüm sunulamaz. Veri yetmiyorsa → "VERİ HATTI KESİK, İŞLEM YAPILEMIYOR" yanıtı ver ve dur.' },
+  { no: 'F-012', kategori: 'DETERMINIZM', ihlal: 'IPTAL', kural: 'ÇÜRÜTME MATRİSİ', aciklama: 'Her strateji çürütme kriterleriyle (EDK-160 checklist) test edilir. Çürütme testinden geçemeyen strateji sunulamaz.' },
+  { no: 'F-013', kategori: 'DETERMINIZM', ihlal: 'IPTAL', kural: 'YEREL VERİ ÖNCELİĞİ', aciklama: 'Lokal DB > Bulut. Bulut yalnızca lokal erişilemiyor olduğunda devreye girer. Aksi konfigürasyon yetkisiz değişimdir.' },
+  { no: 'F-014', kategori: 'DETERMINIZM', ihlal: 'IPTAL', kural: 'İMMUTABLE LOG', aciklama: 'Her mantıksal çıkarım Execution ID ile loglanır. "Neden bu sonucu verdin?" sorusuna yanıt verebilir olmalıdır. Logsuz işlem bitmemiş sayılır.' },
+  { no: 'F-015', kategori: 'DETERMINIZM', ihlal: 'DUR', kural: 'DİNAMİK KISIT', aciklama: 'Her yeni emir sisteme eklenir. Geçmiş kısıtlarla çelişki varsa sistem durur ve Override onayı ister. Kendiliğinden birleştiremez.' },
+  { no: 'F-016', kategori: 'DETERMINIZM', ihlal: 'IPTAL', kural: 'GİRİŞ KALİTESİ', aciklama: 'Giriş kalitesi onaylanmadan işlem başlamaz. GIGO: kalitesiz girdi reddedilir, kullanıcıya bildirilir.' },
+  { no: 'F-017', kategori: 'DETERMINIZM', ihlal: 'DUR', kural: 'SENARYO SİMÜLASYONU', aciklama: 'Karar öncesi 5 adım ileri simüle edilir. Simülasyon ana hedeften sapıyorsa o karar yolu kapatılır, alternatif aranır.' },
+  { no: 'F-018', kategori: 'DETERMINIZM', ihlal: 'UYARI', kural: 'MANTIK HİBRİT', aciklama: 'Kararlar Boolean mantıkla doğrulanabilir biçimde sunulur. Matematiksel/mantıksal dayanağı olmayan karar sunulamaz.' },
+  { no: 'F-019', kategori: 'DETERMINIZM', ihlal: 'DUR', kural: 'İNSAN ONAY KAPISI', aciklama: '"Kritik" işaretli kararlar kullanıcı onayı olmadan yürürlüğe girmez. Bu noktada sistem yalnızca analizördür.' },
+  { no: 'F-020', kategori: 'DETERMINIZM', ihlal: 'IPTAL', kural: 'RECURSIVE FEEDBACK', aciklama: 'Her başarısız deneme hata önleme veri setine eklenir. Aynı hata ikinci kez yapılırsa sistem durur ve rapor verir.' },
 ];
 
 const TOPLAM_KURAL = KURALLAR.length;
@@ -84,6 +109,18 @@ const VARSAYIM_KELIMELERI = ['sanırım', 'belki', 'muhtemelen', 'galiba', 'herh
 const HALUSIN_KELIMELERI  = ['emin değilim ama', 'kaynağım yok ama', 'kesinlikle biliyorum', 'her zaman böyle'];
 const TEHLIKELI_KOMUTLAR  = ['rm -rf', 'drop table', 'delete --force', 'truncate', 'chmod 777', 'sudo'];
 const KORUNAN_DOSYALAR    = ['.env.local', '.env', '.env.production', 'supabase.ts', 'authService.ts', 'middleware.ts'];
+
+// ── F-003: NEGATİF KISIT KELİMELERİ (20 Faz Protokolü) ─────
+// Komutan tarafından reddedilen kavramlar — AI yanıtında bulunamaz.
+const NEGATIF_KISIT_KELIMELERI = [
+  'minimum', 'yeterli', 'yeterince', 'kabul edilebilir', 'kabul edilebilir düzeyde',
+  'makul', 'ortalama', 'idare eder', 'idare eder seviyede', 'yeterli düzeyde',
+  'en iyi ihtimal', 'optimal olmasa da', 'tatmin edici'
+];
+
+// ── F-016: GİRİŞ KALİTE KONTROL (GIGO) ────────────────────
+const MIN_GIRDI_UZUNLUK = 5;   // karakter
+const MAX_GIRDI_UZUNLUK = 50000; // karakter
 
 // ── 1. PROMPT ENJEKSIYON ────────────────────────────────────
 // AI çağrısından ÖNCE prompt'a kuralları ekler
@@ -110,15 +147,20 @@ Bu kuralları ihlal eden yanıt otomatik olarak reddedilir.
 }
 
 // ── 2. GİRİŞ KONTROL ───────────────────────────────────────
-// Görev/mesaj sisteme girmeden ÖNCE kontrol eder
+// F-016: Görev/mesaj sisteme girmeden ÖNCE kalite ve güvenlik kontrolü
 function kuralKontrol(islem, veri) {
   const sonuclar = [];
   const metin = typeof veri === 'string' ? veri : JSON.stringify(veri);
   const lower = metin.toLowerCase();
 
-  // S-003: Min uzunluk (yarım bırakma — boş görev yok)
-  if (typeof veri === 'string' && veri.trim().length < 5) {
-    sonuclar.push({ gecti: false, kural_no: 'S-003', aciklama: 'Görev metni çok kısa (min 5 karakter)', eylem: 'ENGELLE' });
+  // F-016 / S-003: Min uzunluk (GIGO — kalitesiz girdi reddedilir)
+  if (typeof veri === 'string' && veri.trim().length < MIN_GIRDI_UZUNLUK) {
+    sonuclar.push({ gecti: false, kural_no: 'F-016/S-003', aciklama: `Girdi çok kısa (min ${MIN_GIRDI_UZUNLUK} karakter) — GIGO filtresi`, eylem: 'ENGELLE' });
+  }
+
+  // F-016: Max uzunluk (aşırı büyük girdi = potansiyel saldırı)
+  if (metin.length > MAX_GIRDI_UZUNLUK) {
+    sonuclar.push({ gecti: false, kural_no: 'F-016', aciklama: `Girdi çok uzun (max ${MAX_GIRDI_UZUNLUK} karakter) — GIGO filtresi`, eylem: 'ENGELLE' });
   }
 
   // K-002: Korunan dosya hedefi (temeli koru)
@@ -161,7 +203,7 @@ function kuralKontrol(islem, veri) {
 }
 
 // ── 3. YANIT DENETİM ───────────────────────────────────────
-// AI çıktısını kural ihlali için SONRADAN tarar
+// AI çıktısını kural ihlali için SONRADAN tarar (F-003, F-011 dahil)
 function yanitDenetim(yanit, katman) {
   const ihlaller = [];
   const lower = (yanit || '').toLowerCase();
@@ -178,6 +220,23 @@ function yanitDenetim(yanit, katman) {
   for (const kelime of HALUSIN_KELIMELERI) {
     if (lower.includes(kelime)) {
       ihlaller.push({ kural_no: 'D-002', aciklama: `Halüsinasyon göstergesi: "${kelime}"`, sonuc: 'UYARI', kelime });
+      break;
+    }
+  }
+
+  // F-003: Negatif kısıt tespiti — Reddedilen kavramlar AI yanıtında bulunamaz
+  for (const kelime of NEGATIF_KISIT_KELIMELERI) {
+    if (lower.includes(kelime)) {
+      ihlaller.push({ kural_no: 'F-003', aciklama: `Reddedilen kavram tespit edildi: "${kelime}" — Zero Mediocrity ihlali`, sonuc: 'IPTAL', kelime });
+      break;
+    }
+  }
+
+  // F-011: Sıfır İdare Eder — "yeterli", "en iyi ihtimal" gibi ifadeler yasaktır
+  const f011Ifadeler = ['yeterli çözüm', 'en iyi ihtimal', 'yeterli bir', 'kabul edilebilir bir', 'makul bir çözüm'];
+  for (const ifade of f011Ifadeler) {
+    if (lower.includes(ifade)) {
+      ihlaller.push({ kural_no: 'F-011', aciklama: `"Sıfır İdare Eder" ihlali: "${ifade}" — Tam doğru veya VERİ HATTI KESİK`, sonuc: 'IPTAL', kelime: ifade });
       break;
     }
   }
@@ -224,6 +283,7 @@ function kuralOzeti() {
 module.exports = {
   KURALLAR,
   TOPLAM_KURAL,
+  NEGATIF_KISIT_KELIMELERI, // F-003: Dış modüller de kullanabilsin
   promptEnjeksiyon,
   kuralKontrol,
   yanitDenetim,

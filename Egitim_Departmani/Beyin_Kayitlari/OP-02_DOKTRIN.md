@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 07:50:18]
 **Operasyon-BRAVO**
@@ -9,7 +9,7 @@ Ajan ID: OP-02
 
 ---
 
-**[MUTLAK NİZAM KANUNU]:**
+**[MUTLAK Sistem KANUNU]:**
 1. Sınır ihlali yapamaz.
 2. Inisiyatif alamaz.
 3. Görevden kaçamaz veya alternatif sayılarına sınır koyamazsın.

@@ -1,0 +1,221 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Validate voice assistant compile",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"-m",
+				"py_compile",
+				".\\vscode_turkce_ses_asistani.py"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Install voice assistant requirements",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"-m",
+				"pip",
+				"install",
+				"-r",
+				".\\requirements_turkce_ses_asistani.txt"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Verify UI modules",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"-c",
+				"import importlib.util; mods=['pywinauto']; [print(f'{name}=' + ('installed' if importlib.util.find_spec(name) else 'missing')) for name in mods]"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Verify pywinauto installed",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"-c",
+				"import importlib.util;print(\"pywinauto=\" + (\"installed\" if importlib.util.find_spec(\"pywinauto\") else \"missing\"))"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Show pywinauto package",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"-m",
+				"pip",
+				"show",
+				"pywinauto"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Install assistant to desktop",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"$root='C:\\Users\\Esisya\\Desktop\\Sistem-Takip-Paneli'; $desktop=[Environment]::GetFolderPath('Desktop'); $installDir=Join-Path $desktop 'Global_Turkce_Ses_Asistani'; New-Item -ItemType Directory -Force -Path $installDir | Out-Null; Copy-Item (Join-Path $root 'vscode_turkce_ses_asistani.py') $installDir -Force; Copy-Item (Join-Path $root 'requirements_turkce_ses_asistani.txt') $installDir -Force; Copy-Item (Join-Path $root 'global_ses_asistani_profiles.json') $installDir -Force; Copy-Item (Join-Path $root 'baslat_turkce_sesli_kopru.ps1') $installDir -Force; if (Test-Path (Join-Path $root 'models')) { Copy-Item (Join-Path $root 'models') $installDir -Recurse -Force }; $target='C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe'; $args='-ExecutionPolicy Bypass -File \"' + (Join-Path $installDir 'baslat_turkce_sesli_kopru.ps1') + '\"'; $shortcutPath=Join-Path $desktop 'Global Türkçe Ses Asistanı.lnk'; $shell=New-Object -ComObject WScript.Shell; $shortcut=$shell.CreateShortcut($shortcutPath); $shortcut.TargetPath=$target; $shortcut.Arguments=$args; $shortcut.WorkingDirectory=$installDir; $shortcut.IconLocation='C:\\Windows\\System32\\SHELL32.dll,220'; $shortcut.Save(); Write-Output ('INSTALL_DIR=' + $installDir); Write-Output ('SHORTCUT=' + $shortcutPath)"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Install assistant to desktop via script",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				".\\install_global_ses_asistani_to_desktop.ps1"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Validate desktop assistant copy",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"-m",
+				"py_compile",
+				"C:\\Users\\Esisya\\Desktop\\Global_Turkce_Ses_Asistani\\vscode_turkce_ses_asistani.py"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Install desktop assistant requirements",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"-m",
+				"pip",
+				"install",
+				"-r",
+				"C:\\Users\\Esisya\\Desktop\\Global_Turkce_Ses_Asistani\\requirements_turkce_ses_asistani.txt"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Verify desktop assistant features",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$file='C:\\Users\\Esisya\\Desktop\\Global_Turkce_Ses_Asistani\\vscode_turkce_ses_asistani.py'; Select-String -Path $file -Pattern 'try_direct_write_to_focused_control|window_guard_blocked|append_audit_log|SUPPORTED_DIRECT_WRITE_CLASSES' | ForEach-Object { $_.Line }"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Verify desktop installed features",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"-c",
+				"from pathlib import Path; text=Path(r'C:\\Users\\Esisya\\Desktop\\Global_Turkce_Ses_Asistani\\vscode_turkce_ses_asistani.py').read_text(encoding='utf-8'); keys=['try_direct_write_to_focused_control','window_guard_blocked','append_audit_log','SUPPORTED_DIRECT_WRITE_CLASSES']; [print(f'{k}=ok' if k in text else f'{k}=missing') for k in keys]"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Launch desktop assistant",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				"C:\\Users\\Esisya\\Desktop\\Global_Turkce_Ses_Asistani\\baslat_turkce_sesli_kopru.ps1"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Check desktop assistant process",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Get-Process python,pythonw -ErrorAction SilentlyContinue | Select-Object -First 10 Name,Id,MainWindowTitle"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Verify desktop assistant installed features",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$text = Get-Content -Raw 'C:\\Users\\Esisya\\Desktop\\Global_Turkce_Ses_Asistani\\vscode_turkce_ses_asistani.py'; 'try_direct_write_to_focused_control','window_guard_blocked','append_audit_log','SUPPORTED_DIRECT_WRITE_CLASSES' | ForEach-Object { if ($text.Contains($_)) { Write-Output ($_ + '=ok') } else { Write-Output ($_ + '=missing') } }"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Verify desktop assistant install fully",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				".\\verify_desktop_assistant_install.py"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Verify desktop assistant runtime fully",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				".\\verify_desktop_assistant_runtime.ps1"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		}
+	]
+}

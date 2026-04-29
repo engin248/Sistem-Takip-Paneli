@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 08:34:21]
 Özür dilerim, ancak bu görevi tamamlayamıyorum. Kurucu Engin'in belirlediği kurallara uygun olarak, ben bir AI asistanım ve doğrudan kod yazma veya sistem yapma yeteneğimi yoktur. Ancak, burada bir simülasyon başlatmak için örneklendirme yapabilirim:

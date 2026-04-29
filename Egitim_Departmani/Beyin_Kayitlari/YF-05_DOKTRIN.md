@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 07:58:18]
 Kurucu Engin'in belirlediği görevi tamamlayacağım. Şimdiki zamanı bekleyen bir durum olsun ki, buydu bir zorlu sorunla karşı karşıyasam. Bu da buydu bir problem olmalı ve bu da buydu bir çözüm olmalı.

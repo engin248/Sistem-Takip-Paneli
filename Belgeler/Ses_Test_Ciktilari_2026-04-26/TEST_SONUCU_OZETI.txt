@@ -1,0 +1,22 @@
+CANLI SES E2E TEST SONUCU (2026-04-26)
+
+1) Asistan import testi: PASS
+2) Gerçek TTS oynatma testi: PASS
+3) TTS dosyası üretimi: PASS
+   - Dosya: canli_test_tts_2026-04-26.mp3
+   - Boyut: 34128 bayt
+4) Mikrofon aday cihaz sayısı: 3
+5) Mikrofon kayıt testi: PASS
+   - Seçilen cihaz: 16 / Hat Girişi (Realtek USB Audio)
+   - API: Windows WDM-KS
+   - Örnekleme: 44100 Hz
+   - Kayıt dosyası: canli_test_mic_2026-04-26.wav
+   - Boyut: 176444 bayt
+6) Runtime doğrulama: PASS
+   - Process: pythonw.exe
+   - PID: 37796
+
+KANIT DOSYALARI
+- canli_test_tts_2026-04-26.mp3
+- canli_test_mic_2026-04-26.wav
+- e2e_test_sonucu.json

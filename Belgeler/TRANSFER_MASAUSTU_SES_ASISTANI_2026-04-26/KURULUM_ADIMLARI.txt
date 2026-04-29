@@ -1,0 +1,20 @@
+MASAUSTU SES ASISTANI - DIGER LAPTOP KURULUM ADIMLARI
+
+1) Bu klasoru veya zip dosyasini yeni laptopa kopyalayin.
+2) Klasoru acin.
+3) PowerShell'i Yonetici olarak acin.
+4) Bu klasore gecin.
+5) Komutu calistirin:
+   powershell -ExecutionPolicy Bypass -File .\baslat_turkce_sesli_kopru.ps1
+
+Bu komut:
+- Python paketlerini kurar.
+- Asistani baslatir.
+
+DOGRULAMA:
+- python .\verify_desktop_assistant_install.py
+- powershell -ExecutionPolicy Bypass -File .\verify_desktop_assistant_runtime.ps1
+
+NOT:
+- Python 3.11+ kurulu olmalidir.
+- Mikrofon izni Windows'ta acik olmalidir.

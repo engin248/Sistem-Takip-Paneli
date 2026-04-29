@@ -1,0 +1,504 @@
+V Final Master Plan
+
+Review
+V-FINAL — BİRLEŞTİRİLMİŞ SİSTEM DOKTRİNİ
+Tarih: 2026-04-15
+Kaynak: V6 + V7 + V8 + V9 + Dış Denetim Sentezi
+Prensip: Güvenlik-Öncelikli (Security-First), Deterministik Çekirdek, AI Destekli
+
+1) DEĞİŞTİRİLEMEZ AKSİYOMLAR (6 AKSİYOM)
+A1: PROOF YOKSA İŞLEM YOK
+    → Z3 SMT Solver matematiksel kanıt üretmeden hiçbir işlem çalıştırılamaz
+A2: VERİFİCATION YOKSA PROOF GEÇERSİZ DEĞİL
+    → Proof üretildi ≠ doğrulandı. Z3 verify ayrı aşama
+A3: ÇELİŞKİ VARSA SİSTEM KARAR VERMEZ
+    → Çelişki tespit → DUR → bağımsız hakem (Oracle) veya insan
+A4: VERİ DOĞRULANMAMIŞSA İŞLEM İPTAL
+    → Kaynak, format, tip, güncellik kontrolü zorunlu
+A5: RUNTIME İNVARIANT İHLALİ → ANINDA MÜDAHALE
+    → 100ms'de tespit → kill-switch veya isolate
+A6: TÜM İŞLEMLER İZLENEBİLİR (TRACEABLE)
+    → Hash zinciri, immutable log, Merkle tree
+KALDIRILDI (eski V9'dan):
+
+❌ "%100 hatasızlık" → ✅ "ölçülebilir doğruluk"
+❌ "kör nokta yok" → ✅ "sürekli tarama + Gödel sınırı"
+❌ "AI zorunlu" → ✅ "AI destekli, deterministik çekirdek"
+❌ "11 aksiyom" → ✅ 6 aksiyom (fazlalıklar birleştirildi)
+2) KONSOLİDE MİMARİ — 9 KATMAN
+V9'daki 22 katman / 58 modül → 9 katmana sadeleştirildi.
+Her katman = tek sorumluluk. Hiçbir işlev tekrarlanmaz.
+
+K1 — GİRİŞ & KORUMA
+K2 — ANALİZ (AI + KURAL)
+K3 — VERİ & BAĞLAM
+K4 — MODEL & SPEC
+K5 — KANIT MOTORU (Proof Core)
+K6 — ÇÜRÜTME & MUTABAKAT
+K7 — İCRA & GATE
+K8 — DENETİM & LOG
+K9 — EVRİM & FABRİKA
+K1 — GİRİŞ & KORUMA
+Modül	İşlev	Teknoloji
+K1.1 Omni-Channel	Telegram / Panel / Ses / API kabul	Supabase Edge Functions
+K1.2 L0 Gatekeeper	null, yetki, min uzunluk, replay koruması	Schema validation + JWT
+K1.3 Ses Doğrulama	Ses→metin + kullanıcı teyidi	Whisper v3 + onay callback
+K1.4 Normalizasyon	Metin temizleme, encoding	SentencePiece
+K1.5 Ham Arşiv	Gelen her girdi (ses/yazı) olduğu gibi arşiv	Supabase audit_logs
+Kurallar:
+
+Ses geldi → transcript gösterilir → "/onayla" beklenir → durum: VOICE_PENDING_CONFIRM → onay olmadan ilerlenmez
+Yazı geldi → "Anladığım: [X] — Analiz başlıyor..." mesajı → devam
+Her girdi ham haliyle arşivlenir (HERMAI_INPUT_ARCHIVE)
+Her proof zinciri girişi: HERMAI_PROOF_CHAIN olarak etiketlenir
+K2 — ANALİZ (AI + KURAL)
+Modül	İşlev	Teknoloji
+K2.1 HermAI Analiz	Neden / Nasıl / Alternatif / Risk / Çürütme / Koşul (6'lı)	GPT-4o API
+K2.2 Fallback Motor	AI çöktüğünde rule-based analiz	Lokal kural motoru
+K2.3 OPA Kural Motoru	Deterministik kriter kontrolü	OPA + Supabase global_rules
+⚠️ KRİTİK DÜZELTME:
+
+AI KARAR VERMEZ.
+AI "önerici" konumundadır.
+Final karar = Z3 Solver (K5) + OPA Kuralları (K2.3)
+HermAI sadece: neden, nasıl, risk analizi üretir
+Gate geçirmez, execution başlatmaz.
+CODE-AS-LAW PRENSİBİ:
+Manuel teyitler → OPA otonom kural setlerine devredildi.
+Kurallar kod olarak yazılır, versiyon kontrolünde saklanır.
+İnsan sadece kuralı yazar → sistem uygular.
+Kriter Sayısı (optimize edilmiş):
+
+Kategori	Kritik	Yüksek	Standart	Toplam
+Fonksiyonel	8	12	6	26
+Mantıksal	6	8	4	18
+Performans	4	6	4	14
+Güvenlik	10	6	4	20
+Veri	4	6	4	14
+TOPLAM	32	38	22	92
+V9'daki 97 kriter + 180 mikro kontrol + 594 işlem → 92 kriter + 152 kontrollü işlem
+
+Eşik: score ≥ 75 (en az 69 kriter geçmeli). %100 zorunluluk sistemi kilitler.
+
+⚠️ Placeholder Koruması: Hiçbir kriter return true sahte fonksiyonla geçemez. Her kriter gerçek algoritma (regex, typeof, mantık) ile donatılmalıdır. CI/CD'de kriter coverage kontrolü: sahte kriter tespit edilirse build fail.
+
+K3 — VERİ & BAĞLAM
+Modül	İşlev	Teknoloji
+K3.1 Veri Doğrulama	Kaynak + format + tip + güncellik	Great Expectations
+K3.2 Data Lineage	Verinin nereden geldiğinin izlenmesi	OpenLineage
+K3.3 Anomaly Detection	İstatistiksel sapma tespiti (risk signal only — karar vermez)	z-score
+K3.4 Bağlam Motoru	Geçmiş komut + durum hafızası (RAG)	Qdrant (opsiyonel)
+K4 — MODEL & SPEC
+Modül	İşlev	Teknoloji
+K4.1 Pre/Post/Invariant	Formal koşul tanımlama	TLA+ (offline spec)
+K4.2 Constraint Üretimi	Kısıtlama çıkarma	Z3 input formatı
+K4.3 Tutarlılık Kontrolü	Spec kendi içinde çelişiyor mu?	Tutarlılık checker
+K5 — KANIT MOTORU (Proof Core)
+Modül	İşlev	Teknoloji
+K5.1 Z3 Solve	Matematiksel kanıt üretimi	Z3 SMT Solver v4.13
+K5.2 Z3 Verify	Üretilen kanıtın doğrulanması	Z3 verify modu
+K5.3 Proof Cache	Benzer proofları cache'leme	Redis
+⚠️ KRİTİK DÜZELTME — PROOF MİMARİSİ:
+
+DOĞRU MODEL:
+  Runtime: Z3 → solve → Z3 → verify
+  Offline: Lean 4 (Sertifikasyon fazında — Faz 4)
+KALDIRILDI:
+  ❌ Runtime Lean 4 (çok yavaş)
+  ❌ Çift doğrulayıcı zorunluluğu (V9'daki A=B karşılaştırma)
+  ❌ Ağır doğrulayıcı zinciri
+Z3 TEK BAŞINA YETERLİ (runtime için).
+Lean 4 = audit aracı, sertifikasyon dosyası.
+Z3 TIMEOUT DAVRANIŞI:
+
+Z3 solve timeout = 10 saniye
+T+0s     Z3.solve() başlatıldı
+T+10s    TIMEOUT → aşağıdaki sıra izlenir:
+  Adım 1: Cache kontrol (proof cache'de benzer var mı?)
+           → HIT → Z3 quick verify → kullan
+           → MISS → Adım 2'ye geç
+  Adım 2: Constraint sadeleştirme
+           → Spec basitleştirilir → Z3 tekrar denenir (5s)
+           → BAŞARILI → kullan
+           → TIMEOUT → Adım 3'e geç
+  Adım 3: DEGRADED MODE
+           → İşlem "STRICT → SAFE" moduna düşürülür
+           → Sadece kritik 32 kriter + cache verify
+           → İşlem "degraded" olarak etiketlenir
+           → İnsan bilgilendirilir (alert seviye 3)
+  Z3 tamamen çöktüyse (process crash):
+           → F4: ISOLATE
+           → K5 modülü yeniden başlatılır (watchdog)
+           → Tüm bekleyen işlemler kuyruğa alınır
+           → 3 deneme → başarısız → F5: SHUTDOWN + insan escalation
+⚠️ Z3 ASLA bypass edilmez.
+   Timeout = proof yok → işlem bekler veya reddedilir.
+   Hiçbir işlem "proof olmadan geçti" olarak işaretlenemez.
+PROOF CACHE DÜZELTMESİ:
+
+cache hit
+  → hash kontrolü (SHA-256)
+  → input/context match (aynı girdi mi?)
+  → Z3 quick verify (hâlâ geçerli mi?)
+  → kullan
+⚠️ Cache poisoning önlendi:
+  Cache key = SHA-256(input + OPA_policy_version + Z3_version)
+  Kural değişikliği → policy version değişir → cache miss (SALT)
+  Aksiyom değişikliği → TÜM cache temizle
+  Z3 güncelleme → Z3_version değişir → cache miss (SALT)
+K6 — ÇÜRÜTME & MUTABAKAT
+Modül	İşlev	Teknoloji
+K6.1 Red Team	Adversarial saldırı (edge/worst/random)	Garak + rule-based
+K6.2 Monte Carlo	What-if simülasyonları (risk signal only — karar vermez)	İstatistiksel
+K6.3 Consensus	Quorum tabanlı karar	Quorum engine
+⚠️ KRİTİK DÜZELTME — CONSENSUS:
+
+KALDIRILDI:
+  ❌ Unanimity (V9) — tek itiraz her şeyi kilitledi
+YENİ: QUORUM
+  3 kaynak oy verir: K2 (HermAI) + K5 (Proof) + K6 (Çürütme)
+  2/3 yeterli → devam
+  1/3 veya daha az → DUR + Oracle veya insan
+  Fault-tolerant: 1 modül çökmüş olsa bile karar alınabilir
+K7 — İCRA & GATE
+Modül	İşlev	Teknoloji
+K7.1 8-Gate Kontrolü	8 kapılı onay mekanizması	Checklist engine
+K7.2 Snapshot	Pre-execution state capture	Supabase snapshots
+K7.3 Sandbox Exec	Canary / sandbox çalıştırma	Temporal.io
+K7.4 Runtime Monitor	Invariant kontrolü (best-effort <100ms)	VIGIL + metrics
+K7.5 Kill-Switch	4 seviyeli durdurma	Broadcast + Supabase Realtime
+K7.6 Rollback	Saga pattern ile geri alma	Supabase transaction
+8+1 GATE (Post-Condition Eklendi):
+
+Gate 1: Proof valid?                    (A1)
+Gate 2: Z3 verify geçti mi?            (A2)
+Gate 3: Çürütme survived mı?           (K6.1 sonucu)
+Gate 4: Consensus quorum sağlandı mı?  (K6.3)
+Gate 5: Risk kabul edilebilir mi?       (risk < 0.7)
+Gate 6: Spec consistent mi?            (K4.3)
+Gate 7: Auth + yetki geçerli mi?       (K1.2)
+Gate 8: Snapshot alındı mı?            (K7.2)
+→ EXECUTION →
+Gate 9: Post-Condition Validation       (İCRA SONRASI)
+  → Beklenen sonuç = gerçek sonuç mu?
+  → DB state değişikliği beklendiği gibi mi?
+  → Network/disk hatası oluştu mu?
+  → FAIL → Rollback + alarm
+  → PASS → Merkle ağacına mühürleme
+Herhangi Gate 1-8 FAIL → F2: HALT → İşlem yok
+Gate 9 FAIL → F3: ABORT → Rollback
+K8 — DENETİM & LOG
+Modül	İşlev	Teknoloji
+K8.1 Immutable Log	Değiştirilemez olay kayıt	Supabase append-only + Kafka (opsiyonel)
+K8.2 Proof Chain	Hash zinciri + Merkle tree	SHA-256 + ECDSA
+K8.3 Audit Engine	Denetim raporu üretimi	Supabase + Grafana
+K8.4 Compliance	KVKK/TTK uyum	Policy checker
+K8.5 Oracle	Bağımsız deterministik hakem	Rule engine (AI-free)
+K9 — EVRİM & FABRİKA
+Modül	İşlev	Teknoloji
+K9.1 Öğrenme	Pattern extraction	Analytics
+K9.2 Self-Completion	Eksik tespit + Z3 onaylı tamamlama	Gap analysis + Z3 verify
+K9.3 Agent Fabrikası	Yeni agent spec→kod→test	Code gen + CI/CD
+K9.4 Sistem Fabrikası	Yeni modül deploy	Terraform + K8s
+Self-Completion Detay:
+
+K9.2 kendi kodundaki eksikleri tespit eder:
+  1. Gap detection (coverage analizi)
+  2. Otomatik yama (patch) üretimi
+  3. Z3 ile yamanın mantıksal tutarlılık kontrolu
+  4. CI/CD pipeline'dan geçirme
+  5. İnsan onayı (Seviye 3+ değişiklikler için)
+  Z3 onayı olmadan hiçbir self-completion production'a giremez.
+Yapılandırılmış Hata Kodları:
+
+ERR-STP001 ~ ERR-STP020: Girdi katmanı hataları (K1)
+ERR-STP021 ~ ERR-STP035: Analiz hataları (K2)
+ERR-STP036 ~ ERR-STP045: Proof hataları (K5)
+ERR-STP046 ~ ERR-STP055: Execution hataları (K7)
+ERR-STP056 ~ ERR-STP065: Sistem hataları (K8-K9)
+Her hata kodu: modül + seviye + açıklama içerir.
+3) TEK DOĞRU PİPELİNE
+T+0ms     KOMUT GELDİ (Telegram/Panel/Ses/API)
+          ↓
+T+5ms     K1.2 L0 GATEKEEPER
+          ├── boş/null? → REDDET
+          ├── yetkili? → YOKSA REDDET
+          ├── replay? → REDDET
+          └── OK → devam
+          ↓
+T+10ms    K1.5 HAM ARŞİV (audit_logs)
+          ↓
+T+15ms    K1.3 SES Mİ?
+          ├── EVET → transcript göster → "/onayla" bekle → DUR
+          └── HAYIR → devam
+          ↓
+T+50ms    K1.4 NORMALİZASYON + HASH
+          ↓
+T+100ms   K2.1 HERMAİ ANALİZ (non-blocking)
+          → {neden, nasıl, alternatifler, risk, çürütme, koşullar}
+          → confidence, entropy
+          → Timeout: 10s → fallback K2.2
+          ↓
+T+3s      K2.3 OPA KURAL MOTORU (deterministik)
+          → 92 kriter × kontrol
+          → Eşik: score ≥ 75 (en az 69 kriter geçmeli)
+          ↓
+T+3.5s    K3 VERİ DOĞRULAMA
+          → kaynak, format, güncellik
+          ↓
+T+4s      K4 SPEC OLUŞTURMA
+          → pre/post/invariant → Z3 input formatı
+          ↓
+T+4.5s    K5.1 Z3 SOLVE (kanıt üretimi)
+          ↓
+T+6s      K5.2 Z3 VERIFY (kanıt doğrulama)
+          → cache check → hit ise quick verify
+          ↓
+T+7s      K6.1 RED TEAM ÇÜRÜTME (1sn saldırı)
+          ↓
+T+8s      K6.3 CONSENSUS (quorum 2/3)
+          ↓
+T+8.1s    K7.1 8-GATE KONTROL
+          → 8/8 geçmeli → herhangi fail → DUR
+          ↓
+T+8.2s    K7.2 SNAPSHOT AL
+          ↓
+T+8.3s    K7.3 SANDBOX EXECUTION
+          → canary (%5) → monitor → tam deploy
+          ↓
+T+9s      K7.4 RUNTIME MONITOR (100ms hassasiyet)
+          ↓
+T+9.1s    K8.1 IMMUTABLE LOG
+          K8.2 PROOF CHAIN (Merkle mühür)
+          ↓
+T+9.2s    ✅ TAMAMLANDI
+TOPLAM: ~9.2 saniye (normal komut)
+4) 3 ÇALIŞMA MODU
+MOD 1: STRICT (Kritik İşlemler)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Tüm 92 kriter çalışır
+  Z3 full solve + verify
+  Red team çürütme aktif
+  8 gate tam kontrol + Gate 9 post-check
+  Consensus 2/3 quorum + veto hakkı (K5 Proof FAIL → tek başına durdurur)
+  → Kullanım: Finansal, güvenlik, veri silme
+MOD 2: NORMAL (Standart İşlemler)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Kritik 32 kriter + yüksek 38 kriter = 70 kriter
+  Z3 solve + cache verify
+  Red team kısa versiyon (500ms)
+  8 gate kontrol
+  Consensus 2/3 (quorum)
+  → Kullanım: Rutin operasyonlar
+MOD 3: SAFE (Kurtarma Modu)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Sadece kritik 32 kriter
+  Z3 quick verify (cache-only)
+  Red team devre dışı
+  3 gate (proof + auth + snapshot)
+  Tek onay yeterli
+  → Kullanım: Sistem toparlanması, emergency
+5) TEKNOLOJİ YIĞINI (72 → 18 ÇEKIRDEK)
+ZORUNLU (Core Stack)
+#	Teknoloji	Kullanım	Katman
+1	Z3 SMT Solver v4.13	Proof üretimi + doğrulama	K5
+2	OPA (Open Policy Agent)	Deterministik kural motoru	K2
+3	PostgreSQL 16 (Supabase)	Ana veritabanı + RLS	Tüm
+4	Supabase Edge Functions	API endpoint + iş mantığı	K1, K7
+5	Supabase Realtime	WebSocket + event broadcast	K7.5
+6	Supabase Auth	Kimlik + JWT + RLS	K1.2
+7	Supabase Storage	Arşiv + WORM emülasyonu	K8
+8	Redis	Proof cache + session	K5.3
+9	Node.js 22 LTS + TypeScript	Ana runtime	Tüm
+10	Temporal.io	Workflow orchestration + Saga	K7.3, K7.6
+11	gRPC	Modüller arası hızlı iletişim	K5↔K6
+12	Prometheus + Grafana	Monitoring + dashboard	K7.4
+13	OpenTelemetry	Dağıtık izleme	Tüm
+14	Docker	Containerization	Tüm
+15	SHA-256 + ECDSA	Hash + imza	K8.2
+16	GPT-4o API	HermAI analiz (önerici)	K2.1
+17	Whisper v3	Ses → metin	K1.3
+18	Vitest	Test framework	CI/CD
+OPSİYONEL (Gerektiğinde)
+Teknoloji	Ne Zaman
+Lean 4	Faz 4 sertifikasyon
+TLA+	Offline spesifikasyon
+Qdrant	RAG vektör DB (K3.4)
+Kafka	Yüksek hacim log (ölçekleme)
+Trillian	Merkle tree backend (ölçekleme)
+Kubernetes	Çoklu sunucu (ölçekleme)
+Garak	Red team otomasyonu
+ÇIKARILDI (gereksiz)
+❌ SPIFFE/SPIRE → Supabase Auth yeterli
+❌ Neo4j → PostgreSQL ltree/pg_graphql
+❌ NATS → Supabase Realtime
+❌ etcd → PostgreSQL pg_notify
+❌ CockroachDB → Supabase read replica
+❌ Apache Flink/Ray → Edge Functions paralel
+❌ 54 diğer teknoloji → sadeleştirme
+6) SUPABASE 23 TABLO ŞEMASI
+Tüm veri Supabase'de saklanır. Kafka/S3 opsiyonel (ölçekleme).
+
+Pipeline Tabloları (T1-T9)
+T1:  commands            — Gelen komutlar + state
+T2:  hermai_outputs      — HermAI 6'lı analiz çıktısı
+T3:  detection_results   — 92 kriter sonuçları
+T4:  formal_specs        — Pre/post/invariant spec
+T5:  proofs              — Z3 solve + verify sonuçları
+T6:  refutations         — Çürütme + consensus sonuçları
+T7:  gate_results        — 8 gate kontrol sonuçları
+T8:  executions          — İcra sonuçları + rollback
+T9:  snapshots           — Pre-execution state
+Güvenlik & Kontrol (T10-T15)
+T10: immutable_logs      — Append-only (DELETE/UPDATE yasak)
+T11: proof_chain         — Merkle tree + ECDSA imza
+T12: alerts              — 5 seviye alarm
+T13: health_status       — Modül sağlık durumu
+T14: global_rules        — 92 kriter (versiyon yönetimli)
+T15: rule_triggers       — Kural tetikleme logları
+Operasyonel (T16-T23)
+T16: performance_metrics — Metrikler + z-score
+T17: problem_reports     — PR şablonu
+T18: traceability        — İzlenebilirlik matrisi
+T19: config_changes      — Config yönetimi (onaylı)
+T20: watchdog_heartbeats — Watchdog durumu
+T21: operator_certs      — Operatör sertifika
+T22: fmea_records        — FMEA + RPN
+T23: traces              — OpenTelemetry span
+7) GÜVENLİK-ÖNCELİKLİ FAZ PLANLAMASI
+V9'da güvenlik Faz 3'teydi. V-FINAL'de güvenlik FAZ 0'da.
+
+FAZ 0 ─── GÜVENLİ TEMEL (H1-4)      ████████
+FAZ 1 ─── ÇEKİRDEK PİPELİNE (H5-16) ████████████████████████
+FAZ 2 ─── İCRA & KİLL-SWİTCH (H17-26)████████████████████
+FAZ 3 ─── EVRİM & FABRİKA (H27-40)   ████████████████████████████
+FAZ 4 ─── SERTİFİKASYON (H41-50)     ████████████████████
+FAZ 5 ─── HARDENİNG & GO-LİVE (H51-58)████████████████
+                                       ──────────
+                                       58 hafta
+FAZ 0: GÜVENLİ TEMEL & OTONOM DENETİM (H1-4)
+Hafta	Görev	Çıktı
+H1	K0 Bootstrap: 6 aksiyom sistem açılışında doğrulanır	Aksiyom check OK
+H1	Supabase 23 tablo migration	DB hazır
+H1	Supabase Auth + RLS (4 seviye)	Güvenlik temeli
+H1	Git repo + pre-commit Z3 hook (kod repoya girmeden mantık testi)	Güvenli repo
+H2	Docker ortam + CI/CD iskeleti	Geliştirme ortamı
+H2	Zero-Trust kurulumu (mTLS)	Şifreli tünel
+H2	OPA kural tanımları (92 kriter DB'ye yüklenir)	Kural motoru hazır
+H3	Monitoring (Prometheus + Grafana)	İzleme altyapısı
+H3	Immutable log tablosu + RLS	Log güvenliği
+H4	AI Supervisor kurulumu (uyarı yetkili, veto DEĞİL)	Denetçi ajan
+H4	Takım eğitimi (V-FINAL doktrin)	Herkes biliyor
+K0 Bootstrap Detay:
+
+Sistem her başlatıldığında:
+  1. A1-A6 aksiyomları doğrulanır (self-test)
+  2. DB bağlantısı + RLS politikaları kontrol edilir
+  3. OPA kural dosyası hash'i doğrulanır (değiştirilmemiş mi?)
+  4. Proof chain son hash doğrulanır (kırılma var mı?)
+  5. Tüm modül watchdog'ları başlatılır
+  Herhangi biri fail → sistem SAFE modda açılır
+M0: Güvenli altyapı hazır — kod güvenli tünelde yazılabilir
+
+FAZ 1: ÇEKİRDEK PİPELİNE & DOĞRULAMA (H5-16)
+Sprint	Hafta	Modüller	Çıktı
+1.1	H5-H6	K1 Giriş & Koruma	Telegram + Panel + Ses kabul
+1.2	H7-H8	K2 HermAI + OPA	6'lı analiz + 92 kriter motoru
+1.3	H9-H10	K3-K4 Veri + Spec	Veri doğrulama + formal spec
+1.4	H11-H13	K5 Proof Engine	Z3 solve + verify + cache
+1.5	H14-H16	K6 + Pipeline birleştirme	Çürütme + quorum + E2E test
+M1: Çekirdek pipeline çalışıyor — ilk kanıtlı işlem
+
+FAZ 2: İCRA, RUNTIME & KILL-SWITCH (H17-26)
+Sprint	Hafta	Modüller	Çıktı
+2.1	H17-H18	K7.1-K7.2 Gate + Snapshot	8 gate onay mekanizması
+2.2	H19-H20	K7.3-K7.4 Execution + Monitor	Temporal.io + VIGIL 100ms
+2.3	H21-H22	K7.5-K7.6 Kill-switch + Rollback	4 seviye durdurma + Saga
+2.4	H23-H24	K8 Denetim + Log	Immutable log + Merkle chain
+2.5	H25-H26	E2E birleştirme + 3 mod testi	STRICT/NORMAL/SAFE çalışıyor
+M2: Tam pipeline — komut → sonuç, kill-switch aktif
+
+FAZ 3: EVRİM & FABRİKA (H27-40)
+Sprint	Hafta	Modüller	Çıktı
+3.1-3.2	H27-H30	K9.1-K9.2 Öğrenme + Self-completion	Pattern çıkarma
+3.3-3.4	H31-H34	K9.3 Agent fabrikası	İlk otonom agent üretimi
+3.5-3.6	H35-H38	K9.4 Sistem fabrikası	İlk otonom modül deployu
+3.7	H39-H40	DR + remote kontrol	Felaket kurtarma testi
+M3: Sistem kendini onarıyor + yeni agent üretiyor
+
+FAZ 4: FORMAL SERTİFİKASYON (H41-50)
+Sprint	Hafta	Görev	Çıktı
+4.1-4.2	H41-H44	Lean 4 aksiyom audit	Ana mantık ispatı
+4.3-4.4	H45-H48	TLA+ model checking	Sistem doğrulaması
+4.5	H49-H50	Red team + chaos test	Çökertilemezlik kanıtı
+M4: Lean 4 audit raporu + TLA+ doğrulama tamamlanmış
+
+FAZ 5: HARDENİNG & GO-LIVE (H51-58)
+Sprint	Hafta	Görev	Çıktı
+5.1-5.2	H51-H54	Stres test + performans	WCET hedeflerine ulaşıldı
+5.3	H55-H56	ERP entegrasyonu (Mizanet)	Canlı veri bağlantısı
+5.4	H57-H58	Operatör eğitimi + Go/No-Go	Production açılış
+M5: GO-LIVE — Production'da çalışan sistem
+
+8) KONTROL KRİTERLERİ (OPTİMİZE)
+V9 vs V-FINAL Karşılaştırma
+Öğe	V9	V-FINAL	Değişiklik
+Katman	22	9	%59 azaltma
+Modül	58	28	%52 azaltma
+Kriter	97 + 180 mikro	92	Sadeleştirme
+Toplam işlem	594	152	%74 azaltma
+Teknoloji	72	18 çekirdek	%75 azaltma
+Aksiyom	11	6	Birleştirme
+Global kural	51	24 kritik	Önceliklendirme
+Consensus	Unanimity	Quorum 2/3	Kilitlenme önleme
+AI rolü	Karar + analiz	Sadece önerici	Güvenlik
+Lean 4	Runtime	Offline sertif.	Hız
+Pipeline süresi	11.6s	9.2s	%21 hızlanma
+Çalışma modu	1 (hep STRICT)	3 mod	Esneklik
+9) GO/NO-GO KRİTERLERİ
+ZORUNLU (hepsi geçmeli):
+  ☐ 15 E2E test = PASS
+  ☐ 8 stres test = PASS
+  ☐ 8 gate'den biri bile fail → işlem durmalı
+  ☐ Kill-switch 4 seviye = çalışıyor
+  ☐ DR test: RPO < 1sn, RTO < 5dk
+  ☐ Pentest: 0 kritik bulgu
+  ☐ Uptime ≥ %99.9 (staging 30 gün)
+  ☐ Operatör sertifikalı
+ESNEK:
+  ☐ Lean 4 aksiyom derlemesi (warning olabilir)
+  ☐ TLA+ model check
+  ☐ Full MC/DC kapsam (%100 hedef, %95 kabul)
+10) 3 ALTIN KURAL
+KURAL A: AI SUPERVISOR ONAYI
+  AI Supervisor uyarısı olan hiçbir kod production'a çıkamaz.
+  Not: AI Supervisor VETO değil UYARI verir.
+  Final karar = insan mimar + Z3 test sonucu.
+KURAL B: KANIT ZİNCİRİ
+  Her işlemin proof chain hash'i bir önceki işlemle zincirlenir.
+  Manipülasyonu tespit etme olasılığı: %100
+  Tek bir hash kırılması → TÜM zincir alarm verir.
+KURAL C: AI TEK BAŞINA KARAR VEREMEZ
+  İstatistiksel tahminler (LLM/HermAI) asla tek başına karar veremez.
+  Her AI önerisi → Z3 SMT Solver tarafından doğrulanmak zorundadır.
+  AI = önerici, Z3 + OPA = karar.
+11) SON DURUM
+BU SİSTEM:
+  ✔ Deterministik çekirdeğe sahip (Z3 + OPA)
+  ✔ Formal doğrulama kullanıyor
+  ✔ AI destekli ama AI'a bağımlı DEĞİL
+  ✔ İzlenebilir ve denetlenebilir
+  ✔ 3 çalışma moduna sahip (STRICT/NORMAL/SAFE)
+  ✔ Quorum tabanlı fault-tolerant consensus
+  ✔ Güvenlik-öncelikli (Security-First)
+  ✔ Supabase-native veri katmanı
+  ✔ K0 Bootstrap ile güvenli açılış
+  ✔ Pre-commit Z3 hook ile güvenli kod
+  ✔ 3 Altın Kural ile yönetişim
+  ✔ Production'a uygun
+BU SİSTEM DEĞİL:
+  ❌ %100 hatasız (Gödel sınırı)
+  ❌ Mutlak doğru
+  ❌ Tamamen otonom (insan denetimi zorunlu)
+  ❌ Her kararı AI veren (AI = önerici)
+"Formal doğrulama tabanlı, güvenlik öncelikli, AI destekli fakat deterministik çekirdekli bir execution sistemi"

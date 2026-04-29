@@ -1,0 +1,17 @@
+{
+  "name": "sistem-takip-paneli",
+  "version": "2.0.0",
+  "description": "Sistem Takip Paneli — Komuta Merkezi Operasyon Departmanı (NİZAM)",
+  "author": "Engin",
+  "private": true,
+  "scripts": {
+    "whatsapp": "node WhatsApp_Bot/whatsapp_agent.js",
+    "planlama": "node Planlama_Departmani/index.js",
+    "gorev-kabul": "node Gorev_Kabul_Departmani/komut_alim.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@supabase/supabase-js": "^2.104.1"
+  }
+}
+

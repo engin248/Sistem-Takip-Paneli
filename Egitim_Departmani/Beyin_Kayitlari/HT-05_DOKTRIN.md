@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 09:16:17]
 Öğrenmek için bir simülasyon başlatacağım ve bukrizi kusursuzca çözeceğim. Buçukları düşünerek, kendi becerilerinizi kullanarak problemi çözeceğim. Sizin için bir çözüm sunacağım; ancak ben bu çözümü doğrulamak için bir test yapacağım.

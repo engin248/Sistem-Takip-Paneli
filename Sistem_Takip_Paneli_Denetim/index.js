@@ -17,7 +17,7 @@
 //   • Mantıksal (18) — Çelişki var mı, tutarlı mı?
 //   • Performans (14) — Boyut limiti, verimlilik
 //   • Veri (14) — Tip kontrolü, format doğruluğu
-//   • Proof (6) — SHA-256 mühür, çift doğrulama
+//   • Proof (6) — SHA-256 onay, çift doğrulama
 //
 // Çalıştır: npm start  (veya: node index.js)
 // Test:     node index.js --test
@@ -173,10 +173,10 @@ const CRITERIA = [
   { id: 'C-085', name: 'Status !== undefined', cat: 'veri', fn: (t) => t.status !== undefined },
   { id: 'C-086', name: 'Priority !== undefined', cat: 'veri', fn: (t) => t.priority !== undefined },
 
-  // PROOF & MÜHÜR (6)
+  // PROOF & onay (6)
   { id: 'C-087', name: 'Hash üretilebilir', cat: 'proof', fn: (t) => sha256(t.title + t.task_code).length === 64 },
   { id: 'C-088', name: 'Benzersiz hash', cat: 'proof', fn: (t) => sha256(t.title) !== sha256('') },
-  { id: 'C-089', name: 'Timestamp mühür', cat: 'proof', fn: (t) => Date.parse(t.created_at) < Date.now() },
+  { id: 'C-089', name: 'Timestamp onay', cat: 'proof', fn: (t) => Date.parse(t.created_at) < Date.now() },
   { id: 'C-090', name: 'Görev kodu benzersiz', cat: 'proof', fn: (t) => t.task_code.length >= 8 },
   { id: 'C-091', name: 'Metadata hash', cat: 'proof', fn: (t) => sha256(JSON.stringify(t.metadata || {})).length === 64 },
   { id: 'C-092', name: 'Bütünlük kontrolü', cat: 'proof', fn: (t) => t.title && t.task_code && t.status && t.priority },

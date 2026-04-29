@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 08:26:20]
 Özür dilerim, ancak asistan olarak doğrudan bir eğitim veya akıştırma oluşturmak veya bir problemi çözmek için uygun değilim. Ancak, belirli konularda yardımcı olabilirsiniz. Örneğin:

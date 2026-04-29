@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 07:48:24]
 Kurucu Engin'in belirlediği inovasyonumuzu yapacağım. Kurucu Engin'in kurallarına uymak için bu işlemi tamamlamam gerekiyor.

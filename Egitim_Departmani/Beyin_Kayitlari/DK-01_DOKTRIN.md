@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 08:24:23]
 İşte "DOKÜMAN-ALFA" adlı eğitim simülasyonunuz başlaması için bir örneği:

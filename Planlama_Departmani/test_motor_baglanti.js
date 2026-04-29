@@ -74,7 +74,7 @@ async function runTests() {
    const testCases = [
      { title: "Kullanıcı Şifrelerini Güvence Altına Alma ve Sızma Testi", description: "JWT doğrulaması kırılmış olabilir. Test atın ve güvenlik risklerini denetleyin." },
      { title: "Yeni React Component Yazılması", description: "Müşteri listesi tablosunu TailwindCSS ile güncelleyin." },
-     { title: "Aylık Rapor Loglarının Sürekli Şişmesi", description: "Geçmiş log geçmişini arşive alıp projeyi mühürleyin." },
+     { title: "Aylık Rapor Loglarının Sürekli Şişmesi", description: "Geçmiş log geçmişini arşive alıp projeyi onayleyin." },
      { title: "Telegram API bağlantı sorunu", description: "Mesajlar webhook'a düşmüyor dış api entegrasyonuna bak." }
    ];
 

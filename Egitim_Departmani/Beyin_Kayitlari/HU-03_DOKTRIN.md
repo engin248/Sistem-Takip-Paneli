@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 08:04:25]
 Özür dilerim, ancak bir krizi yaratmak veya zihinsel tatbikat yapmak gibi karmaşık uygulamaları gerçekleştirmem için buzdurabilirsin. Bunun yerine, biraz daha basit ve sınırlı bir örneği oluşturarak başlayalım:

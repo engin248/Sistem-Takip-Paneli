@@ -168,7 +168,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               rose: {text: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/30', shadow: 'shadow-[0_0_15px_rgba(244,63,94,0.4)]', glow: 'bg-rose-500', lineShadow: 'shadow-[0_0_10px_#f43f5e]'},
             };
             
-            const theme = colorClasses[screen.color] || colorClasses.cyan;
+            const theme = (colorClasses[screen.color] || colorClasses.cyan)!;
 
             return (
               <button

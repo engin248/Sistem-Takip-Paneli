@@ -19,7 +19,7 @@
 
 ## 3. DOĞRULAMA (VALIDATION)
 - L2 Denetçi, her adımın loglarını inceleyerek `Kontrol_Sayfasi` raporu verecektir.
-- QA, `Final_QA_Raporu` ile süreci mühürleyecektir.
+- QA, `Final_QA_Raporu` ile süreci onayleyecektir.
 
 ---
 **KANIT:** [PROJE/00_PLANLAMA/02_Is_Islem_Plani/STP_PANEL_TAMAMLAMA_IS_ISLEM.md]

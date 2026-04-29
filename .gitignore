@@ -55,6 +55,18 @@ external/
 # Loglar
 *.log
 
+# HATA #25-28 DÜZELTİLDİ: Bu log dosyaları git'e giremesin
+Agent_Uretim_Departmani/KARARGAH_ISTIHBARAT.log
+Agent_Uretim_Departmani/STAJYER_BELLEK.log
+Gorev_Kabul_Departmani/gecici_hafiza.log
+WhatsApp_Bot/whatsapp_agent.log
+Planlama_Departmani/ajanlar.log
+Planlama_Departmani/audit_logs/
+Planlama_Departmani/kararlar/
+
+# HATA #23 DÜZELTİLDİ: 3.6MB büyük JSON dosyaları
+Agent_Uretim_Departmani/merkez_karargah_kadro.json
+
 # Büyük medya / geçici çıktı
 *.mp4
 *.mp3

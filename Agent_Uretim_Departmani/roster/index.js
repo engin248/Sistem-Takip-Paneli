@@ -1,17 +1,10 @@
 // ============================================================
-// AGENT ÜRETİM DEPARTMANI — BİRLEŞİK KADRO (199 BİRİM)
+// AGENT ÜRETİM DEPARTMANI — BİRLEŞİK KADRO
 // ============================================================
-// YENİ KADRO: 32 Uzmanlık Alanı × 5 Ajan = 160 Birim
-// ESKİ KADRO: 39 Ajan (K, A, B, C, D, ANTI, IVDE, CNTRL, L, G)
-// TOPLAM:     199 Aktif Birim
-//
-// AŞAMA 1: YAPIM ÖNCESİ  — 5 takım  = 25 ajan
-// AŞAMA 2: TASARIM       — 6 takım  = 30 ajan
-// AŞAMA 3: İNŞA          — 6 takım  = 30 ajan
-// AŞAMA 4: DOĞRULAMA     — 4 takım  = 20 ajan
-// AŞAMA 5: YAYINLAMA     — 3 takım  = 15 ajan
-// AŞAMA 6: YAŞATMA       — 8 takım  = 40 ajan
-// ENTEGRE: Eski Kadro     — 32 takıma dağılmış = 39 ajan
+// ORİJİNAL: 32 Takım × 5 Ajan = 160 Birim
+// ESKİ     : 63 Ajan (legacy_converter)
+// RUL      : 4 Yeni Takım × 5 = 20 Ajan (AI, MB, ET, PZ)
+// TOPLAM   : 243 Aktif Birim
 //
 // DİSİPLİN: Sıfır İnisiyatif — Komut dışı hareket yasak
 // KAPSAM:   Her ajan SADECE kendi uzmanlık alanında çalışır
@@ -19,18 +12,20 @@
 
 const { DISIPLIN, ASAMALAR, TAKIM_KODLARI } = require('./types');
 const { YAPIM_ONCESI } = require('./phase_1_yapim_oncesi');
-const { TASARIM } = require('./phase_2_tasarim');
-const { INSA } = require('./phase_3_insa');
-const { DOGRULAMA } = require('./phase_4_dogrulama');
-const { YAYINLAMA } = require('./phase_5_yayinlama');
-const { YASATMA } = require('./phase_6_yasatma');
-const { eskiKadroyuDonustur } = require('./legacy_converter');
+const { TASARIM }      = require('./phase_2_tasarim');
+const { INSA }         = require('./phase_3_insa');
+const { DOGRULAMA }    = require('./phase_4_dogrulama');
+const { YAYINLAMA }    = require('./phase_5_yayinlama');
+const { YASATMA }      = require('./phase_6_yasatma');
+const { eskiKadroyuDonustur }             = require('./legacy_converter');
 const { kadroyaEnjekte, DAVRANIS_KURALLARI } = require('./discipline_injector');
+const { beceriGenislet, beceriGenislemeRaporu } = require('./beceri_genisleme');
+const { YENI_TAKIMLAR, MEVCUT_TAKIM_RULLERI }  = require('./yeni_takimlar'); // AI, MB, ET, PZ
 
 // ── ESKİ KADRO DÖNÜŞTÜR ──────────────────────────────────────
-const ESKI_KADRO = eskiKadroyuDonustur(); // 39 ajan
+const ESKI_KADRO = eskiKadroyuDonustur(); // 63 ajan
 
-// ── BİRLEŞİK KADRO (Önce birleştir, sonra disiplin enjekte et) ───
+// ── BİRLEŞİK KADRO ───────────────────────────────────────────
 const HAM_KADRO = [
   ...YAPIM_ONCESI,   // 25 ajan
   ...TASARIM,        // 30 ajan
@@ -38,35 +33,36 @@ const HAM_KADRO = [
   ...DOGRULAMA,      // 20 ajan
   ...YAYINLAMA,      // 15 ajan
   ...YASATMA,        // 40 ajan
-  ...ESKI_KADRO,     // 63 ajan (eski kadro, yeni takımlara entegre)
+  ...ESKI_KADRO,     // 63 ajan
+  ...YENI_TAKIMLAR,  // 20 ajan (AI-5, MB-5, ET-5, PZ-5)
 ];
 
-// ── DİSİPLİN ENJEKSİYONU ───────────────────────────────────
-// Tüm 223 ajana MDS-160 kural paketi yükleniyor:
-//   disiplin, kimlik, davranis, mantik, yasak,
-//   komuta, cikti, hafiza, dogrulama, hata_yonetimi
-const TAM_KADRO = kadroyaEnjekte(HAM_KADRO);
+// ── DİSİPLİN ENJEKSİYONU + BECERİ GENİŞLEME ────────────────
+const DISIPLINLI_KADRO = kadroyaEnjekte(HAM_KADRO);
+const TAM_KADRO = beceriGenislet(DISIPLINLI_KADRO);
+const _genRaporu = beceriGenislemeRaporu(DISIPLINLI_KADRO, TAM_KADRO);
+const _genTakim  = Object.keys(_genRaporu).length;
+const _genBeceri = Object.values(_genRaporu).reduce((s, t) => s + t.eklenen, 0);
 
 // ── DOĞRULAMA ─────────────────────────────────────────────────
-const YENI_KADRO_SAYISI = 160;
+const ORIJINAL_SAYISI = 160;
 const ESKI_KADRO_SAYISI = ESKI_KADRO.length;
-const BEKLENEN_TOPLAM = YENI_KADRO_SAYISI + ESKI_KADRO_SAYISI;
-console.log(`[KADRO] Yeni: ${YENI_KADRO_SAYISI} + Eski: ${ESKI_KADRO_SAYISI} = Toplam: ${TAM_KADRO.length}`);
+const RUL_SAYISI = YENI_TAKIMLAR.length; // 20
 
-if (TAM_KADRO.length !== BEKLENEN_TOPLAM) {
-  throw new Error(`[KADRO HATASI] Beklenen: ${BEKLENEN_TOPLAM}, Mevcut: ${TAM_KADRO.length}`);
-}
+console.log(`[KADRO] Orijinal: ${ORIJINAL_SAYISI} + Eski: ${ESKI_KADRO_SAYISI} + RUL: ${RUL_SAYISI} = Toplam: ${TAM_KADRO.length}`);
+console.log(`[RUL] Aktif yeni takımlar: AI(5) MB(5) ET(5) PZ(5) = ${RUL_SAYISI} ajan`);
+console.log(`[BECERİ] ${_genTakim} takıma ${_genBeceri} ek beceri enjekte edildi.`);
 
 // ID benzersizlik kontrolü
 const idSet = new Set();
 for (const ajan of TAM_KADRO) {
   if (idSet.has(ajan.id)) {
-    throw new Error(`[KADRO HATASI] Duplike ID tespit edildi: ${ajan.id}`);
+    throw new Error(`[KADRO HATASI] Duplike ID: ${ajan.id}`);
   }
   idSet.add(ajan.id);
 }
 
-// Takım sayıları (eski kadro dahil — artık 5'ten fazla olabilir)
+// Takım sayıları
 const takimSayilari = {};
 for (const ajan of TAM_KADRO) {
   takimSayilari[ajan.takim_kodu] = (takimSayilari[ajan.takim_kodu] || 0) + 1;
@@ -74,49 +70,23 @@ for (const ajan of TAM_KADRO) {
 
 // ── ERİŞİM FONKSİYONLARI ─────────────────────────────────────
 
-/** Tüm 160 ajanı döndürür */
-function tumKadro() {
-  return TAM_KADRO;
-}
+function tumKadro()             { return TAM_KADRO; }
+function takimBul(takimKodu)    { return TAM_KADRO.filter(a => a.takim_kodu === takimKodu); }
+function asamaBul(asama)        { return TAM_KADRO.filter(a => a.asama === asama); }
+function ajanBul(id)            { return TAM_KADRO.find(a => a.id === id) || null; }
+function beceriyeGore(beceri)   { return TAM_KADRO.filter(a => a.beceriler.includes(beceri)); }
 
-/** Takım koduna göre 5 ajan döndürür */
-function takimBul(takimKodu) {
-  return TAM_KADRO.filter(a => a.takim_kodu === takimKodu);
-}
-
-/** Aşamaya göre ajanları döndürür */
-function asamaBul(asama) {
-  return TAM_KADRO.filter(a => a.asama === asama);
-}
-
-/** ID ile tek ajan döndürür */
-function ajanBul(id) {
-  return TAM_KADRO.find(a => a.id === id) || null;
-}
-
-/** Beceriye göre uygun ajanları döndürür */
-function beceriyeGore(beceri) {
-  return TAM_KADRO.filter(a => a.beceriler.includes(beceri));
-}
-
-/** Kadro özet istatistikleri */
 function kadroOzet() {
   return {
-    toplam_ajan: TAM_KADRO.length,
-    yeni_kadro: YENI_KADRO_SAYISI,
-    eski_kadro: ESKI_KADRO_SAYISI,
-    toplam_takim: Object.keys(takimSayilari).length,
+    toplam_ajan:    TAM_KADRO.length,
+    orijinal_kadro: ORIJINAL_SAYISI,
+    eski_kadro:     ESKI_KADRO_SAYISI,
+    rul_kadro:      RUL_SAYISI,
+    toplam_takim:   Object.keys(takimSayilari).length,
     takim_dagilimi: takimSayilari,
-    asamalar: {
-      YAPIM_ONCESI: YAPIM_ONCESI.length,
-      TASARIM: TASARIM.length,
-      INSA: INSA.length,
-      DOGRULAMA: DOGRULAMA.length,
-      YAYINLAMA: YAYINLAMA.length,
-      YASATMA: YASATMA.length,
-      ENTEGRE: ESKI_KADRO.length,
-    },
-    disiplin: DISIPLIN,
+    rul_takimlari:  ['AI', 'MB', 'ET', 'PZ'],
+    mevcut_takim_rulleri: Object.keys(MEVCUT_TAKIM_RULLERI),
+    disiplin:       DISIPLIN,
   };
 }
 
@@ -126,6 +96,7 @@ module.exports = {
   DAVRANIS_KURALLARI,
   ASAMALAR,
   TAKIM_KODLARI,
+  MEVCUT_TAKIM_RULLERI,
   tumKadro,
   takimBul,
   asamaBul,

@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 07:48:23]
 **İcracı-Data: Veri Akışı ve İşleme**

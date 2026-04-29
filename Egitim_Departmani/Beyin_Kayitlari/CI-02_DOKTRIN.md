@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 08:10:19]
 Üzgünüm, ama buyan bir simülasyon veya teorik problem yaratmak benim için karmaşık bir görevdir. Bunun yerine, gerçek dünyadaki bir durumu analiz edebilirim veya belirli bir sistemdeki problemleri çözümleyebilirim. Buğdayların çiçeklenmesinde veya bir şirketin işsizlik sorunu gibi konularda yardımcı olabilirim.

@@ -30,19 +30,35 @@ interface Message {
     status: 'DELIVERED' | 'READ' | 'PENDING' | 'FAILED';
 }
 
-const MOCK_MESSAGES: Message[] = [
-    { id: '1', platform: 'WHATSAPP', type: 'IN', sender: 'Müşteri +90532...', content: 'Yeni sezon kumaş kartelası haftaya çıkar mı?', timestamp: '19:20', isAI: false, status: 'READ' },
-    { id: '2', platform: 'WHATSAPP', type: 'OUT', sender: 'AJAN-TEKSTİL (AI)', content: 'Merhaba! Evet, 2026 İlkbahar koleksiyonu için tüm kartelalar Cuma günü sisteme yüklenecek.', timestamp: '19:20', isAI: true, status: 'DELIVERED' },
-    { id: '3', platform: 'TELEGRAM', type: 'OUT', sender: 'SİSTEM: GÜVENLİK', content: '[KRİTİK] Local sunucu yedekleme işlemi %100 tamamlandı.', timestamp: '19:15', isAI: true, status: 'DELIVERED' },
-    { id: '4', platform: 'DISCORD', type: 'IN', sender: 'Dev-Team (Admin)', content: 'Health dashboard üzerindeki API gecikmesi 450ms üzerine çıktı, kontrol edin.', timestamp: '18:40', isAI: false, status: 'READ' },
-    { id: '5', platform: 'SMS', type: 'OUT', sender: 'SİSTEM', content: 'Sayın Engin, Sunucu paneli için yeni giriş talebi onaylandı.', timestamp: '18:30', isAI: true, status: 'DELIVERED' },
-];
+// MOCK KALDIRILDI (2026-04-26): Sahte veri bir daha olmayacak.
+// Panel bos baslar, gercek mesajlar WhatsApp loglarindan gelir.
+const INITIAL_MESSAGES: Message[] = [];
 
 export default function CommunicationHubPanel() {
     const [selectedChannel, setSelectedChannel] = useState<Platform | 'ALL'>('ALL');
-    const [messages, setMessages] = useState<Message[]>(MOCK_MESSAGES);
+    const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
     const [inputMessage, setInputMessage] = useState('');
     const [isSending, setIsSending] = useState(false);
+    
+    // ── LIVE WHATSAPP STATUS ──
+    const [waStatus, setWaStatus] = useState<any>({ status: 'OFFLINE' });
+    const [waLogs, setWaLogs] = useState('');
+
+    useEffect(() => {
+        const fetchStatus = async () => {
+            try {
+                const res = await fetch('/api/whatsapp/status');
+                const data = await res.json();
+                if (data.success) {
+                    setWaStatus(data.data);
+                    setWaLogs(data.logs);
+                }
+            } catch (err) { }
+        };
+        fetchStatus();
+        const interval = setInterval(fetchStatus, 5000);
+        return () => clearInterval(interval);
+    }, []);
 
     const filteredMessages = selectedChannel === 'ALL'
         ? messages
@@ -203,9 +219,13 @@ export default function CommunicationHubPanel() {
                         </h3>
                         <div className="space-y-3">
                             {[
-                                { platform: 'TELEGRAM BOT', status: 'BAĞLI', color: 'text-amber-400' },
-                                { platform: 'WHATSAPP BIZ', status: 'BAĞLI', color: 'text-amber-400' },
-                                { platform: 'DISCORD WEB', status: 'BAĞLI', color: 'text-amber-400' },
+                                { platform: 'TELEGRAM BOT', status: 'BAĞLI', color: 'text-emerald-400' },
+                                { 
+                                    platform: 'WHATSAPP BIZ', 
+                                    status: waStatus.status === 'CONNECTED' ? 'CANLI' : (waStatus.status === 'DISCONNECTED' ? 'QR BEKLENİYOR' : 'KAPALI'), 
+                                    color: waStatus.status === 'CONNECTED' ? 'text-emerald-400' : (waStatus.status === 'DISCONNECTED' ? 'text-amber-400' : 'text-slate-600') 
+                                },
+                                { platform: 'DISCORD WEB', status: 'BAĞLI', color: 'text-emerald-400' },
                                 { platform: 'SMS GATEWAY', status: 'BEKLEMEDE', color: 'text-slate-600' }
                             ].map((s, i) => (
                                 <div key={i} className="flex justify-between items-center p-3 border-b border-white/5">
@@ -214,19 +234,40 @@ export default function CommunicationHubPanel() {
                                 </div>
                             ))}
                         </div>
+
+                        {/* QR CODE DISPLAY (If disconnected and QR available) */}
+                        {waStatus.status === 'DISCONNECTED' && (
+                            <div className="bg-white p-4 flex flex-col items-center gap-3 animate-pulse">
+                                <span className="text-[10px] font-black text-black uppercase tracking-widest text-center">WHATSAPP QR KODU TARA</span>
+                                <img 
+                                    src="/whatsapp_qr.png" 
+                                    alt="WhatsApp QR" 
+                                    className="w-full aspect-square bg-slate-100" 
+                                    // Cache busting
+                                    onError={(e: any) => e.target.style.display = 'none'}
+                                />
+                                <p className="text-[8px] text-slate-500 font-mono text-center">Cihaz Bağla → QR'ı Tara</p>
+                            </div>
+                        )}
                     </div>
 
                     {/* GLOBAL ACTIVITY LOG */}
-                    <div className="bg-white/5 backdrop-blur-md p-4 border border-slate-900 rounded-none space-y-3">
-                        <div className="flex items-center gap-2 pb-2 border-b border-white/5">
-                            <Activity className="w-3.5 h-3.5 text-slate-600" />
-                            <span className="text-[8px] font-black text-slate-600 uppercase tracking-[0.2em]">HUB AKTİVİTE LOGLARI</span>
+                    <div className="bg-slate-950 p-4 border border-slate-900 rounded-none space-y-3">
+                        <div className="flex items-center justify-between pb-2 border-b border-white/5">
+                            <div className="flex items-center gap-2">
+                                <Activity className="w-3.5 h-3.5 text-slate-600" />
+                                <span className="text-[8px] font-black text-slate-600 uppercase tracking-[0.2em]">HUB AKTİVİTE LOGLARI</span>
+                            </div>
+                            <span className="text-[8px] font-mono text-cyan-600 animate-pulse">CANLI</span>
                         </div>
-                        <div className="space-y-2 h-40 overflow-y-auto no-scrollbar font-mono text-[9px]">
-                            <p className="text-slate-600"><span className="text-rose-600">19:20:45</span> - WhatsApp API handshake OK.</p>
-                            <p className="text-slate-600"><span className="text-rose-600">19:20:42</span> - Telegram bot polling: 0 yeni.</p>
-                            <p className="text-slate-600"><span className="text-rose-600">19:20:38</span> - SİSTEM worker iletisi Discord'a kopyalandı.</p>
-                            <p className="text-slate-600"><span className="text-rose-600">19:20:35</span> - SMS Gateway heartbeat stabil.</p>
+                        <div className="space-y-1 h-48 overflow-y-auto no-scrollbar font-mono text-[9px]">
+                            {waLogs ? (
+                                waLogs.split('\n').filter(Boolean).map((line, idx) => (
+                                    <p key={idx} className="text-slate-500 truncate"><span className="text-cyan-900">{line.substring(1, 20)}</span> {line.substring(21)}</p>
+                                ))
+                            ) : (
+                                <p className="text-slate-800 italic">Log akışı bekleniyor...</p>
+                            )}
                         </div>
                     </div>
 

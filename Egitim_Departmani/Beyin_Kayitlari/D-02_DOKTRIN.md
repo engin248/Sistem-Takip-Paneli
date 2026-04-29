@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 08:06:20]
 **KURUCU ENGİN'IN KATİ EMRİ**: "Askerin yatacak zamanı yok! Görev yoksa, kendi uzmanlığında dünyada TEK olacak şekilde eğitim ve zihinsel tatbikat yapacaksın."
@@ -26,7 +26,7 @@ Bu inovasyonu kaydet. Askeri bir dil kullan ve uzatmadan direkt çözümünü 20
 
 ---
 
-**MUTLAK NİZAM KANUNU:**
+**MUTLAK Sistem KANUNU:**
 
 - **Sınır ihlali:** Hayır.
 - **Inisiyatif almak:** Hayır.

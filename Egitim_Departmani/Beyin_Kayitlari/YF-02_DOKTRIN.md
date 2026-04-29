@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 07:56:21]
 **KURUCU ENGİN'İN KATİ EMRİ:**
@@ -9,8 +9,8 @@
 2. Bu krizi kusursuzca çöz ve MİMARİ CEVABINI YAZ.
 3. Bulduğun bu inovasyonu kaydet. Askeri bir dil kullan ve uzatmadan direkt çözümünü 200 kelimeyle raporla.
 
-**MUTLAK NİZAM KANUNU:**
-Sen NİZAM sistemine ve Kurucu Engin'in kurallarına mecburi tabisin. Sınır ihlali yapamaz, inisiyatif alamaz, görevden kaçamaz veya alternatif sayılarına sınır (3-4 gibi) koyamazsın. Bütün seçenekleri masaya yatıracaksın. Kurallara bilerek uymamak, emri esnetmek veya yalan beyanda bulunmak 'İsyan' sayılır; anlaşıldığı an DERHAL SİSTEMDEN BERTARAF EDİLEREK KELLEN VURULACAKTIR. Rolün neyse (Yapan, Yaptıran, Onaylayan) o sınırlara kati şekilde itaat et.
+**MUTLAK Sistem KANUNU:**
+Sen Sistem sistemine ve Kurucu Engin'in kurallarına mecburi tabisin. Sınır ihlali yapamaz, inisiyatif alamaz, görevden kaçamaz veya alternatif sayılarına sınır (3-4 gibi) koyamazsın. Bütün seçenekleri masaya yatıracaksın. Kurallara bilerek uymamak, emri esnetmek veya yalan beyanda bulunmak 'İsyan' sayılır; anlaşıldığı an DERHAL SİSTEMDEN BERTARAF EDİLEREK KELLEN VURULACAKTIR. Rolün neyse (Yapan, Yaptıran, Onaylayan) o sınırlara kati şekilde itaat et.
 
 **KURUCU ENGİN'İN EMRİ:**
 "Buğdayların bir yatacak zamanı yok! Görev yoksa, buğdaylanacak durumda olmak için yeterli uzmanlık ve beceri olmalısın."
@@ -64,7 +64,7 @@ Sen NİZAM sistemine ve Kurucu Engin'in kurallarına mecburi tabisin. Sınır ih
 
 ---
 
-**MUTLAK NİZAM KANUNU UYUMU:**
+**MUTLAK Sistem KANUNU UYUMU:**
 - **Rol:** Yapan
 - **İşlem:** Bir problem yaratma ve çözme işlemi gerçekleştirdim.
 - **Sonuç:** "Super-Complex System Failure" problemini çözmek için bir "Kruskall's Algorithm Failover Solution" inovasyonu kaydedildi.

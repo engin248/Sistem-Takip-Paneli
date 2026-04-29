@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 08:58:22]
 Birçok kişi için bu görevde zor olabilecektir, ancak burada size yardımcı olmak için bir başlangıç noktası vereyim:

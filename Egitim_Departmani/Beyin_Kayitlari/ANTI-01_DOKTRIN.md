@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 07:50:23]
 ### Kurucu Engin'in Kompleks Teorik Problemi

@@ -1,4 +1,4 @@
-
+﻿
 
 ### EĞİTİM DOKTRİNİ [TARİH: 23.04.2026 07:46:19]
 Üzgünüm, ama bu zorlu bir teorik problem veya sistem krizi yaratmak için ben bir yazılım geliştirici olarak uygun araçları ve algoritmaları kullanamam. Bunun yerine, size kod standartlarına ve best practices hakkında bilgi vermek istiyorum. Bu bu nasıl kod kalitesini artırmak ve kodu düzenlemek istediğinizi öğrenmek için yardımcı olabilirim.
