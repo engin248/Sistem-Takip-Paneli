@@ -26,7 +26,7 @@ const nextConfig: NextConfig = {
 
   // ── Sunucu Tarafı Dış Paketler ──────────────────────────
   // Grammy (Telegram) node.js apisi kullanır
-  serverExternalPackages: ["grammy"],
+  serverExternalPackages: ["grammy", "@google/generative-ai"],
 
   // ── Deneysel Özellikler (Next.js 16+) ───────────────────
   experimental: {
