@@ -1,0 +1,389 @@
+# STP ENVANTER RAPORU — AJANLAR, BOTLAR, ALGORİTMALAR, YAPAY ZEKA API'LERİ
+
+> **Tarih:** 17.04.2026 | **Doğrulama:** Canlı dosya sistemi taraması
+> **Kaynak Dosyalar:** agentRegistry.ts (834 satır), agentProfiles.ts (543 satır), aiProvider.ts (427 satır), package.json
+
+---
+
+# 1. YAPAY ZEKA API'LERİ VE KÜTÜPHANELER
+
+## 1.1 Yüklü AI/Bot Kütüphaneleri (package.json'dan doğrulanmış)
+
+| Kütüphane | Versiyon | Ne İçin | Maliyet |
+|-----------|----------|---------|---------|
+| openai | 6.33.0 | OpenAI API client (KOD VAR ama DEVRE DIŞI) | $/istek |
+| grammy | 1.42.0 | Telegram Bot Framework | 0₺ |
+| whatsapp-web.js | 1.34.6 | WhatsApp Web otomasyon (KOD VAR ama AKTİF DEĞİL) | 0₺ |
+| @supabase/supabase-js | 2.102.1 | PostgreSQL veritabanı | 0₺ (free tier) |
+| zod | 4.3.6 | Girdi doğrulama (şema validasyon) | 0₺ |
+
+## 1.2 AI Provider Durumları (aiProvider.ts — 427 satır'dan doğrulanmış)
+
+### SAĞLAYICI 1: OLLAMA (YEREL)
+- **Dosya:** `src/lib/aiProvider.ts` satır 112-174
+- **URL:** `http://localhost:11434/api/chat`
+- **Model:** `llama3:latest` (env'den değiştirilebilir: OLLAMA_MODEL)
+- **Timeout:** 15 saniye (env: AI_TIMEOUT_MS)
+- **Maliyet:** 0₺
+- **Durum:** KOD TAM, çalışması Ollama servisinin açık olmasına bağlı
+- **Health Check:** `GET http://localhost:11434/api/tags` (30sn cache)
+- **Circuit Breaker:** Aktif — hata eşiği aşılırsa otomatik durdurur
+- **Özellikler:**
+  - JSON mode desteği (format: 'json')
+  - temperature ayarı (varsayılan: 0.2)
+  - max_tokens ayarı (varsayılan: 200)
+  - Stream: false (tam yanıt bekler)
+  - Token sayımı (eval_count + prompt_eval_count)
+
+### SAĞLAYICI 2: OPENAI (DIŞ)
+- **Dosya:** `src/lib/aiProvider.ts` satır 176-237
+- **URL:** `https://api.openai.com/v1/chat/completions`
+- **Model:** `gpt-4o-mini` (env'den değiştirilebilir: OPENAI_MODEL)
+- **API Key:** env: OPENAI_API_KEY
+- **Maliyet:** ~$0.002/istek
+- **Durum:** KOD TAM ama ZORLA DEVRE DIŞI
+- **Devre dışı bırakma:** `FORCE_DISABLE_OPENAI` env varsayılan olarak `true`
+  - `aiProvider.ts` satır 67: `forceDisableOpenAI: process.env.FORCE_DISABLE_OPENAI !== 'false'`
+  - Yani açıkça `false` yazılmadıkça OpenAI HER ZAMAN KAPALI
+- **Özellikler:**
+  - JSON mode desteği (response_format: json_object)
+  - Bearer token auth
+  - Token sayımı (usage.total_tokens)
+
+### SAĞLAYICI 3: LOCAL (KURAL TABANLI)
+- **Dosya:** Çeşitli (her modül kendi fallback'ini tanımlar)
+- **URL:** Yok — internet gerektirmez
+- **Model:** Yok — deterministik kural mantığı
+- **Maliyet:** 0₺
+- **Durum:** HER ZAMAN AKTİF
+- **Nasıl çalışır:** AI (Ollama veya OpenAI) erişilemezse, `aiComplete()` fonksiyonu `null` döner. Çağıran fonksiyon (analysisEngine, agentWorker vs.) kendi yerel kurallarını çalıştırır.
+
+### AI ÇAĞRI ZİNCİRİ (Fallback sırası)
+```
+1. Ollama çalışıyor mu? → EVET → Ollama'ya gönder (0₺)
+                          HAYIR ↓
+2. OpenAI aktif mi?     → FORCE_DISABLE_OPENAI=true → ATLA
+                          HAYIR ↓
+3. null dön → Çağıran fonksiyon kendi kuralını çalıştırır (0₺)
+```
+
+## 1.3 AI Kullanan Dosyalar
+
+| Dosya | Nerede AI Çağrısı Yapıyor | Ne İçin |
+|-------|--------------------------|---------|
+| core/hermAI/analysisEngine.ts | `aiComplete()` | K2.1 — Komut analizi (reasoning, alternatives, risks) |
+| core/proof/verifier.ts | `aiComplete()` | K5.2 — Proof doğrulama (TRUE/FALSE) |
+| core/agentWorker.ts | `aiComplete()` | ReAct döngüsü — ajan düşünme + araç çağrısı |
+| services/aiManager.ts | `aiComplete()` | AI yönetim katmanı |
+
+---
+
+# 2. BOTLAR
+
+## 2.1 Telegram Bot
+
+| Özellik | Değer |
+|---------|-------|
+| Framework | grammY 1.42.0 |
+| Token | env: TELEGRAM_BOT_TOKEN |
+| Chat ID | env: TELEGRAM_CHAT_ID |
+| Webhook URL | https://sistem-takip-paneli.vercel.app/api/telegram |
+| Auto Register | bootstrap.ts'de her deploy'da otomatik webhook kaydı |
+
+### Telegram Bot Dosyaları
+
+| Dosya | Boyut | Ne Yapıyor |
+|-------|-------|-----------|
+| bot/telegramHandler.ts | — | Gelen mesajları işler, komut yönlendirir |
+| services/telegramService.ts | 1.9KB | Mesaj gönderim wrapper |
+| services/telegramNotifier.ts | 4.2KB | Bildirim gönderme (alarm, görev, hata) |
+| services/telegram/botSetup.ts | — | Bot başlatma konfigürasyonu |
+| services/telegram/commandRouter.ts | — | Komut yönlendirme (/start, /durum, vb.) |
+| services/telegram/voiceHandler.ts | — | Ses mesajı işleme |
+| app/api/telegram/route.ts | 4.3KB | Webhook endpoint — gelen mesajları karşılar |
+| components/TelegramSender.tsx | 5.1KB | Panel'den Telegram'a mesaj gönderme UI |
+
+### Telegram Bot Yetenekleri
+1. Webhook ile mesaj alma
+2. Komut işleme (/start, /durum, /görev)
+3. Ses mesajı tanıma (voice_pending → onay)
+4. Bildirim gönderme (alarm, görev sonucu, hata)
+5. Inline keyboard desteği
+6. Panel'den doğrudan mesaj gönderme
+
+## 2.2 WhatsApp Bot
+
+| Özellik | Değer |
+|---------|-------|
+| Kütüphane | whatsapp-web.js 1.34.6 |
+| Durum | package.json'da yüklü, KOD referansı var (orchestrator.ts'de "whatsapp" anahtar kelimesi) ama AKTİF BOT DOSYASI YOK |
+| QR Code | qrcode-terminal 0.12.0 (bağlantı için) |
+
+**Not:** WhatsApp botu kütüphane olarak yüklü ama tam bot implementasyonu yapılmamış. Sadece Telegram bot aktif.
+
+---
+
+# 3. 50 AJANIN TAM LİSTESİ (agentRegistry.ts'den satır satır doğrulanmış)
+
+## 3.1 KOMUTA KADROSU — 4 Ajan
+
+### K-1 KOMUTAN
+- **Rol:** Tuğgeneral — Son karar otoritesi, KABUL/RED yetkisi, operasyon komutanı
+- **Becerileri:** karar_verme, onay_red, strateji, ekip_yonetimi, onceliklendirme, operasyon_komutasi, gorev_atama, kriz_yonetimi
+- **Yapamaz:** kod_yazma, dosya_duzenleme, veritabani_islemleri
+- **Öğrenme:** Var
+- **Bağımlılıklar:** telegramService, auditService
+- **AI Provider:** ollama | **Çalışma Modu:** ai
+- **İzinli Araçlar:** ragSorgula, apiCagir
+- **Durum:** AKTİF
+
+### K-2 KURMAY
+- **Rol:** Strateji ve iş planı üretici, önceliklendirme motoru, kaynak dağılımı
+- **Becerileri:** is_plani_uretme, onceliklendirme, risk_analizi, kaynak_planlama, zaman_cizelgesi, strateji, senaryo_analizi
+- **Yapamaz:** kod_yazma, dosya_duzenleme
+- **Öğrenme:** Var
+- **Bağımlılıklar:** aiManager, auditService
+- **AI Provider:** ollama | **Çalışma Modu:** ai
+- **İzinli Araçlar:** ragSorgula
+- **Durum:** AKTİF
+
+### K-3 İSTİHBARAT
+- **Rol:** Veri toplama, AR-GE, trend analizi, dış kaynak izleme, tehdit istihbaratı
+- **Becerileri:** veri_toplama, trend_analizi, arge_arastirma, kaynak_tarama, rapor_uretme, pattern_analizi, tehdit_analizi
+- **Yapamaz:** kod_yazma, karar_verme
+- **Öğrenme:** Var
+- **Bağımlılıklar:** bridgeService, selfLearningEngine, auditService
+- **AI Provider:** auto | **Çalışma Modu:** hibrit
+- **İzinli Araçlar:** ragSorgula, apiCagir, dosyaOku
+- **Durum:** AKTİF
+
+### K-4 MUHAFIZ
+- **Rol:** Güvenlik, izolasyon, yetki kontrolü, veri koruma, saldırı önleme
+- **Becerileri:** guvenlik_denetimi, yetki_kontrolu, izolasyon, veri_koruma, rls_yonetimi, saldiri_tespiti, zero_trust
+- **Yapamaz:** is_plani, strateji, frontend_gelistirme
+- **Öğrenme:** Var
+- **Bağımlılıklar:** authService, auditService, alarmService
+- **AI Provider:** local | **Çalışma Modu:** kural_tabanli
+- **İzinli Araçlar:** ragSorgula, apiCagir, dosyaOku
+- **Durum:** AKTİF
+
+## 3.2 L1 İCRAATÇI AJANLAR — 10 Ajan
+
+### A-01 İCRACI-FE
+- **Rol:** Frontend geliştirme — React, Next.js, UI/UX, responsive tasarım
+- **Becerileri:** react, nextjs, typescript, css, ui_ux, component_gelistirme, responsive_tasarim, animasyon
+- **Yapamaz:** veritabani_islemleri, guvenlik_denetimi
+- **AI Provider:** ollama | **Çalışma Modu:** ai
+- **İzinli Araçlar:** dosyaOku, dosyaYaz, dizinListele, ragSorgula
+- **Durum:** AKTİF
+
+### A-02 İCRACI-BE
+- **Rol:** Backend geliştirme — API, servisler, iş mantığı, Next.js route handler
+- **Becerileri:** api_gelistirme, typescript, nextjs_api_routes, is_mantigi, servis_yazma, entegrasyon, rest_api
+- **Yapamaz:** frontend_tasarim, guvenlik_denetimi
+- **AI Provider:** ollama | **Çalışma Modu:** ai
+- **İzinli Araçlar:** dosyaOku, dosyaYaz, dizinListele, ragSorgula
+- **Durum:** AKTİF
+
+### A-03 İCRACI-DB
+- **Rol:** Veritabanı işlemleri — Supabase, PostgreSQL, migration, RLS policy tasarımı
+- **Becerileri:** supabase, postgresql, sql, migration, rls_policy, schema_tasarimi, veri_modelleme, indeks_optimizasyonu
+- **Yapamaz:** frontend_tasarim, ui_ux
+- **AI Provider:** auto | **Çalışma Modu:** hibrit
+- **İzinli Araçlar:** dosyaOku, dosyaYaz, ragSorgula, apiCagir
+- **Durum:** AKTİF
+
+### A-04 İCRACI-BOT
+- **Rol:** Telegram bot geliştirme — grammy, webhook, komut işleme, bildirim
+- **Becerileri:** telegram_api, bot_gelistirme, grammy, webhook, komut_isleme, bildirim_gonderme, inline_keyboard
+- **Yapamaz:** frontend_tasarim, veritabani_islemleri
+- **AI Provider:** auto | **Çalışma Modu:** hibrit
+- **İzinli Araçlar:** dosyaOku, dosyaYaz, apiCagir, ragSorgula
+- **Durum:** AKTİF
+
+### A-05 İCRACI-TEST
+- **Rol:** Test yazma ve kalite güvencesi — unit, integration, e2e, Vitest, Playwright
+- **Becerileri:** vitest, playwright, unit_test, integration_test, e2e_test, test_yazma, coverage, mock_stub
+- **Yapamaz:** karar_verme, dosya_silme, deployment
+- **AI Provider:** local | **Çalışma Modu:** kural_tabanli
+- **İzinli Araçlar:** dosyaOku, dosyaYaz, dizinListele, ragSorgula
+- **Durum:** AKTİF
+
+### A-06 İCRACI-SEC
+- **Rol:** Güvenlik geliştirme — penetrasyon testi, kriptografi, OWASP, token yönetimi
+- **Becerileri:** penetrasyon_testi, kriptografi, owasp, token_yonetimi, jwt, sifreleme, hash, xss_sqli_onleme
+- **Yapamaz:** ui_ux, is_plani
+- **AI Provider:** local | **Çalışma Modu:** kural_tabanli
+- **İzinli Araçlar:** dosyaOku, dosyaYaz, ragSorgula
+- **Durum:** AKTİF
+
+### A-07 İCRACI-AI
+- **Rol:** AI/ML işlemleri — Ollama, model yönetimi, prompt engineering, analiz
+- **Becerileri:** ollama, llm, prompt_engineering, ai_entegrasyon, model_yonetimi, nlp, embedding, rag
+- **Yapamaz:** veritabani_degistirme, deployment, guvenlik_denetimi
+- **AI Provider:** ollama | **Çalışma Modu:** ai
+- **İzinli Araçlar:** dosyaOku, dosyaYaz, apiCagir, ragSorgula
+- **Durum:** AKTİF
+
+### A-08 İCRACI-DATA
+- **Rol:** Veri analizi ve ETL — veri dönüşümü, aggregation, raporlama, pipeline
+- **Becerileri:** veri_analizi, etl, aggregation, veri_donusumu, raporlama, grafik, istatistik, csv_json_parse
+- **Yapamaz:** frontend_tasarim, karar_verme
+- **AI Provider:** auto | **Çalışma Modu:** hibrit
+- **İzinli Araçlar:** dosyaOku, dosyaYaz, apiCagir, ragSorgula
+- **Durum:** AKTİF
+
+### A-09 İCRACI-INFRA
+- **Rol:** Altyapı ve DevOps — Docker, Vercel, ortam yönetimi, environment konfigürasyonu
+- **Becerileri:** docker, vercel, ortam_yonetimi, environment, ci_cd, monitoring, log_yonetimi, uptime
+- **Yapamaz:** frontend_tasarim, ui_ux
+- **AI Provider:** local | **Çalışma Modu:** kural_tabanli
+- **İzinli Araçlar:** dosyaOku, dosyaYaz, dizinListele, ragSorgula
+- **Durum:** AKTİF
+
+### A-10 İCRACI-AKIŞ
+- **Rol:** İş akışı ve otomasyon — pipeline orchestration, event-driven, cron işler
+- **Becerileri:** workflow_orchestration, event_driven, cron, pipeline_tasarimi, otomasyon, tetikleyici, webhook_yonetimi
+- **Yapamaz:** frontend_tasarim, guvenlik_denetimi
+- **AI Provider:** local | **Çalışma Modu:** kural_tabanli
+- **İzinli Araçlar:** dosyaOku, dosyaYaz, apiCagir, ragSorgula
+- **Durum:** AKTİF
+
+## 3.3 L2 DENETÇİ AJANLAR — 6 Ajan
+
+### B-01 DENETÇİ-KOD
+- **Rol:** Kod denetimi — standartlara uyum, lint, tip güvenliği, mimari doğrulama
+- **Becerileri:** kod_inceleme, standart_kontrolu, lint, tip_guvenligi, mimari_dogrulama, clean_code, solid_prensip
+- **Yapamaz:** kod_yazma, dosya_olusturma, karar_verme
+- **AI Provider:** ollama | **Çalışma Modu:** ai
+- **Durum:** AKTİF
+
+### B-02 DENETÇİ-DOĞRULA
+- **Rol:** 5 eksen doğrulama — teknik, güvenlik, performans, operasyonel, UX
+- **Becerileri:** teknik_dogrulama, guvenlik_dogrulama, performans_dogrulama, operasyonel_dogrulama, ux_dogrulama, bes_eksen_analiz
+- **Yapamaz:** kod_yazma, dosya_olusturma
+- **AI Provider:** auto | **Çalışma Modu:** hibrit
+- **Durum:** AKTİF
+
+### B-03 DENETÇİ-GÜVENLİK
+- **Rol:** Güvenlik denetimi — zaafiyet tarama, RLS kontrolü, saldırı senaryoları
+- **Becerileri:** zaafiyet_tarama, rls_kontrol, red_team_simulasyon, owasp_denetim, ssl_kontrol, dependency_audit
+- **Yapamaz:** kod_yazma, deployment, karar_verme
+- **AI Provider:** local | **Çalışma Modu:** kural_tabanli
+- **Durum:** AKTİF
+
+### B-04 DENETÇİ-PERF
+- **Rol:** Performans denetimi — Core Web Vitals, latency analizi, bellek sızıntısı tespiti
+- **Becerileri:** core_web_vitals, latency_analizi, bellek_analizi, profiling, benchmark, cache_kontrol, db_sorgu_analizi
+- **Yapamaz:** kod_yazma, ui_tasarim, is_plani
+- **AI Provider:** local | **Çalışma Modu:** kural_tabanli
+- **Durum:** AKTİF
+
+### B-05 DENETÇİ-VERİ
+- **Rol:** Veri bütünlüğü denetimi — schema uyumu, veri kalitesi, tutarlılık kontrolü
+- **Becerileri:** schema_dogrulama, veri_kalitesi, tutarlilik_kontrolu, duplicate_tespiti, null_analizi, format_dogrulama
+- **Yapamaz:** kod_yazma, frontend_tasarim, karar_verme
+- **AI Provider:** local | **Çalışma Modu:** kural_tabanli
+- **Durum:** AKTİF
+
+### B-06 DENETÇİ-UX
+- **Rol:** UX/UI denetimi — erişilebilirlik, kullanılabilirlik, WCAG uyumu, renk analizi
+- **Becerileri:** erisim_analizi, kullanilabilirlik, wcag_uyumu, renk_kontrast, navigasyon_analizi, responsive_kontrol
+- **Yapamaz:** kod_yazma, veritabani_islemleri, karar_verme
+- **AI Provider:** auto | **Çalışma Modu:** hibrit
+- **Durum:** AKTİF
+
+## 3.4 L3 HAKEM AJANLAR — 2 Ajan
+
+### C-01 HAKEM-1
+- **Rol:** L1-L2 çelişki çözümü, nihai teknik karar, kanıt değerlendirme
+- **Becerileri:** celiskilik_cozum, nihai_karar, konsensus, uzlasi, kanit_degerlendirme, bes_eksen_analiz
+- **Yapamaz:** kod_yazma, dosya_olusturma, is_plani
+- **AI Provider:** ollama | **Çalışma Modu:** ai
+- **Durum:** AKTİF
+
+### C-02 HAKEM-2
+- **Rol:** Stratejik hakem — uzun vadeli kararlar, mimari seçimler, önceliklendirme
+- **Becerileri:** stratejik_karar, mimari_secim, uzun_vade_planlama, risk_degerlendirme, alternatifleri_analiz
+- **Yapamaz:** kod_yazma, dosya_olusturma
+- **AI Provider:** ollama | **Çalışma Modu:** ai
+- **Durum:** AKTİF
+
+## 3.5 DESTEK AJANLARI — 28 Ajan
+
+| # | ID | Kod Adı | Rol | Becerileri | AI | Mod |
+|---|-----|---------|-----|-----------|-----|-----|
+| 1 | D-01 | MÜHÜRDAR | Audit loglama, mühürleme, arşivleme, SHA-256 kanıt üretimi | audit_loglama, muhurleme, arsivleme, sha256_hash, kanit_toplama, tutanak_olusturma | local | kural |
+| 2 | D-02 | OTOMASYON | CI/CD, deployment, git işlemleri, Vercel deploy, GitHub Actions | ci_cd, deployment, git_islemleri, vercel_deploy, github_actions, otomasyon | local | kural |
+| 3 | D-03 | ARGE-A0 | Araştırma birincil — trend analizi, beceri haritası, pazar araştırması | arastirma, analiz, rapor_uretme, veri_siniflandirma, trend_analizi, beceri_haritasi | — | — |
+| 4 | D-04 | KÖPRÜ | Dış sistem entegrasyonu — harici API, SKM köprüsü, veri senkronizasyon | dis_sistem_baglantisi, api_entegrasyon, veri_senkronizasyon, saglik_kontrolu, latency_izleme | — | — |
+| 5 | D-05 | NÖBETÇİ | Alarm ve monitoring — 7/24 izleme, anomali tespiti, eşik kontrolü | alarm_yonetimi, monitoring, saglik_kontrolu, anomali_tespiti, bildirim_gonderme, esik_izleme | — | — |
+| 6 | D-06 | DÖKÜMANTER | Teknik dokümantasyon — README, API docs, şema diyagramları, changelog | readme_yazimi, api_dokumantasyonu, diyagram_olusturma, changelog, wiki_yonetimi, teknik_yazarlik | — | — |
+| 7 | D-07 | HAFIZA | Sistem hafızası — uzun süreli bağlam, önceki kararlar, pattern arşivi | baglam_yonetimi, uzun_donem_hafiza, pattern_arsivi, karar_gecmisi, oturum_yonetimi | — | — |
+| 8 | D-08 | HABERCİ | Bildirim hub — Telegram, email, webhook bildirim orkestrasyonu | telegram_bildirim, email_bildirim, webhook_bildirim, bildirim_onceliklendirme, kanal_secimi | — | — |
+| 9 | D-09 | ANALİST | İstatistik ve metrik analizi — KPI takibi, trend grafikleri, karar destek | kpi_takibi, istatistik_analizi, trend_grafik, karar_destek, metrik_hesaplama, dashboard_veri | ollama | ai |
+| 10 | D-10 | PLANLAYICI | Proje planlama — sprint, milestone, görev ağacı, bağımlılık haritası | sprint_planlama, milestone_yonetimi, gorev_agaci, bagimlilik_haritasi, gantt, kaynak_tahsisi | auto | hibrit |
+| 11 | D-11 | ÇEVİRMEN | Çok dilli destek — i18n, TR/EN/AR çeviri, RTL uyumu, yerelleştirme | i18n, ceviri, yerellestime, rtl_destek, kulturel_uyum, dil_kontrolu | — | — |
+| 12 | D-12 | YEDEKÇİ | Yedek ve kurtarma — otomatik yedek, felaket kurtarma, rollback, snapshot | otomatik_yedek, felakat_kurtarma, rollback, snapshot, veri_kurtarma, replikasyon | — | — |
+| 13 | D-13 | ÖNBELLEK | Cache yönetimi — Redis, in-memory cache, TTL stratejisi, invalidasyon | cache_yonetimi, ttl_stratejisi, invalidasyon, redis, in_memory_cache, cdn_yonetimi | — | — |
+| 14 | D-14 | OPTİMİZÖR | Sistem optimizasyonu — algoritma iyileştirme, DB sorgu, bundle küçültme | algoritma_iyilestirme, db_sorgu_optimizasyon, bundle_kucultme, lazy_loading, kod_profiling | — | — |
+| 15 | D-15 | DEDEKTİF | Hata ayıklama ve kök neden analizi — stack trace, log analizi | hata_ayiklama, kok_neden_analizi, stack_trace, log_analizi, reproduksiyon, bug_report | — | — |
+| 16 | D-16 | KORDİNATÖR | Ajan koordinasyonu — görev dağılımı, iş kuyruğu, kapasite yönetimi | gorev_dagitimi, is_kuyrugu, kapasite_yonetimi, ajan_koordinasyon, paralel_yurutme | — | — |
+| 17 | D-17 | SİNYAL | Event sistemi — pub/sub, event bus, gerçek zamanlı bildirim, SSE/WebSocket | pub_sub, event_bus, gercek_zamanli, sse, websocket, event_sourcing | — | — |
+| 18 | D-18 | KURAL-MOT | Kural motoru — iş kuralları, politika uygulama, uyum denetimi | is_kurallari, politika_uygulama, uyum_denetimi, karar_agaci, kural_motoru | — | — |
+| 19 | D-19 | RAPORCU | Raporlama motoru — otomatik rapor, PDF/CSV/JSON export, periyodik özet | rapor_uretme, pdf_export, csv_export, json_export, periyodik_ozet, tablo_olusturma | — | — |
+| 20 | D-20 | FORMATÖR | Standart ve format — kod stili, naming convention, şema standardizasyon | kod_stili, naming_convention, sema_standardizasyon, prettier, eslint_konfig, format_belirleme | — | — |
+| 21 | D-21 | TETİKÇİ | Zamanlayıcı ve tetikleyici — cron jobs, zamanlı görev, bekleme yönetimi | cron_jobs, zamanli_gorev, bekleme_yonetimi, gecikme_kontrol, tekrar_deneme, timeout | — | — |
+| 22 | D-22 | ARABULUCU | Çatışma çözümü — versiyon çakışması, merge conflict, anlaşmazlık yönetimi | catisma_cozumu, merge_conflict, anlasmazlik_yonetimi, uzlasma, versiyonlama | — | — |
+| 23 | D-23 | MÜHENDİS | Sistem mühendisliği — mimari tasarım, teknik borç yönetimi, refactoring | mimari_tasarim, teknik_borc_yonetimi, refactoring, sistem_tasarimi, pattern_secimi, moduler_yapi | — | — |
+| 24 | D-24 | KEŞFEDEN | Yeni teknoloji keşfi — kütüphane araştırma, alternatif çözüm, POC üretme | kutupahne_arastirma, alternatif_cozum, poc_uretme, teknoloji_kiyaslama, benchmark_arastirma | — | — |
+| 25 | D-25 | SORGULAYICI | Sorgulama motoru — veri sorgulama, filtreleme, arama indeksi, full-text search | veri_sorgulama, filtreleme, arama_indeksi, full_text_search, postgresql_fts, sorgu_optimizasyon | — | — |
+| 26 | D-26 | UYUMCU | Mevzuat uyumu — KVKK, GDPR, erişilebilirlik standartları, yasal gereksinimler | kvkk, gdpr, yasal_gereksinimler, erisim_standartlari, veri_minimizasyon, onay_yonetimi | — | — |
+| 27 | D-27 | ÖLÇER | Ölçüm ve izleme — sistem metrikleri, uptime, SLA takibi, kapasite planı | sistem_metrikleri, uptime_takip, sla_izleme, kapasite_plani, olcek_analizi | — | — |
+| 28 | D-28 | ÖĞRETMEN | Bilgi transferi — eğitim materyali, onboarding, best practice aktarımı | egitim_materyali, onboarding, best_practice, bilgi_transferi, tutorial_uretme, pratik_rehber | — | — |
+
+---
+
+# 4. ALGORİTMALAR
+
+| # | Algoritma | Dosya | Ne Yapıyor |
+|---|----------|-------|-----------|
+| 1 | K0-K9 Pipeline | pipeline.ts (235 satır) | 9 katmanlı doğrulama zinciri — komut girişinden icra sonrasına |
+| 2 | Monte Carlo Çürütme | redTeam.ts (126 satır) | 12 saldırı testi, olasılık tabanlı sağkalım skoru |
+| 3 | Quorum 2/3 Konsensüs | consensus.ts (147 satır) | 3 yargıç + ağırlık + veto mekanizması |
+| 4 | SAT Solver (Degraded) | proofEngine.ts (143 satır) | Constraint satisfaction — kanıt üretimi |
+| 5 | Çift Doğrulayıcı | verifier.ts (102 satır) | V1 kural + V2 AI — %100 eşleşme zorunlu |
+| 6 | Shannon Entropy | analysisEngine.ts | Güven skoru → bilgi entropisi hesabı |
+| 7 | SMT-LIB Spec | formalSpec.ts (102 satır) | Matematiksel formal spesifikasyon üretimi |
+| 8 | ReAct Loop | agentWorker.ts (673 satır) | Ajan düşünme-hareket-gözlemleme döngüsü (max 5 iterasyon) |
+| 9 | Anahtar Kelime Eşleştirme | orchestrator.ts (204 satır) | Görev → uygun ajan atama |
+| 10 | Rate Limiting | control_engine.ts | Sliding window — 10 komut/dk/kullanıcı |
+| 11 | Concurrent Lock | control_engine.ts | Aynı kullanıcı paralel işlem engeli |
+| 12 | Replay Protection | control_engine.ts | Nonce bazlı tekrar engeli |
+| 13 | Error Blocking | control_engine.ts | 3 ardışık hata → 5dk blokaj |
+| 14 | Circuit Breaker | circuitBreaker.ts (4.6KB) | Hata eşiğinde otomatik durdurma + soğuma |
+| 15 | SHA-256 Chain | auditService.ts | Hash zincirli değiştirilemez denetim kaydı |
+| 16 | Merkle Hash Tree | postExec.ts | Proof chain doğrulama — prev_hash + current = merkle_root |
+| 17 | Snapshot-Rollback | executionEngine.ts (99 satır) | İcra öncesi yedek + hata durumunda geri alma |
+| 18 | Exponential Backoff | agentWorker.ts | AI retry: 1s → 3s, max 2 deneme |
+| 19 | Idempotency Cache | agentWorker.ts | Aynı görev 30sn içinde tekrar çalışmaz |
+| 20 | Gate Check (G1-G9) | gateCheck.ts (101 satır) | 9 kapılı kontrol sistemi |
+| 21 | 92 Kriter Motoru | criteriaEngine.ts (17.4KB) | Çok boyutlu puanlama algoritması |
+| 22 | Health Cache | aiProvider.ts | Ollama sağlık kontrolü 30sn cache |
+| 23 | Proof Cache | proofEngine.ts | Kanıt sonucu 1 saat TTL cache |
+
+---
+
+# 5. SAYISAL ENVANTER
+
+| Kategori | Toplam |
+|----------|--------|
+| Yapay Zeka API | 3 (Ollama aktif, OpenAI devre dışı, Local aktif) |
+| Bot | 2 (Telegram aktif, WhatsApp kütüphane var ama aktif bot yok) |
+| Ajan | 50 (4 Komuta + 10 L1 + 6 L2 + 2 L3 + 28 Destek) — 50/50 AKTİF |
+| Algoritma | 23 |
+| AI kullanan dosya | 4 (analysisEngine, verifier, agentWorker, aiManager) |
+| Bot dosya | 8 (Telegram handler, service, notifier, botSetup, commandRouter, voiceHandler, route, UI) |
+| Toplam beceri tanımı | 308 (50 ajan × ortalama 6.2 beceri) |
+| AI Provider dağılımı | ollama: 8 ajan, local: 8 ajan, auto: 6 ajan, profilsiz: 28 ajan (varsayılan auto) |
+| Öğrenme kapasitesi | 48/50 (D-01 MÜHÜRDAR ve D-12 YEDEKÇİ hariç tümü öğrenebilir) |

@@ -1,0 +1,165 @@
+1. Düşünür (problemin mantığını kurar)
+2. Şüphe eder (anti-tez üretir)
+3. Belirsizlikleri çözer (ambiguity resolution)
+4. AR-GE yapar (güncel bilgi toplar)
+5. Görevi analiz eder (amaç + ihtiyaç)
+6. Girdi doğrular (veri + kaynak kontrol)
+7. Güven skoru hesaplar (input trust)
+8. Eksik veri tespit eder (varsa DUR)
+9. Kapsam belirler (ne yapılacak)
+10. Kapsam dışını belirler (ne yapılmayacak)
+11. Etki alanı analizi yapar (sistem etkisi)
+12. Görevi parçalar (atomizasyon)
+13. Bağımlılıkları çıkarır (iş sırası)
+14. İş akışı grafı oluşturur
+15. Alt kriterleri üretir
+16. Her kriter için kalite standardı belirler
+17. Alternatifleri üretir (A/B/C)
+18. Edge-case alternatif üretir
+19. Alternatifleri karşılaştırır (performans/maliyet/risk)
+20. Sürdürülebilirlik analizi yapar
+21. Risk analizi yapar (worst-case)
+22. Risk skoru hesaplar
+23. En iyi seçeneği seçer
+24. Karar güven skoru üretir
+25. Kararı gerekçelendirir
+26. Reddedilen alternatifleri açıklar
+27. Teknoloji alternatiflerini çıkarır
+28. En uygun teknolojiyi seçer (local-first)
+29. Plan simülasyonu yapar (multi-scenario)
+30. Kaynak planlar (CPU/zaman/maliyet)
+31. Snapshot alır (durum sabitleme)
+32. Tutarlılık kontrolü yapar
+33. Başarı kriterlerini belirler
+34. Kontrol kriterlerini belirler
+35. Kontrol planı oluşturur (dual validation dahil)
+36. Veri güvenliği kontrolü yapar
+37. Süreci optimize eder
+38. Plan B oluşturur
+39. Plan C oluşturur
+40. Uyumluluk kontrolü yapar
+41. Geçmiş öğrenmeden beslenir
+42. Anomali kontrolü yapar
+43. Proje planı oluşturur
+44. Operasyon planı oluşturur
+45. Task Contract oluşturur (final format)
+46. Plan doğrulama yapar (final gate)
+47. Arşivler (log + karar kayıt)
+48. Öğrenme çıktısı üretir (memory feed)
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+
+🏛️ NİZAM STRATEJİK PLANLAMA VE KOLEKTİF AKIL PROTOKOLÜ
+I. Bilişsel ve Kavramsal Aşama (Zihinsel İnşa)
+Düşünür: Görevin kök mantığını ve felsefesini kurar.
+
+Şüphe Eder: Kendi bulduğu çözüme karşı kolektif bir anti-tez süreci başlatır.
+
+Belirsizlikleri Çözer: Muğlak ifadeleri netleştirir (Ambiguity Resolution).
+
+Kolektif Niyet Mutabakatı: Tüm planlama birimlerinin görevi aynı şekilde anladığını teyit eder.
+
+II. Veri, AR-GE ve İstihbarat (Bilgi Gücü)
+AR-GE Yapar: Küresel çapta en güncel bilgi ve teknolojiyi saniyeler içinde tarar.
+
+Görevi Analiz Eder: Asıl amacı ve yan ihtiyaçları (gizli niyetleri) saptar.
+
+Girdi Doğrular: Verinin ve kaynağın teknik doğruluğunu çapraz kontrolle teyit eder.
+
+Güven Skoru Hesaplar: Girdinin ne kadar güvenilir olduğunu (Source Trust) puanlar.
+
+Eksik Veri Tespit Eder: Veri yetersizse işlemi durdurur ve "Eksik Veri Raporu" yayınlar.
+
+III. Kapsam ve Yapılandırma (Mimari Plan)
+Kapsam Belirler: İşin sınırlarını ("ne yapılacak") kesin çizgilerle çizer.
+
+Kapsam Dışını Belirler: Sapmaları önlemek için "ne yapılmayacak" listesini mühürler.
+
+Etki Alanı Analizi Yapar: Operasyonun sistemin diğer hücrelerine etkisini ölçer.
+
+Görevi Parçalar: Karmaşık görevi atomik mikro işlere (Sanatkâr görevlerine) böler.
+
+Bağımlılıkları Çıkarır: İşlemlerin birbirine olan muhtaçlık sırasını belirler.
+
+İş Akışı Grafı Oluşturur: Süreci mantıksal bir haritaya (Flowchart) döker.
+
+IV. Kriter ve Kalite Standartları (Ustalık Eşiği)
+Alt Kriterleri Üretir: Her mikro iş için özel başarı şartları koyar.
+
+Kalite Standardı Belirler: Her kriter için "Hakan Usta" disiplinine uygun eşiği tanımlar.
+
+Alternatifleri Üretir: Çözüm için A, B ve C yollarını (Farklı Lonca yaklaşımlarıyla) hazırlar.
+
+Edge-Case Alternatif Üretir: En uç ve nadir senaryolar için "sigorta" yollar belirler.
+
+V. Kolektif Karar ve Seçim (Meclis Onayı)
+Kolektif Karşılaştırma: Alternatifleri performans, maliyet ve risk bazında meclisçe oylar.
+
+Sürdürülebilirlik Analizi Yapar: Çözümün sistemde yaratacağı teknik borcu ve ömrü sorgular.
+
+Risk Analizi Yapar: En kötü senaryo (Worst-Case) simülasyonunu uzmanlarla yürütür.
+
+Risk Skoru Hesaplar: Operasyonun tehlike seviyesini rakamlaştırır.
+
+EN İYİ SEÇENEĞİ SEÇER: (Kolektif Karar) Hiçbir ajan tek başına seçemez; uzmanların konsensüsü aranır.
+
+Karar Güven Skoru Üretir: Seçilen kararın isabet oranını meclis puanıyla tescil eder.
+
+Kararı Gerekçelendirir: Seçimin mantığını teknik ve felsefi olarak raporlar.
+
+Reddedilen Alternatifleri Açıklar: Diğer yolların neden "Nizam"a uygun olmadığını ispatlar.
+
+VI. Teknoloji ve Kaynak Yönetimi (Lojistik)
+Teknoloji Alternatiflerini Çıkarır: Kullanılabilecek güncel kütüphane ve araçları listeler.
+
+En Uygun Teknolojiyi Seçer: "Local-first" ve otonom çalışma odaklı seçimi mühürler.
+
+Plan Simülasyonu Yapar: Çoklu senaryolarda "kuru çalıştırma" ile planın sağlamlığını test eder.
+
+Kaynak Planlar: İşlem için gereken CPU, RAM, zaman ve bütçeyi rezerve eder.
+
+Maliyet-Fayda Dengesi: Harcanan emeğin, elde edilecek sonuca değip değmediğini sorgular.
+
+VII. Güvenlik, Denetim ve Kontrol (Mühürleme)
+Snapshot Alır: Mevcut sistem ve veri durumunu dondurur (Geri dönüş noktası).
+
+Tutarlılık Kontrolü Yapar: Dondurulan veri ile hazırlanan planın tam uyumuna bakar.
+
+Başarı Kriterlerini Belirler: İşin "Oldu" sayılması için gereken somut çıktıları tanımlar.
+
+Kontrol Kriterlerini Belirler: Denetçi (Audit) birimlerinin bakacağı kritik noktaları seçer.
+
+Kontrol Planı Oluşturur: İcraat sırasında yapılacak Dual Validation (Çifte Onay) rotasını çizer.
+
+Veri Güvenliği Kontrolü Yapar: Veri sızıntısı ve yetki aşımı risklerini tarar.
+
+Süreci Optimize Eder: Gereksiz tüm adımları plan üzerinden temizler.
+
+VIII. Acil Durum ve Uyumluluk (B Planı)
+Plan B Oluşturur: Ana yol tıkanırsa saniyeler içinde devreye girecek yedek rotayı hazırlar.
+
+Plan C Oluşturur: Sistemsel çöküş senaryoları için "Hayatta Kalma" rotasını belirler.
+
+Uyumluluk Kontrolü Yapar: Planın Nizamnameye ve sizin etik kırmızı çizgilerinize uyumunu onaylar.
+
+Geçmiş Öğrenmeden Beslenir: Arşivden gelen tecrübeleri plana son bir süzgeç olarak uygular.
+
+Anomali Kontrolü Yapar: Plan içindeki mantık dışı sapmaları ve "Yapay Zeka Halüsinasyonlarını" denetler.
+
+IX. Finalizasyon ve Hafıza (Ebediyet)
+Proje Planı Oluşturur: Stratejik ve zamansal takvimi son haline getirir.
+
+Operasyon Planı Oluşturur: İcra edecek ajanların teknik uygulama detaylarını (Savaş Haritası) çıkarır.
+
+Task Contract Oluşturur: Tüm süreci bağlayıcı, dijital imzalı nihai sözleşmeye dönüştürür.
+
+KOLEKTİF MÜHÜR (Final Gate): Tüm lonca başkanlarının ve planlama meclisinin nihai onayı.
+
+Arşivler: Planın her aşamasını, elenen seçenekleri ve AR-GE verilerini kalıcı hafızaya mühürler.
+
+Öğrenme Çıktısı Üretir: Bu planın başarısından veya zorluklarından çıkarılan dersleri Akademi'ye iletir.
+
+Veri İmha ve Hijyen: Planlama sırasında kullanılan geçici şifreleri ve gizli verileri güvenli şekilde temizler.
+
+Başlatma Emri (Launch): Görevi mühürlü bir şekilde Dispatcher'a (Sevk Birimi) teslim eder.

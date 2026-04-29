@@ -1,0 +1,5 @@
+# STP - Sistem Takip Paneli
+User-agent: *
+Allow: /
+
+Sitemap: https://sistem-takip-paneli.vercel.app/sitemap.xml

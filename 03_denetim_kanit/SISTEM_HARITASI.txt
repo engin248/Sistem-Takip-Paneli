@@ -1,0 +1,145 @@
+============================================================
+TABLO-DOSYA EŞLEŞTİRME MÜHÜRÜ
+MÜHÜRDAR (3. BİRİM) — NİHAİ MÜHÜR
+============================================================
+Tarih      : 08.04.2026
+Saat       : 14:35 (UTC+3)
+Mühürleyen : Antigravity AI — MÜHÜRDAR Rolü
+Kaynak     : Canlı kod taraması (grep + dosya okuma)
+============================================================
+Format: [TABLO_ADI] <-> [KOD_DOSYASI_YOLU]
+============================================================
+
+=============================================
+PROJE 1: STP (c:\sistem_takip_paneli\02_is_alani)
+=============================================
+
+[tasks]          <-> [src/services/taskService.ts]         — SELECT, UPDATE, DELETE, REALTIME
+[tasks]          <-> [src/components/TaskForm.tsx]          — INSERT
+[tasks]          <-> [src/components/TaskCard.tsx]          — UPDATE, DELETE (via taskService)
+[tasks]          <-> [src/app/page.tsx]                     — SELECT, REALTIME (via taskService)
+[tasks]          <-> [src/store/useTaskStore.ts]            — STORE (bellek deposu)
+[tasks]          <-> [src/services/exportService.ts]        — READ (via useTaskStore)
+[tasks]          <-> [src/components/Stats.tsx]             — READ (via useTaskStore)
+
+[audit_logs]     <-> [src/services/auditService.ts]        — INSERT, SELECT
+[audit_logs]     <-> [src/components/AuditLog.tsx]          — SELECT, REALTIME
+[audit_logs]     <-> [src/services/taskService.ts]          — INSERT (via auditService)
+[audit_logs]     <-> [src/lib/errorHandler.ts]              — INSERT (via auditService)
+[audit_logs]     <-> [src/components/TaskForm.tsx]          — INSERT (via auditService)
+[audit_logs]     <-> [src/services/exportService.ts]        — INSERT (via auditService)
+[audit_logs]     <-> [src/app/page.tsx]                     — SELECT (via auditService)
+
+ALTYAPI:
+[*]              <-> [src/lib/supabase.ts]                  — CLIENT (tüm tablolar için bağlantı)
+[*]              <-> [01_komutlar/supabase_schema.sql]      — ŞEMA (tasks + audit_logs tanımı)
+[—]              <-> [src/lib/constants.ts]                 — DB ERİŞİMİ YOK (sabitler)
+[—]              <-> [src/store/useLanguageStore.ts]        — DB ERİŞİMİ YOK (dil seçimi)
+[—]              <-> [src/components/NavBar.tsx]            — DB ERİŞİMİ YOK (navigasyon)
+[—]              <-> [src/app/layout.tsx]                   — DB ERİŞİMİ YOK (kök layout)
+
+=============================================
+PROJE 2: SKM (c:\Users\Esisya\Desktop\sistem-kontrol-merkezi)
+=============================================
+
+[skm_sistemler]      <-> [src/app/page.tsx]                     — SELECT
+[skm_sistemler]      <-> [src/app/api/health-check/route.ts]    — SELECT, UPDATE
+
+[skm_saglik_kayitlari] <-> [src/app/api/health-check/route.ts] — INSERT
+
+[skm_olaylar]        <-> [src/lib/skm.ts]                       — INSERT, SELECT
+[skm_olaylar]        <-> [src/app/page.tsx]                     — REALTIME
+
+[skm_cift_kontrol]   <-> [src/lib/skm.ts]                       — INSERT, SELECT, UPDATE
+
+[skm_alarmlar]       <-> [src/lib/skm.ts]                       — INSERT, SELECT, UPDATE
+[skm_alarmlar]       <-> [src/app/page.tsx]                     — REALTIME
+
+[gorevler]           <-> [src/lib/gorev-motoru.ts]              — INSERT, SELECT, UPDATE
+
+[gorev_kanitlar]     <-> [src/lib/gorev-motoru.ts]              — INSERT, SELECT
+
+[gorev_loglar]       <-> [src/lib/gorev-motoru.ts]              — INSERT, SELECT
+
+[audit_logs]         <-> [src/services/audit.ts]                — INSERT, SELECT
+[audit_logs]         <-> [src/app/api/audit-test/route.ts]      — INSERT, SELECT
+[audit_logs]         <-> [src/app/page.tsx]                     — REALTIME
+
+ALTYAPI:
+[*]                  <-> [src/lib/supabase.ts]                  — CLIENT (bağlantı katmanı)
+[—]                  <-> [src/lib/dictionaries.ts]              — DB ERİŞİMİ YOK (çeviri)
+[—]                  <-> [src/app/layout.tsx]                   — DB ERİŞİMİ YOK (kök layout)
+
+=============================================
+SUPABASE'DEKİ ERİŞİLEBİLİR TABLOLARIN TAM LİSTESİ
+=============================================
+
+KOD TARAFINDAN YÖNETİLEN TABLOLAR (10/87):
+-------------------------------------------
+01. [tasks]               <-> STP: taskService.ts, TaskForm.tsx
+02. [audit_logs]          <-> STP: auditService.ts + SKM: audit.ts, audit-test/route.ts
+03. [skm_sistemler]       <-> SKM: page.tsx, health-check/route.ts
+04. [skm_saglik_kayitlari] <-> SKM: health-check/route.ts
+05. [skm_olaylar]         <-> SKM: skm.ts, page.tsx
+06. [skm_cift_kontrol]    <-> SKM: skm.ts
+07. [skm_alarmlar]        <-> SKM: skm.ts, page.tsx
+08. [gorevler]            <-> SKM: gorev-motoru.ts
+09. [gorev_kanitlar]      <-> SKM: gorev-motoru.ts
+10. [gorev_loglar]        <-> SKM: gorev-motoru.ts
+
+KOD TARAFINDAN YÖNETİLMEYEN TABLOLAR (77/87):
+-----------------------------------------------
+Bu tablolar Supabase veritabanında mevcuttur ancak
+mevcut kod tabanlarında (STP + SKM) bu tablolara
+erişen hiçbir .ts/.tsx dosyası YOKTUR.
+
+B0 GRUBU (10):
+b0_ajan_loglari, b0_api_spam_kalkani, b0_arsiv,
+b0_bildirim_loglari, b0_giris_girisimleri,
+b0_herm_ai_kararlar, b0_sistem_loglari,
+b0_tasarim_ayarlari, b0_telegram_log, b0_yetki_ayarlari
+
+B1 GRUBU (50):
+b1_agent_loglari, b1_ai_is_kuyrugu, b1_ajan_gorevler,
+b1_aksesuar_arsivi, b1_ara_is_emirleri,
+b1_arge_cost_analysis, b1_arge_products,
+b1_arge_products_karantina, b1_arge_risk_analysis,
+b1_arge_strategy, b1_arge_trend_data, b1_arge_trendler,
+b1_askeri_haberlesme, b1_dikim_talimatlari,
+b1_fire_kayitlari, b1_gorevler, b1_ic_mesajlar,
+b1_imalat_emirleri, b1_is_emirleri, b1_kamera_olaylari,
+b1_kesim_emirleri, b1_kesim_is_emirleri,
+b1_kesim_operasyonlari, b1_kumas_arsiv, b1_kumas_arsivi,
+b1_makineler, b1_maliyet_kalemleri, b1_maliyet_kayitlari,
+b1_mesaj_gizli, b1_mesaj_okundu_log, b1_model_is_akislari,
+b1_model_kaliplari, b1_model_malzeme_listesi,
+b1_model_taslaklari, b1_modelhane_kayitlari,
+b1_muhasebe_raporlari, b1_numune_uretimleri,
+b1_operasyon_adimlari, b1_operasyon_takip,
+b1_operasyon_tanimlari, b1_personel, b1_personel_devam,
+b1_personel_performans, b1_sistem_ayarlari,
+b1_sistem_uyarilari, b1_stok, b1_stok_hareketleri,
+b1_tedarikci_sabika, b1_uretim_kayitlari,
+b1_uretim_operasyonlari
+
+B2 GRUBU (13):
+b2_cek_senet_vade, b2_kasa_hareketleri,
+b2_malzeme_katalogu, b2_muhasebe, b2_musteriler,
+b2_personel_devam, b2_siparis_kalemleri, b2_siparisler,
+b2_stok_hareketleri, b2_tedarikciler, b2_teklif_logs,
+b2_urun_katalogu, b2_urun_varyant_stok
+
+BAĞIMSIZ (4):
+bot_tracking_logs, camera_access_log, camera_events,
+cameras, cost_analysis, m2_finans_veto, notifications,
+orders, production_orders, products, risk_analysis,
+strategy, trend_data
+
+============================================================
+NİHAİ MÜHÜR
+============================================================
+TABLO-DOSYA EŞLEŞTİRMESİ TAMAMLANDI.
+10 TABLO AKTİF OLARAK KOD TARAFINDAN YÖNETİLMEKTEDİR.
+77 TABLO SUPABASE'DE MEVCUTTUR ANCAK MEVCUT KODLA ERİŞİLMEMEKTEDİR.
+MÜHÜR DURUMU: ✅ MÜHÜRLENDİ
+============================================================

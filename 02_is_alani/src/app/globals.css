@@ -1,0 +1,494 @@
+@import "tailwindcss";
+
+/* ══════════════════════════════════════════════════════════════ */
+/* STP KARARGAH PANELİ — FÜTÜRİSTİK TASARIM SİSTEMİ           */
+/* Versiyon: 2.0 | 2031 Vizyon                                   */
+/* ══════════════════════════════════════════════════════════════ */
+
+:root {
+  --background: #0a0e1a;
+  --background-deep: #060912;
+  --foreground: #e2e8f0;
+  --neon-cyan: #06b6d4;
+  --neon-blue: #3b82f6;
+  --neon-purple: #a855f7;
+  --neon-green: #22c55e;
+  --neon-amber: #f59e0b;
+  --neon-red: #ef4444;
+  --glass-bg: rgba(12, 20, 40, 0.65);
+  --glass-border: rgba(148, 163, 184, 0.1);
+  --glass-glow: rgba(6, 182, 212, 0.06);
+  --grid-line: rgba(100, 140, 200, 0.035);
+  --surface-1: rgba(15, 25, 50, 0.5);
+  --surface-2: rgba(20, 30, 60, 0.4);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0e1a;
+    --foreground: #e2e8f0;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --background: #0a0e1a;
+    --foreground: #e2e8f0;
+  }
+}
+
+/* ── BODY: Derin koyu gradient + grid overlay + radial glow ─── */
+body {
+  background: var(--background);
+  color: var(--foreground);
+  background-image:
+    /* Merkez radial glow — subtil mavi-lacivert */
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(15, 30, 80, 0.35) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 50% at 80% 100%, rgba(6, 182, 212, 0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 20% 80%, rgba(99, 50, 180, 0.03) 0%, transparent 50%),
+    /* Grid overlay */
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+  background-attachment: fixed;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  min-height: 100vh;
+}
+
+/* ── GLASSMORPHISM KARTLARI ───────────────────────────────── */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow:
+    0 4px 30px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border-color: rgba(6, 182, 212, 0.25);
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.35),
+    0 0 30px rgba(6, 182, 212, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transform: translateY(-1px);
+}
+
+/* ── NEON GLOW EFEKTLERİ ─────────────────────────────────── */
+.neon-glow-cyan {
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.15), 0 0 40px rgba(6, 182, 212, 0.05);
+}
+
+.neon-glow-green {
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.15), 0 0 40px rgba(34, 197, 94, 0.05);
+}
+
+.neon-glow-red {
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.15), 0 0 40px rgba(239, 68, 68, 0.05);
+}
+
+.neon-glow-purple {
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.15), 0 0 40px rgba(168, 85, 247, 0.05);
+}
+
+.neon-glow-amber {
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.15), 0 0 40px rgba(245, 158, 11, 0.05);
+}
+
+/* ── NEON TEXT ────────────────────────────────────────────── */
+.neon-text-cyan {
+  color: var(--neon-cyan);
+  text-shadow: 0 0 10px rgba(6, 182, 212, 0.5), 0 0 20px rgba(6, 182, 212, 0.2);
+}
+
+.neon-text-green {
+  color: var(--neon-green);
+  text-shadow: 0 0 10px rgba(34, 197, 94, 0.5), 0 0 20px rgba(34, 197, 94, 0.2);
+}
+
+.neon-text-red {
+  color: var(--neon-red);
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.5), 0 0 20px rgba(239, 68, 68, 0.2);
+}
+
+/* ── NEON BORDER ─────────────────────────────────────────── */
+.neon-border-cyan {
+  border-color: rgba(6, 182, 212, 0.4);
+}
+
+.neon-border-green {
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+/* ── PULSE ANİMASYONLARI ─────────────────────────────────── */
+@keyframes pulse-neon {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes scan-line {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+@keyframes glow-breathe {
+  0%, 100% { box-shadow: 0 0 20px rgba(6, 182, 212, 0.1); }
+  50% { box-shadow: 0 0 40px rgba(6, 182, 212, 0.2), 0 0 60px rgba(6, 182, 212, 0.1); }
+}
+
+@keyframes data-stream {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 0% 100%; }
+}
+
+@keyframes border-flow {
+  0% { border-color: rgba(6, 182, 212, 0.2); }
+  50% { border-color: rgba(6, 182, 212, 0.5); }
+  100% { border-color: rgba(6, 182, 212, 0.2); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes radar-sweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-pulse-neon {
+  animation: pulse-neon 2s ease-in-out infinite;
+}
+
+.animate-glow-breathe {
+  animation: glow-breathe 4s ease-in-out infinite;
+}
+
+.animate-border-flow {
+  animation: border-flow 3s ease-in-out infinite;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.08), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 3s linear infinite;
+}
+
+.animate-radar {
+  animation: radar-sweep 4s linear infinite;
+}
+
+/* ── MEKANİK VİDA / DİŞLİ ANİMASYONLARI ───────────────────── */
+@keyframes gear-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes gear-spin-reverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+@keyframes screw-pulse {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.3; }
+  50% { transform: scale(1.1) rotate(180deg); opacity: 0.6; }
+}
+
+.animate-gear {
+  animation: gear-spin 12s linear infinite;
+}
+
+.animate-gear-slow {
+  animation: gear-spin-reverse 25s linear infinite;
+}
+
+.animate-screw {
+  animation: screw-pulse 4s ease-in-out infinite;
+}
+
+/* ── SCROLLBAR FÜTÜRİSTİK ───────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(6, 182, 212, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(6, 182, 212, 0.5);
+}
+
+/* ── HQ SCREEN MODÜLLERİ ────────────────────────────────── */
+.hq-screen {
+  position: relative;
+  overflow: hidden;
+}
+
+.hq-screen::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+  opacity: 0.5;
+}
+
+.hq-screen::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.1), transparent);
+}
+
+/* ── STATUS INDICATOR ────────────────────────────────────── */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  position: relative;
+}
+
+.status-dot::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  opacity: 0.3;
+  animation: pulse-neon 2s ease-in-out infinite;
+}
+
+/* ── GRID SCREEN HEADER ──────────────────────────────────── */
+.screen-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.screen-header-tag {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-family: 'Inter', monospace;
+}
+
+/* ══════════════════════════════════════════════════════════════ */
+/* RTL SİMETRİ DESTEĞİ                                         */
+/* html[dir="rtl"] aktif olduğunda tüm metin/yön sınıfları      */
+/* otomatik olarak ters çevrilir.                                */
+/* ══════════════════════════════════════════════════════════════ */
+
+/* RTL modunda grid ve flex yönünü otomatik tersle */
+html[dir="rtl"] .direction-rtl {
+  direction: rtl;
+}
+
+/* RTL modunda text-start → sağa, text-end → sola dönüşümü */
+/* Tailwind'in logical properties desteği ile uyumlu */
+html[dir="rtl"] .text-start {
+  text-align: right;
+}
+
+html[dir="rtl"] .text-end {
+  text-align: left;
+}
+
+/* RTL modunda Toaster pozisyonu */
+html[dir="rtl"] [data-sonner-toaster] {
+  left: var(--offset, 16px) !important;
+  right: auto !important;
+}
+
+/* RTL modunda border-start/end logical properties */
+html[dir="rtl"] .border-s-4 {
+  border-right-width: 4px;
+  border-left-width: 0;
+}
+
+/* RTL modunda margin-start */
+html[dir="rtl"] .ms-2 {
+  margin-right: 0.5rem;
+  margin-left: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════ */
+/* MOBİL RESPONSİVE — TELEFON ERİŞİMİ İÇİN                    */
+/* ══════════════════════════════════════════════════════════════ */
+
+/* ── Telefon (<640px) ─────────────────────────────────────── */
+@media (max-width: 639px) {
+  /* Karargah ekran haritası: 3 sütundan 1'e */
+  .grid.grid-cols-3 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Kanban: 4 sütundan 1'e (dikey scroll) */
+  .grid.lg\:grid-cols-4 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* 9 ekran grid'i: tek sütun */
+  .hq-screen {
+    margin-bottom: 0.5rem;
+  }
+
+  /* Başlık küçült */
+  h1 {
+    font-size: 1.25rem !important;
+  }
+
+  /* Durum mühürleri: kaydırmalı */
+  .flex.flex-wrap.gap-3 {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 0.5rem;
+  }
+  .flex.flex-wrap.gap-3::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Form elemanları: tam genişlik */
+  input, select, textarea, button {
+    min-height: 44px;
+    font-size: 16px !important;
+  }
+
+  /* Footer: kompakt */
+  footer .flex.items-center.gap-4 {
+    gap: 0.5rem;
+  }
+
+  /* Ekran header: kompakt */
+  .screen-header {
+    padding: 0.5rem 0.75rem;
+  }
+
+  /* Protokol grid: 3 sütun */
+  .grid.md\:grid-cols-7 {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  /* Başlık satırı: dikey */
+  .flex.justify-between.items-end {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+}
+
+/* ── Tablet (640px–1023px) ────────────────────────────────── */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .grid.lg\:grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .grid.grid-cols-3 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .grid.md\:grid-cols-7 {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+
+/* ── Dokunmatik iyileştirmeler ────────────────────────────── */
+@media (hover: none) and (pointer: coarse) {
+  .hover\:shadow-md:hover {
+    box-shadow: none;
+  }
+
+  button, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .cursor-grab {
+    cursor: default;
+  }
+}
+
+/* ── Güvenli alan (notch/dinamik ada) ─────────────────────── */
+@supports (padding-top: env(safe-area-inset-top)) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════ */
+/* SIDEBAR STİLLERİ                                              */
+/* ══════════════════════════════════════════════════════════════ */
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(6, 182, 212, 0.15);
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(6, 182, 212, 0.3);
+}
+
+/* ══════════════════════════════════════════════════════════════ */
+/* GRİD LAYOUT GEÇİŞ ANİMASYONLARI                              */
+/* ══════════════════════════════════════════════════════════════ */
+
+/* Panel daralt/genişlet geçişi */
+.hq-screen {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 2 sütunlu grid'de genişletilmiş panel */
+@media (min-width: 1024px) {
+  .hq-screen.lg\:col-span-2 {
+    grid-column: span 2 / span 2;
+  }
+}
+

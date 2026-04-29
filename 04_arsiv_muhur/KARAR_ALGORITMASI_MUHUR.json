@@ -1,0 +1,142 @@
+{
+  "muhur_id": "MUH-KARAR-ALG-001",
+  "muhur_tipi": "KARAR ALGORİTMASI MÜHRÜ",
+  "muhur_birimi": "3. MÜHÜRDAR (BİRİM-3)",
+  "muhurleyen": "Antigravity AI",
+  "otorite": "Engin — Sistem Kurucusu",
+  "muhur_tarihi": "2026-04-08T18:46:07+03:00",
+  "doktrin": "Sistem Takip Paneli — SIFIR İNİSİYATİF",
+  "release_etiketi": "RELEASE-1.0-STP",
+
+  "konu": "AI'NIN VERDİĞİ KARARLARIN OPERATÖR ONAYINDAN GEÇMEDEN 'KESİNLEŞTİ' STATÜSÜNE GEÇMEDİĞİNİN DOĞRULANMASI",
+
+  "analiz_ozeti": {
+    "sonuc": "✅ MÜHÜRLENDİ — AI SİSTEMDE TEK BAŞINA KESİN KARAR ALMA YETKİSİ YOKTUR",
+    "gerekce": "Canlı kod analizi sonucunda AI'nın hiçbir kararının operatör onayı atlanarak veritabanına KESİNLEŞTİ olarak yazılamadığı tespit ve teyit edilmiştir."
+  },
+
+  "canli_kanit_zinciri": {
+    "katman_1_ai_motoru": {
+      "dosya": "src/services/aiManager.ts",
+      "satir_sayisi": 396,
+      "sha256": "CANLI_DOĞRULAMA",
+      "fonksiyonlar": [
+        {
+          "ad": "analyzeLocalPriority()",
+          "satir": "124-196",
+          "cikti_tipi": "PriorityAnalysisResult",
+          "karar_yetkisi": "❌ SADECE ÖNERİ ÜRETIR — Veritabanına yazmaz",
+          "aciklama": "Anahtar kelime tarayarak 'kritik/yuksek/normal/dusuk' önerir. Çıktı sadece bir nesne döner, hiçbir DB işlemi yapmaz."
+        },
+        {
+          "ad": "analyzeWithAI()",
+          "satir": "204-316",
+          "cikti_tipi": "PriorityAnalysisResult",
+          "karar_yetkisi": "❌ SADECE ÖNERİ ÜRETIR — Veritabanına yazmaz",
+          "aciklama": "OpenAI GPT-4o-mini'ye sorgu atar. Dönen öncelik değerini bir nesne olarak döndürür. Hiçbir DB mutasyonu yoktur."
+        },
+        {
+          "ad": "analyzeTaskPriority()",
+          "satir": "334-364",
+          "cikti_tipi": "PriorityAnalysisResult",
+          "karar_yetkisi": "❌ ORKESTRATÖR — AI veya Lokal analizi çağırır, kararı UYGULAMAZ",
+          "aciklama": "Ana giriş noktası. AI mevcut ve çalışıyorsa AI analizi, değilse lokal analiz çağırır. Sonucu döndürür, hiçbir DB işlemi yapmaz."
+        }
+      ],
+      "kritik_tespit": "aiManager.ts içinde 'supabase.from()', '.insert()', '.update()', '.delete()' çağrısı SIFIR (0) adettir. AI motoru yalnızca analiz üretir, asla uygulamaz."
+    },
+
+    "katman_2_gorev_olusturma": {
+      "dosya": "src/components/TaskForm.tsx",
+      "satir_sayisi": 112,
+      "kritik_satirlar": {
+        "50-51": "status: 'beklemede', priority: 'normal'",
+        "aciklama": "Görev oluşturulduğunda statü DAİMA 'beklemede' olarak yazılır. AI'nın öncelik önerisi KULLANILMAMAKTADIR — sabit 'normal' kodlanmıştır."
+      },
+      "ai_entegrasyonu": "❌ YOK — TaskForm.tsx içinde analyzeTaskPriority() çağrısı bulunmamaktadır",
+      "sonuc": "Görev oluşumunda AI SIFIR (0) etkiye sahiptir. Her görev OPERATÖR tarafından manuel oluşturulur."
+    },
+
+    "katman_3_durum_gecisi": {
+      "dosya": "src/services/taskService.ts",
+      "satir_sayisi": 183,
+      "fonksiyonlar": {
+        "updateStatus()": {
+          "satir": "48-83",
+          "mekanizma": "Operatör UI'dan statü değişikliği tetikler → supabase.from('tasks').update({ status }) → audit_logs'a yazılır",
+          "ai_mudahalesi": "❌ YOK — updateStatus() içinde AI çağrısı bulunmamaktadır",
+          "sonuc": "Statü değişikliği %100 OPERATÖR inisiyatifindedir"
+        },
+        "deleteTask()": {
+          "satir": "85-120",
+          "ai_mudahalesi": "❌ YOK"
+        },
+        "archiveTask()": {
+          "satir": "122-157",
+          "ai_mudahalesi": "❌ YOK"
+        }
+      },
+      "kritik_tespit": "taskService.ts içinde 'aiManager', 'analyzeTaskPriority', 'analyzeLocalPriority' importu SIFIR (0) adettir."
+    },
+
+    "katman_4_durum_makinesi": {
+      "dosya": "src/store/useTaskStore.ts",
+      "satir_sayisi": 79,
+      "statu_enum": {
+        "TaskStatus": ["beklemede", "devam_ediyor", "dogrulama", "tamamlandi", "reddedildi", "iptal"],
+        "aciklama": "'dogrulama' statüsü tanımlıdır — bu, bir kararın kesinleşmeden önce doğrulama aşamasından geçmesi gerektiğini ifade eder."
+      },
+      "ai_mudahalesi": "❌ YOK — useTaskStore.ts içinde AI referansı bulunmamaktadır",
+      "sonuc": "State yönetimi tamamen pasif bir veri deposudur. Hiçbir otonom karar almaz."
+    }
+  },
+
+  "karar_akisi_haritasi": {
+    "mevcut_akis": [
+      "1. OPERATÖR → TaskForm.tsx'den görev başlığı girer",
+      "2. TaskForm.tsx → status: 'beklemede', priority: 'normal' olarak Supabase'e yazar",
+      "3. OPERATÖR → TaskCard.tsx üzerinden statü değiştirir (beklemede → devam_ediyor → dogrulama → tamamlandi)",
+      "4. taskService.ts → updateStatus() fonksiyonu veritabanını günceller",
+      "5. auditService.ts → Her değişiklik audit_logs'a IMMUTABLE olarak kaydedilir"
+    ],
+    "ai_konumu": "AI (aiManager.ts) mevcut akışta PASIF konumdadır. Sistem tarafından çağrılmaktadır ancak kararları uygulanmamaktadır.",
+    "kesinlesme_yetkisi": "YALNIZCA OPERATÖR — Hiçbir AI motoru doğrudan DB mutasyonu yapamaz"
+  },
+
+  "guvence_katmanlari": {
+    "katman_1_kod_izolasyonu": {
+      "aciklama": "aiManager.ts hiçbir DB importu (supabase) içermez → fiziksel olarak veritabanına erişemez",
+      "durum": "✅ DOĞRULANMIŞ"
+    },
+    "katman_2_tek_giris_noktasi": {
+      "aciklama": "DB mutasyonları yalnızca taskService.ts üzerinden geçer → AI bu servise bağlı değildir",
+      "durum": "✅ DOĞRULANMIŞ"
+    },
+    "katman_3_audit_izleme": {
+      "aciklama": "Her statü değişikliği audit_logs tablosuna IMMUTABLE olarak yazılır → geri alınamaz, değiştirilemez",
+      "durum": "✅ DOĞRULANMIŞ"
+    },
+    "katman_4_rls_korumasi": {
+      "aciklama": "audit_logs tablosu UPDATE/DELETE politikası YOKTUR → mühürlü kayıt",
+      "durum": "✅ DOĞRULANMIŞ"
+    },
+    "katman_5_dogrulama_statusu": {
+      "aciklama": "TaskStatus enum'unda 'dogrulama' statüsü mevcuttur → kesinleşme öncesi operatör doğrulaması mimari olarak desteklenir",
+      "durum": "✅ DOĞRULANMIŞ"
+    }
+  },
+
+  "nihai_karar": {
+    "muhur_statusu": "KESİNLEŞTİ",
+    "sonuc": "AI SİSTEMDE TEK BAŞINA KESİN KARAR ALMA YETKİSİ YOKTUR. Tüm durum geçişleri (beklemede → devam_ediyor → dogrulama → tamamlandi) OPERATÖR tarafından tetiklenir. AI motoru (aiManager.ts) yalnızca öncelik analizi ÖNERİSİ üretir ve bu öneri dahi mevcut TaskForm akışında kullanılmamaktadır. Veritabanı mutasyonları %100 operatör inisiyatifindedir.",
+    "muhur_kodu": "MUH-KARAR-ALG-001-OPERATÖR-ONAYI-ZORUNLU"
+  },
+
+  "uyarilar": [
+    "Bu dosya 3. MÜHÜRDAR (BİRİM-3) tarafından oluşturulmuştur.",
+    "Bu dosyanın içeriği DEĞİŞTİRİLEMEZ — yalnızca arşivlenebilir.",
+    "AI motoruna DB yazma yetkisi verilmesi durumunda bu mühür GEÇERSİZ sayılır ve yeniden denetim gerektirir.",
+    "Gelecekte AI kararlarının otomatik uygulanması istenirse, 'OPERATÖR ONAY KAPISI' (approval gate) mekanizması zorunludur.",
+    "Her mühür ihlali audit_logs'a CRITICAL seviyede kaydedilmelidir."
+  ]
+}

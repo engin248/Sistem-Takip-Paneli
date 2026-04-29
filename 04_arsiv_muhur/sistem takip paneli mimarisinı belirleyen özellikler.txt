@@ -1,0 +1,100 @@
+1 Monolitik Mimari  basit
+hızlı başlangıç
+
+2. Katmanlı Mimari (Layered)
+
+Mantık: UI / Business / Data ayrımı
+
+3. Mikroservis Mimari
+
+Mantık: Her iş ayrı servis
+
+
+4. Event-Driven Mimari
+
+Mantık: olay tetikleme
+
+5. Serverless (FaaS)
+
+Mantık: fonksiyon bazlı çalışm
+
+6. Microkernel (Plugin) Mimari
+
+Mantık: çekirdek + eklentiler
+
+
+
+7. Service-Oriented Architecture (SOA)
+
+Mantık: servisler arası iletişim
+
+
+8. Hexagonal (Ports & Adapters)
+
+Mantık: iç sistem dıştan bağımsız
+
+9. CQRS + Event Sourcing
+
+Mantık: okuma/yazma ayrımı
+
+
+2) DAĞITIK SİSTEM MİMARİLERİ
+10. Distributed Systems
+
+11. Peer-to-Peer (P2P)
+
+Mantık: merkezi yok
+
+12. Cluster Computing
+
+Mantık: birlikte çalışan makineler
+
+13. Grid Computing
+
+Mantık: dağıtık kaynak paylaşımı
+
+
+14. Edge Computing
+
+Mantık: veri kaynağa yakın
+
+
+15. Fault-Tolerant Systems
+
+Mantık: hata olsa bile çalışır
+
+16. Redundant Systems (N+1 / Triple Modular Redundancy)
+
+Mantık: aynı sistemden birden fazla
+
+17. Real-Time Systems (RTOS)
+
+Mantık: zaman garantili işlem
+
+4) NÜKLEER / ASKERİ
+18. Air-Gapped Systems
+
+Mantık: tamamen izole
+
+19. Zero Trust Architecture
+
+Mantık: kimseye güvenme
+
+20. Defense-in-Depth
+
+Mantık: katmanlı güvenlik
+
+21. Command & Control (C2)
+
+Mantık: merkezi + dağıtık kontro
+
+5) YÜKSEK PERFORMANS / GELECEK
+22. Parallel Computing
+
+23. Quantum Computing (yaklaşım)
+
+Mantık: paralel olasıl
+
+24. Autonomous Systems
+
+Mantık: kendi karar verir

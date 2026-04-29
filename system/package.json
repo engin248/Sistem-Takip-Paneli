@@ -1,0 +1,15 @@
+{
+  "name": "nizam-autonomous-architecture",
+  "version": "1.0.0",
+  "description": "Sistem Takip Paneli - Otonom AI Merkezi ve Agent Ağı",
+  "main": "network/agentServer.js",
+  "scripts": {
+    "start": "node network/agentServer.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.103.3",
+    "bullmq": "^5.74.1",
+    "express": "^4.22.1",
+    "ioredis": "^5.10.1"
+  }
+}
