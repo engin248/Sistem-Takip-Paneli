@@ -20,10 +20,11 @@ import * as path from 'path';
 // Next.js root'undan bir üst dizin: Sistem-Takip-Paneli/data/
 const DATA_DIR = path.join(process.cwd(), '..', 'data');
 const STORE_FILES = {
-  agents:        path.join(DATA_DIR, 'agents.json'),
-  tasks:         path.join(DATA_DIR, 'tasks.json'),
-  audit_logs:    path.join(DATA_DIR, 'audit_logs.json'),
-  sync_log:      path.join(DATA_DIR, 'sync_log.json'),
+  agents:          path.join(DATA_DIR, 'agents.json'),
+  tasks:           path.join(DATA_DIR, 'tasks.json'),
+  audit_logs:      path.join(DATA_DIR, 'audit_logs.json'),
+  sync_log:        path.join(DATA_DIR, 'sync_log.json'),
+  gorev_kartlari:  path.join(DATA_DIR, 'gorev_kartlari.json'),
 } as const;
 
 type StoreKey = keyof typeof STORE_FILES;
