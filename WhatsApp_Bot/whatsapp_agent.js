@@ -71,6 +71,10 @@ if (!AUTHORIZED_NUMBERS.length) {
 function isAuthorized(msg, client) {
     if (msg.from === 'status@broadcast' || msg.to === 'status@broadcast' || msg.isStatus) return false;
     const myNum = client.info?.wid?._serialized;
+    // DÜZELTİLDİ (2026-04-29): Dışa giden mesajları yoksay.
+    // Birine mesaj attığında bot devreye girmesin.
+    // İstisna: Kendi numarana kendi kendine attığın mesajlar (komut kanalı) geçerlidir.
+    if (msg.fromMe && myNum && msg.to !== myNum) return false;
     if (myNum && msg.from === myNum && (msg.to === myNum || msg.to.endsWith('@lid'))) return true;
     if (AUTHORIZED_NUMBERS.length && AUTHORIZED_NUMBERS.includes(msg.from)) return true;
     return false;
