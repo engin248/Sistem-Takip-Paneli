@@ -246,31 +246,34 @@ export default function AgentPanel() {
   };
 
   const [isOrderLoading, setIsOrderLoading] = useState(false);
+  const [lastKartId, setLastKartId] = useState<string | null>(null);
 
   const executeOrder = async () => {
     if (!orderText) { toast.error('Emir boş bırakılamaz!'); return; }
     setIsOrderLoading(true);
     try {
-      const gorevMetni = `[${orderPriority}] [${orderTaskType}] [${orderAutonomy}] Ajan: ${activeOrderAgent?.codename} — ${orderText}`;
-      const res = await fetch('/api/intake', {
+      // /api/gorev-karti — 5 aşamalı AI pipeline
+      const res = await fetch('/api/gorev-karti', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ task: gorevMetni, agent: activeOrderAgent?.codename }),
+        body: JSON.stringify({
+          gorev: `[${orderPriority}][${orderTaskType}][${orderAutonomy}] ${orderText}`,
+          ajan_id: activeOrderAgent?.id,
+          ajan_codename: activeOrderAgent?.codename,
+        }),
       });
       const data = await res.json();
       if (data.success) {
-        toast.success(`✅ Görev Planlama Motoruna iletildi! ID: ${data.gorev_id || '—'}`);
-      } else {
-        toast.error(`❌ Görev reddedildi: ${data.message || data.error || 'Bilinmeyen hata'}`);
-      }
-      // Ajanın son aksiyonunu güncelle
-      if (activeOrderAgent) {
-        await fetch(`/api/agents/${activeOrderAgent.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: 'MESGUL', last_action: orderText.substring(0, 80) }),
-        });
+        setLastKartId(data.kart_id);
+        const eksik = data.ozet?.eksik_uzman_sayisi || 0;
+        if (eksik > 0) {
+          toast.success(`⚠️ Görev Kartı hazır! (${data.kart_id}) — ${eksik} eksik uzman tespit edildi, ajan talebi oluşturuldu`, { duration: 6000 });
+        } else {
+          toast.success(`✅ Görev Kartı hazır! (${data.kart_id}) — ${data.ozet?.is_adim_sayisi || 0} adım, ${data.ozet?.kontrol_noktasi_sayisi || 0} kontrol noktası`, { duration: 5000 });
+        }
         await fetchAgents();
+      } else {
+        toast.error(`❌ Görev Kartı oluşturulamadı: ${data.error || 'Bilinmeyen hata'}`);
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -291,7 +294,7 @@ export default function AgentPanel() {
 
   const handleRefresh = async () => {
     await fetchAgents();
-    toast.success(`Ajan kadrosu Supabase'den senkronize edildi ✅ (${dataSource === 'supabase' ? 'Canlı Veri' : 'Mock Veri'})`);
+    toast.success(`Ajan kadrosu yerel arşivden yüklendi ✅ (${agents.length} ajan)`);
   };
 
   const getStatusColor = (status: AgentStatus) => {

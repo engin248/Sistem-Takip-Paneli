@@ -19,7 +19,8 @@
 // ============================================================
 
 import { NextRequest, NextResponse } from 'next/server';
-import { localInsert, localRead } from '@/lib/localStore';
+import { localInsert, localRead, localUpdate } from '@/lib/localStore';
+
 
 const OLLAMA_URL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'qwen3:8b';
@@ -404,16 +405,17 @@ export async function POST(req: NextRequest) {
     if (eksikEkip.var_mi && eksikEkip.talepler.length > 0) {
       console.log(`[GK] ⚠️ ${eksikEkip.talepler.length} eksik uzman tespit edildi — ajan talebi oluşturuluyor...`);
       for (const talep of eksikEkip.talepler) {
-        localInsert('agents' as any, {
-          id: `TALEP-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
-          agent_code: `TALEP-${Date.now()}`,
+        const talepId = `TALEP-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;
+        localInsert('agents', {
+          id: talepId,
+          agent_code: talepId,
           codename: `[TALEP] ${talep.uzmanlik}`,
-          tier: 'YAZILIM',
+          tier: 'AR-GE' as const,
           status: 'TALEP',
           specialty: talep.uzmanlik,
           tasks_completed: 0,
           health: 0,
-          last_action: `Talep: ${talep.neden_gerekli}`,
+          last_action: `Kaynak Görevi: ${gorev.substring(0, 50)}`,
           role: talep.neden_gerekli,
           _synced: false,
         });
@@ -441,21 +443,17 @@ export async function POST(req: NextRequest) {
     };
 
     // ── YEREL KAYIT ──
-    localInsert('gorev_kartlari' as Parameters<typeof localInsert>[0], kart as unknown as Record<string, unknown>);
-    
+    localInsert('gorev_kartlari', kart as unknown as Record<string, unknown>);
+
     // ── AJANIN SON AKSİYONUNU GÜNCELLE ──
-    const agentsList = localRead('agents');
-    const agentIdx = agentsList.findIndex(a => (a as Record<string, unknown>).id === ajan_id);
-    if (agentIdx !== -1) {
-      const updated = [...agentsList];
-      updated[agentIdx] = {
-        ...(updated[agentIdx] as Record<string, unknown>),
+    if (ajan_id) {
+      localUpdate('agents', ajan_id, {
         status: 'MESGUL',
-        last_action: `GK: ${gorev.substring(0, 60)}...`,
+        last_action: `GK-${kartId}: ${gorev.substring(0, 60)}`,
         _synced: false,
-        updated_at: new Date().toISOString(),
-      };
+      });
     }
+
 
     console.log(`[GÖREV KARTI] ✅ ${kartId} hazır — Durum: ${kart.durum}`);
 
