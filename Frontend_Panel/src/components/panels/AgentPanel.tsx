@@ -35,12 +35,30 @@ interface Agent {
   memory?: string;
 }
 
-const MOCK_AGENTS: Agent[] = [
-  { id: 'AG-01', codename: 'MİMAR-X', tier: 'YAZILIM', status: 'AKTİF', specialty: 'Claude-3.5-Sonnet', tasksCompleted: 1450, health: 100, lastAction: 'Veritabanı şeması oluşturuluyor...' },
-  { id: 'AG-02', codename: 'RADAR-OSINT', tier: 'WEB', status: 'AKTİF', specialty: 'GPT-4o', tasksCompleted: 890, health: 98, lastAction: 'Rakip analizi verisi çekildi.' },
-  { id: 'AG-03', codename: 'PİSAGOR', tier: 'AR-GE', status: 'MEŞGUL', specialty: 'Ollama (Llama-3)', tasksCompleted: 3421, health: 92, lastAction: 'Yeni optimizasyon algoritmaları araştırılıyor...' },
-  { id: 'AG-04', codename: 'KOD-MÜFETTİŞİ', tier: 'DENETİM', status: 'BOŞTA', specialty: 'GPT-4o-Mini', tasksCompleted: 560, health: 100, lastAction: 'Beklemede' },
-];
+// MOCK_AGENTS kaldırıldı — Supabase'den gerçek veri çekiliyor
+// Bağlantı koparsa fallback mock veri API'den gelir
+function mapDbAgent(row: Record<string, unknown>): Agent {
+  const statusMap: Record<string, AgentStatus> = {
+    'AKTIF': 'AKTİF', 'AKTİF': 'AKTİF',
+    'BOSTA': 'BOŞTA', 'BOŞTA': 'BOŞTA',
+    'MESGUL': 'MEŞGUL', 'MEŞGUL': 'MEŞGUL',
+    'HATA': 'HATA'
+  };
+  return {
+    id: row.id as string,
+    codename: row.codename as string,
+    tier: row.tier as AgentTier,
+    status: statusMap[row.status as string] || 'BOŞTA',
+    specialty: row.specialty as string,
+    tasksCompleted: (row.tasks_completed as number) || 0,
+    health: (row.health as number) || 100,
+    lastAction: (row.last_action as string) || 'Beklemede',
+    role: (row.role as string) || '',
+    rules: (row.rules as string) || '',
+    directives: (row.directives as string) || '',
+    memory: (row.memory as string) || '',
+  };
+}
 
 const QUICK_ORDERS: Record<AgentTier, string[]> = {
   'YAZILIM': [
@@ -67,14 +85,32 @@ const QUICK_ORDERS: Record<AgentTier, string[]> = {
 
 export default function AgentPanel() {
   const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const [agents, setAgents] = useState<Agent[]>(MOCK_AGENTS);
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [dataSource, setDataSource] = useState<'supabase' | 'mock'>('mock');
   const [filter, setFilter] = useState<AgentTier | 'TÜMÜ'>('TÜMÜ');
   const [search, setSearch] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const fetchAgents = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      const res = await fetch('/api/agents');
+      const json = await res.json();
+      setAgents((json.agents || []).map(mapDbAgent));
+      setDataSource(json.source === 'supabase' ? 'supabase' : 'mock');
+    } catch (err) {
+      console.error('Ajan yükleme hatası:', err);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    setMounted(true);
+    fetchAgents();
+  }, [fetchAgents]);
 
   // Drawer State
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -101,20 +137,36 @@ export default function AgentPanel() {
   const [chatInput, setChatInput] = useState('');
   const [chatMessages, setChatMessages] = useState<{role: 'user'|'agent', text: string}[]>([]);
 
-  const handleSendMessage = (e?: React.FormEvent) => {
+  const [isChatLoading, setIsChatLoading] = useState(false);
+
+  const handleSendMessage = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!chatInput.trim()) return;
+    if (!chatInput.trim() || isChatLoading) return;
     
-    setChatMessages(prev => [...prev, { role: 'user', text: chatInput }]);
+    const userMsg = chatInput.trim();
+    setChatMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setChatInput('');
+    setIsChatLoading(true);
     
-    // Simulate agent reply
-    setTimeout(() => {
-      setChatMessages(prev => [...prev, { 
-        role: 'agent', 
-        text: `Veritabanına bağlandım. Sorgu isteğinizi işlemeye başlıyorum. İlgili dokümanları hazırladıktan sonra raporu sunacağım.` 
-      }]);
-    }, 1500);
+    try {
+      const res = await fetch('/api/agents/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          agentCodename: activeChatAgent?.codename,
+          agentTier: activeChatAgent?.tier,
+          agentRole: activeChatAgent?.role,
+          message: userMsg,
+          history: chatMessages.slice(-6).map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text })),
+        }),
+      });
+      const data = await res.json();
+      setChatMessages(prev => [...prev, { role: 'agent', text: data.reply || 'Yanıt alınamadı.' }]);
+    } catch (err) {
+      setChatMessages(prev => [...prev, { role: 'agent', text: 'Bağlantı hatası. Ollama çalışıyor mu?' }]);
+    } finally {
+      setIsChatLoading(false);
+    }
   };
 
   const openNewAgentDrawer = () => {
@@ -141,71 +193,94 @@ export default function AgentPanel() {
     setIsDrawerOpen(true);
   };
 
-  const saveAgent = () => {
+  const saveAgent = async () => {
     if (!formCodename) {
       toast.error('Ajan kod adı boş olamaz!');
       return;
     }
-
-    if (editingAgent) {
-      // Update
-      setAgents(prev => prev.map(a => a.id === editingAgent.id ? {
-        ...a,
-        codename: formCodename,
-        tier: formTier,
-        specialty: formSpecialty,
-        role: formRole,
-        rules: formRules,
-        directives: formDirectives,
-        memory: formMemory
-      } : a));
-      toast.success(`${formCodename} başarıyla güncellendi.`);
-    } else {
-      // Create
-      const newId = `AG-${String(agents.length + 1).padStart(2, '0')}`;
-      const newAgent: Agent = {
-        id: newId,
-        codename: formCodename,
-        tier: formTier,
-        status: 'BOŞTA',
-        specialty: formSpecialty,
-        tasksCompleted: 0,
-        health: 100,
-        lastAction: 'Yeni eklendi',
-        role: formRole,
-        rules: formRules,
-        directives: formDirectives,
-        memory: formMemory
-      };
-      setAgents(prev => [...prev, newAgent]);
-      toast.success(`${formCodename} kadroya dahil edildi.`);
-    }
-    setIsDrawerOpen(false);
-  };
-
-  const toggleAgentPower = (id: string) => {
-    setAgents(prev => prev.map(agent => {
-      if (agent.id === id) {
-        const isAwake = agent.status !== 'BOŞTA';
-        return {
-          ...agent,
-          status: isAwake ? 'BOŞTA' : 'AKTİF',
-          lastAction: isAwake ? 'Uyku modunda.' : 'Sistem başlatıldı, emir bekliyor.'
-        };
+    try {
+      if (editingAgent) {
+        // Supabase PATCH
+        const res = await fetch(`/api/agents/${editingAgent.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ codename: formCodename, tier: formTier, specialty: formSpecialty, role: formRole, rules: formRules, directives: formDirectives, memory: formMemory }),
+        });
+        if (!res.ok) throw new Error(await res.text());
+        toast.success(`${formCodename} Supabase'e güncellendi ✅`);
+      } else {
+        // Supabase POST
+        const res = await fetch('/api/agents', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ codename: formCodename, tier: formTier, specialty: formSpecialty, role: formRole, rules: formRules, directives: formDirectives, memory: formMemory }),
+        });
+        if (!res.ok) throw new Error(await res.text());
+        toast.success(`${formCodename} kadroya eklendi ✅`);
       }
-      return agent;
-    }));
+      setIsDrawerOpen(false);
+      await fetchAgents(); // Listeyi yenile
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Kayıt hatası: ${msg}`);
+    }
   };
 
-  const executeOrder = () => {
-    if (!orderText) {
-      toast.error('Emir boş bırakılamaz!');
-      return;
+  const toggleAgentPower = async (id: string) => {
+    const agent = agents.find(a => a.id === id);
+    if (!agent) return;
+    const isAwake = agent.status !== 'BOŞTA';
+    const newStatus = isAwake ? 'BOSTA' : 'AKTIF';
+    const newAction = isAwake ? 'Uyku moduna geçti.' : 'Sistem başlatıldı, emir bekliyor.';
+    // Optimistic UI güncelleme
+    setAgents(prev => prev.map(a => a.id === id ? { ...a, status: isAwake ? 'BOŞTA' : 'AKTİF', lastAction: newAction } : a));
+    try {
+      await fetch(`/api/agents/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus, last_action: newAction }),
+      });
+    } catch (err) {
+      console.error('Power toggle hatası:', err);
     }
-    toast.success(`${activeOrderAgent?.codename} ajanına [${orderPriority}] öncelikli emir iletildi.`);
-    setActiveOrderAgent(null);
-    setOrderText('');
-    setOrderPriority('NORMAL');
+  };
+
+  const [isOrderLoading, setIsOrderLoading] = useState(false);
+
+  const executeOrder = async () => {
+    if (!orderText) { toast.error('Emir boş bırakılamaz!'); return; }
+    setIsOrderLoading(true);
+    try {
+      const gorevMetni = `[${orderPriority}] [${orderTaskType}] [${orderAutonomy}] Ajan: ${activeOrderAgent?.codename} — ${orderText}`;
+      const res = await fetch('/api/intake', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ task: gorevMetni, agent: activeOrderAgent?.codename }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(`✅ Görev Planlama Motoruna iletildi! ID: ${data.gorev_id || '—'}`);
+      } else {
+        toast.error(`❌ Görev reddedildi: ${data.message || data.error || 'Bilinmeyen hata'}`);
+      }
+      // Ajanın son aksiyonunu güncelle
+      if (activeOrderAgent) {
+        await fetch(`/api/agents/${activeOrderAgent.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'MESGUL', last_action: orderText.substring(0, 80) }),
+        });
+        await fetchAgents();
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Bağlantı hatası: ${msg}`);
+    } finally {
+      setIsOrderLoading(false);
+      setActiveOrderAgent(null);
+      setOrderText('');
+      setOrderPriority('NORMAL');
+    }
   };
 
   const filteredAgents = agents.filter(a => {
@@ -214,12 +289,9 @@ export default function AgentPanel() {
     return matchFilter && matchSearch;
   });
 
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    setTimeout(() => {
-      setIsRefreshing(false);
-      toast.success("Ajan kadrosu ve performans verileri güncellendi.");
-    }, 1500);
+  const handleRefresh = async () => {
+    await fetchAgents();
+    toast.success(`Ajan kadrosu Supabase'den senkronize edildi ✅ (${dataSource === 'supabase' ? 'Canlı Veri' : 'Mock Veri'})`);
   };
 
   const getStatusColor = (status: AgentStatus) => {
