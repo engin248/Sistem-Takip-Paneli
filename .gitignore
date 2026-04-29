@@ -54,6 +54,13 @@ external/
 
 # Loglar
 *.log
+logs/
+**/logs/
+
+# Log klasörleri — git'e girmez, 7 günde bir otomatik silinir
+MASTER_AGENTS_POOL/
+Sistem_Takip_Projesi/logs/
+Sistem_Takip_Projesi/node_modules/
 
 # HATA #25-28 DÜZELTİLDİ: Bu log dosyaları git'e giremesin
 Agent_Uretim_Departmani/KARARGAH_ISTIHBARAT.log
