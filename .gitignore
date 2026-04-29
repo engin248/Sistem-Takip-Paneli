@@ -4,8 +4,14 @@ node_modules/
 out/
 build/
 
-# Ortam değişkenleri
-.env*
+# Ortam değişkenleri — gerçek değerler git'e GİRMEZ
+.env
+.env.local
+.env.production
+.env.development
+# Şablon dosyaları git'e GİRER (değerler boş)
+!.env.example
+!**/.env.example
 
 # OS
 .DS_Store
