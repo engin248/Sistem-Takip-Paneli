@@ -20,7 +20,11 @@
  */
 
 const http = require('http');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+let GoogleGenerativeAI;
+try {
+    const pkg = '@google/generative-ai';
+    GoogleGenerativeAI = require(pkg).GoogleGenerativeAI;
+} catch (e) {}
 
 /**
  * callOllama — Ollama API'sine chat isteği gönderir.

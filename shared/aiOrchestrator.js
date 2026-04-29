@@ -13,7 +13,11 @@
 
 const fs   = require('fs');
 const path = require('path');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+let GoogleGenerativeAI;
+try {
+    const pkg = '@google/generative-ai';
+    GoogleGenerativeAI = require(pkg).GoogleGenerativeAI;
+} catch (e) {}
 const { callOllama, callOpenAILocal, callGemini, getEngineForModel } = require('./ai_motorlar');
 const { validateProtocol } = require('./ai_protokol');
 const { edk25SistemPrompt } = require('./edk_25'); // EDK-25 (121 madde)
